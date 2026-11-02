@@ -1,0 +1,687 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../theme/bb_colors.dart';
+import '../../theme/bb_text.dart';
+import '../../widgets/brand_card.dart';
+import '../../widgets/brand_button.dart';
+import '../../services/component_data_service.dart';
+import '../../models/app_models.dart';
+import '../../providers/build_provider.dart';
+import '../../providers/cart_provider.dart';
+
+class BuilderScreen extends StatelessWidget {
+  const BuilderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: ComponentCategory.values.length,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('PC Builder', style: BBTextResponsive.headlineMedium(context, weight: FontWeight.w600)),
+          bottom: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            indicatorColor: BBColors.accentBlue,
+            labelColor: BBColors.accentBlue,
+            unselectedLabelColor: BBColors.textMuted(context),
+            labelStyle: BBTextResponsive.labelMedium(context, weight: FontWeight.w600),
+            unselectedLabelStyle: BBTextResponsive.labelMedium(context),
+            tabs: ComponentCategory.values.map((cat) => Tab(
+              icon: Icon(cat.icon, size: 20),
+              text: cat.label,
+            )).toList(),
+          ),
+        ),
+        body: Consumer<BuildProvider>(
+          builder: (context, buildProvider, _) {
+            return Column(
+              children: [
+                // Build Summary Card
+                _BuildSummaryCard(buildProvider: buildProvider),
+                // Component Selection
+                Expanded(
+                  child: TabBarView(
+                    children: ComponentCategory.values.map((category) {
+                      final components = ComponentDataService.getByCategory(category);
+                      final selected = buildProvider.getSelectedComponent(category);
+                      return _ComponentList(
+                        category: category,
+                        components: components,
+                        selectedComponent: selected,
+                        selectedOption: selected?.options.firstWhere(
+                          (o) => o.isDefault,
+                          orElse: () => selected.options.first,
+                        ),
+                        onSelect: (component, option) {
+                          buildProvider.selectComponent(category, component, option: option);
+                        },
+                        onClear: () {
+                          buildProvider.clearComponent(category);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+                // Action Buttons
+                _BuildActionBar(buildProvider: buildProvider),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _BuildSummaryCard extends StatelessWidget {
+  final BuildProvider buildProvider;
+
+  const _BuildSummaryCard({required this.buildProvider});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final build = buildProvider.currentBuild;
+    final completed = build?.componentCount ?? 0;
+    final total = ComponentCategory.values.length;
+    final price = build?.totalPrice ?? 0;
+
+    return Container(
+      margin: const EdgeInsets.all(BBColors.padL),
+      padding: const EdgeInsets.all(BBColors.padL),
+      decoration: BoxDecoration(
+        gradient: isDark ? BrandAccents.electricGradient : null,
+        color: isDark ? null : BBColors.accentBlueSoft,
+        borderRadius: BorderRadius.circular(BBColors.radiusXl),
+        border: Border.all(
+          color: isDark ? BBColors.nightDivider : BBColors.dayDivider,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.3)
+                : Colors.black.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          gradient: BrandAccents.electricGradient,
+                          borderRadius: BorderRadius.circular(BBColors.radiusMd),
+                        ),
+                        child: const Icon(Icons.memory_rounded, color: Colors.white, size: 28),
+                      ),
+                      const SizedBox(width: BBColors.padM),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Your Build', style: BBTextResponsive.titleMedium(context, weight: FontWeight.w600)),
+                            Text('$completed of $total components', style: BBTextResponsive.bodySmall(context)),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '\$${price.toStringAsFixed(2)}',
+                            style: BBTextResponsive.displayMedium(context, color: BBColors.accentBlue, weight: FontWeight.w700, size: 28),
+                          ),
+                          if (build?.isComplete ?? false)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: BBColors.accentGreen.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(BBColors.radiusSm),
+                              ),
+                              child: Text(
+                                'Ready to Buy',
+                                style: BBTextResponsive.labelSmall(context, color: BBColors.accentGreen, weight: FontWeight.w600),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: BBColors.padL),
+                  // Progress Bar
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(BBColors.radiusSm),
+                    child: LinearProgressIndicator(
+                      value: completed / total,
+                      minHeight: 8,
+                      backgroundColor: isDark ? BBColors.nightBorder : BBColors.dayBorder,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        (build?.isComplete ?? false) ? BBColors.accentGreen : BBColors.accentBlue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: BBColors.padS),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        (build?.isComplete ?? false) ? 'Build complete!' : '${total - completed} more to go',
+                        style: BBTextResponsive.bodySmall(context),
+                      ),
+                      Text(
+                        '${((completed / total) * 100).round()}%',
+                        style: BBTextResponsive.labelMedium(context, weight: FontWeight.w600, color: BBColors.accentBlue),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }
+        }
+
+class _ComponentList extends StatelessWidget {
+  final ComponentCategory category;
+  final List<Component> components;
+  final Component? selectedComponent;
+  final ComponentOption? selectedOption;
+  final void Function(Component, ComponentOption) onSelect;
+  final VoidCallback onClear;
+
+  const _ComponentList({
+    required this.category,
+    required this.components,
+    required this.selectedComponent,
+    required this.selectedOption,
+    required this.onSelect,
+    required this.onClear,
+  });
+
+  @override
+    Widget build(BuildContext context) {
+
+      if (components.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(category.icon, size: 64, color: BBColors.textMuted(context)),
+            const SizedBox(height: BBColors.padM),
+            Text(
+              'No ${category.label.toLowerCase()} available',
+              style: BBTextResponsive.bodyLarge(context, color: BBColors.textMuted(context)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(BBColors.padL, BBColors.padM, BBColors.padL, BBColors.padXXL),
+      itemCount: components.length,
+      separatorBuilder: (_, _) => const SizedBox(height: BBColors.padM),
+      itemBuilder: (context, index) {
+        final component = components[index];
+        final isSelected = selectedComponent?.id == component.id;
+        final option = isSelected ? (selectedOption ?? component.options.first) : component.options.first;
+
+        return _ComponentCard(
+          component: component,
+          selectedOption: option,
+          isSelected: isSelected,
+          categoryColor: category.color,
+          onTap: () => _showOptionSheet(context, component),
+          onClear: isSelected ? onClear : null,
+        );
+      },
+    );
+  }
+
+  void _showOptionSheet(BuildContext context, Component component) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _ComponentOptionSheet(
+        component: component,
+        selectedOption: selectedOption,
+        onSelect: (option) => onSelect(component, option),
+      ),
+    );
+  }
+}
+
+class _ComponentCard extends StatelessWidget {
+  final Component component;
+  final ComponentOption selectedOption;
+  final bool isSelected;
+  final Color categoryColor;
+  final VoidCallback onTap;
+  final VoidCallback? onClear;
+
+  const _ComponentCard({
+    required this.component,
+    required this.selectedOption,
+    required this.isSelected,
+    required this.categoryColor,
+    required this.onTap,
+    this.onClear,
+  });
+
+  @override
+    Widget build(BuildContext context) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+
+      return GestureDetector(
+      onTap: onTap,
+      child: BrandCard(
+        variant: isSelected ? BrandCardVariant.gradient : BrandCardVariant.defaultCard,
+        gradient: LinearGradient(
+          colors: [
+            categoryColor.withValues(alpha: 0.15),
+            categoryColor.withValues(alpha: 0.03),
+          ],
+        ),
+        // borderColor removed - not a parameter of BrandCard
+        padding: const EdgeInsets.all(BBColors.padM),
+        child: Row(
+          children: [
+            // Image
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: isDark ? BBColors.nightSurface : BBColors.daySurface,
+                borderRadius: BorderRadius.circular(BBColors.radiusMd),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(BBColors.radiusMd),
+                child: component.images.isNotEmpty
+                    ? Image.asset(
+                        component.images.first,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Icon(
+                          component.category.icon,
+                          size: 32,
+                          color: categoryColor,
+                        ),
+                      )
+                    : Icon(
+                        component.category.icon,
+                        size: 32,
+                        color: categoryColor,
+                      ),
+              ),
+            ),
+            const SizedBox(width: BBColors.padM),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          component.name,
+                          style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (component.discountLabel != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: BBColors.accentRed.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(BBColors.radiusSm),
+                          ),
+                          child: Text(
+                            component.discountLabel!,
+                            style: BBTextResponsive.labelSmall(context, color: BBColors.accentRed, weight: FontWeight.w600),
+                          ),
+                        ),
+                    ],
+                  ),
+                  Text(component.brand, style: BBTextResponsive.caption(context)),
+                  const SizedBox(height: BBColors.padS),
+                  // Selected option
+                  if (isSelected) ...[
+                    Row(
+                      children: [
+                        Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: selectedOption.colorHex != null
+                                                            ? Color(int.parse(selectedOption.colorHex!.replaceFirst('#', '0xFF')))
+                                                            : categoryColor,
+                                                        shape: BoxShape.circle,
+                                                        border: Border.all(
+                                                          color: Theme.of(context).brightness == Brightness.dark ? BBColors.nightBorder : BBColors.dayBorder,
+                                                          width: 1,
+                                                        ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          selectedOption.name,
+                          style: BBTextResponsive.bodySmall(context, weight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  // Price
+                  Row(
+                    children: [
+                      Text(
+                        '\$${(selectedOption.price ?? 0).toStringAsFixed(2)}',
+                        style: BBTextResponsive.titleMedium(context, color: categoryColor, weight: FontWeight.w700),
+                      ),
+                      if (selectedOption.originalPrice != null && selectedOption.originalPrice! > (selectedOption.price ?? 0)) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          '\$${selectedOption.originalPrice!.toStringAsFixed(2)}',
+                          style: BBTextResponsive.bodySmall(context).copyWith(decoration: TextDecoration.lineThrough),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Selection indicator / Clear
+            if (isSelected && onClear != null)
+              IconButton(
+                icon: Icon(Icons.clear_rounded, color: BBColors.textMuted(context), size: 20),
+                onPressed: onClear,
+                tooltip: 'Remove',
+              )
+            else
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: isSelected ? categoryColor : BBColors.textMuted(context),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ComponentOptionSheet extends StatelessWidget {
+  final Component component;
+  final ComponentOption? selectedOption;
+  final void Function(ComponentOption) onSelect;
+
+  const _ComponentOptionSheet({
+    required this.component,
+    required this.selectedOption,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      maxChildSize: 0.9,
+      minChildSize: 0.5,
+      builder: (context, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? BBColors.nightBg : BBColors.dayBg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(BBColors.radiusXl)),
+        ),
+        child: Column(
+          children: [
+            // Handle
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: BBColors.padM),
+              decoration: BoxDecoration(
+                color: BBColors.textMuted(context),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(BBColors.padXL, 0, BBColors.padXL, BBColors.padM),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          component.name,
+                          style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600),
+                        ),
+                        Text(
+                          'Select ${component.category.label.toLowerCase()} variant',
+                          style: BBTextResponsive.bodySmall(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // Options
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.all(BBColors.padL),
+                itemCount: component.options.length,
+                itemBuilder: (context, index) {
+                  final option = component.options[index];
+                  final isSelected = selectedOption?.id == option.id;
+
+                  return GestureDetector(
+                    onTap: () {
+                      onSelect(option);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: BBColors.padM),
+                      padding: const EdgeInsets.all(BBColors.padM),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? component.category.color.withValues(alpha: 0.1)
+                            : (isDark ? BBColors.nightSurface : BBColors.daySurface),
+                        borderRadius: BorderRadius.circular(BBColors.radiusLg),
+                        border: Border.all(
+                          color: isSelected
+                              ? component.category.color
+                              : (isDark ? BBColors.nightDivider : BBColors.dayDivider),
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          // Color swatch
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: option.colorHex != null
+                                  ? Color(int.parse(option.colorHex!.replaceFirst('#', '0xFF')))
+                                  : component.category.color,
+                              borderRadius: BorderRadius.circular(BBColors.radiusMd),
+                            ),
+                          ),
+                          const SizedBox(width: BBColors.padM),
+                          // Info
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      option.name,
+                                      style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600),
+                                    ),
+                                    const Spacer(),
+                                    if (isSelected)
+                                      Icon(Icons.check_circle_rounded, color: component.category.color, size: 20),
+                                  ],
+                                ),
+                                if (option.specs != null && option.specs!.isNotEmpty)
+                                  Text(
+                                    option.specs!.entries.map((e) => '${e.key}: ${e.value}').join(' • '),
+                                    style: BBTextResponsive.caption(context),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                              ],
+                            ),
+                          ),
+                          // Price
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '\$${(option.price ?? 0).toStringAsFixed(2)}',
+                                style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: component.category.color),
+                              ),
+                              if (option.originalPrice != null && option.originalPrice! > (option.price ?? 0))
+                                Text(
+                                  '\$${option.originalPrice!.toStringAsFixed(2)}',
+                                  style: BBTextResponsive.caption(context).copyWith(decoration: TextDecoration.lineThrough),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BuildActionBar extends StatelessWidget {
+  final BuildProvider buildProvider;
+
+  const _BuildActionBar({required this.buildProvider});
+
+  @override
+  Widget build(BuildContext context) {
+    final build = buildProvider.currentBuild;
+    final isComplete = build?.isComplete ?? false;
+    final totalPrice = build?.totalPrice ?? 0;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(BBColors.padL, BBColors.padM, BBColors.padL, BBColors.padL),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: BrandButton.outline(
+                text: 'Save Build',
+                icon: Icons.save_rounded,
+                onPressed: () => _saveBuild(context),
+              ),
+            ),
+            const SizedBox(width: BBColors.padM),
+            Expanded(
+              flex: 2,
+              child: BrandButton(
+                text: isComplete ? 'Add to Cart (\$${totalPrice.toStringAsFixed(2)})' : 'Complete Build First',
+                icon: Icons.shopping_cart_rounded,
+                onPressed: isComplete ? () => _addToCart(context) : null,
+                isLoading: false,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _saveBuild(BuildContext context) {
+    // TODO: Show name input dialog
+    final name = 'My Build ${DateTime.now().toString().substring(0, 16)}';
+    buildProvider.setBuildName(name);
+    buildProvider.saveBuild();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Build saved!', style: BBTextResponsive.bodyMedium(context)),
+        backgroundColor: BBColors.accentGreen,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _addToCart(BuildContext context) {
+      final cartProvider = context.read<CartProvider>();
+      final build = buildProvider.currentBuild;
+
+      if (build == null || !build.isComplete) return;
+
+      for (final component in build.components) {
+        ComponentOption? selectedOption;
+        if (component.options.isNotEmpty) {
+          selectedOption = component.options.firstWhere(
+            (o) => o.isDefault,
+            orElse: () => component.options.first,
+          );
+        }
+        cartProvider.addItem(CartItem(
+          id: 'cart_${component.id}_${DateTime.now().millisecondsSinceEpoch}',
+          component: component,
+          quantity: 1,
+          option: selectedOption,
+        ));
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Build added to cart!', style: BBTextResponsive.bodyMedium(context)),
+          backgroundColor: BBColors.accentGreen,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      // Navigate to cart tab
+      // Could use a global navigator key or callback
+    }
+}
