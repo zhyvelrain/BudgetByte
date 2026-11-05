@@ -14,13 +14,17 @@ class HomeScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final featuredProducts = ComponentDataService.getFeatured();
     final onSaleProducts = ComponentDataService.getOnSale();
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final horizontalPadding =
+        screenWidth < BBColors.bpMobile ? BBColors.padM : BBColors.padXL;
+    final heroHeight = screenWidth < BBColors.bpMobile ? 245.0 : 220.0;
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           // App Bar / Hero Section
           SliverAppBar(
-            expandedHeight: 220,
+            expandedHeight: heroHeight,
             floating: false,
             pinned: true,
             stretch: true,
@@ -75,7 +79,7 @@ class HomeScreen extends StatelessWidget {
                     // Content
                     SafeArea(
                       child: Padding(
-                        padding: const EdgeInsets.all(BBColors.padXL),
+                      padding: EdgeInsets.all(horizontalPadding),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -83,6 +87,8 @@ class HomeScreen extends StatelessWidget {
                             Text(
                               'Build Your Dream Setup',
                               style: BBTextResponsive.displayLarge(context, size: 28, weight: FontWeight.w700),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: BBColors.padS),
                             Text(
@@ -91,6 +97,8 @@ class HomeScreen extends StatelessWidget {
                                 context,
                                 color: isDark ? BBColors.nightTextSecondary : BBColors.dayTextSecondary,
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: BBColors.padL),
                             // Search bar hint
@@ -121,6 +129,8 @@ class HomeScreen extends StatelessWidget {
                                       context,
                                       color: isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted,
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
@@ -138,10 +148,10 @@ class HomeScreen extends StatelessWidget {
           // Categories
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
                 BBColors.padXL,
-                BBColors.padXL,
-                BBColors.padXL,
+                horizontalPadding,
                 BBColors.padM,
               ),
               child: _CategoriesSection(),
@@ -152,7 +162,7 @@ class HomeScreen extends StatelessWidget {
           if (featuredProducts.isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: BBColors.padXL),
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 child: _SectionHeader(
                   title: 'Featured Picks',
                   subtitle: 'Hand-selected by our experts',
@@ -164,16 +174,16 @@ class HomeScreen extends StatelessWidget {
 
           if (featuredProducts.isNotEmpty)
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                BBColors.padXL,
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
                 0,
-                BBColors.padXL,
+                horizontalPadding,
                 BBColors.padXL,
               ),
               sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.72,
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 220,
+                  childAspectRatio: 0.62,
                   crossAxisSpacing: BBColors.padM,
                   mainAxisSpacing: BBColors.padM,
                 ),
@@ -191,7 +201,7 @@ class HomeScreen extends StatelessWidget {
           if (onSaleProducts.isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: BBColors.padXL),
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 child: _SectionHeader(
                   title: 'On Sale',
                   subtitle: 'Limited time discounts',
@@ -203,16 +213,16 @@ class HomeScreen extends StatelessWidget {
 
           if (onSaleProducts.isNotEmpty)
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                BBColors.padXL,
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
                 0,
-                BBColors.padXL,
+                horizontalPadding,
                 BBColors.padXL,
               ),
               sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.72,
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 220,
+                  childAspectRatio: 0.62,
                   crossAxisSpacing: BBColors.padM,
                   mainAxisSpacing: BBColors.padM,
                 ),
@@ -229,7 +239,7 @@ class HomeScreen extends StatelessWidget {
           // Categories Grid
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: BBColors.padXL),
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               child: _SectionHeader(
                 title: 'Shop by Category',
                 subtitle: 'Explore all component types',
@@ -240,16 +250,16 @@ class HomeScreen extends StatelessWidget {
           ),
 
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              BBColors.padXL,
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
               0,
-              BBColors.padXL,
+              horizontalPadding,
               BBColors.padXL,
             ),
             sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 1.1,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 150,
+                childAspectRatio: 1,
                 crossAxisSpacing: BBColors.padM,
                 mainAxisSpacing: BBColors.padM,
               ),
@@ -266,7 +276,7 @@ class HomeScreen extends StatelessWidget {
           // Features
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: BBColors.padXL),
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               child: _SectionHeader(
                 title: 'Why ByteBudget?',
                 subtitle: 'Built for PC enthusiasts',
@@ -277,10 +287,10 @@ class HomeScreen extends StatelessWidget {
           ),
 
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              BBColors.padXL,
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
               0,
-              BBColors.padXL,
+              horizontalPadding,
               BBColors.padXXL,
             ),
             sliver: SliverList(
@@ -476,6 +486,8 @@ class _CategoryCard extends StatelessWidget {
               category.label,
               style: BBTextResponsive.labelLarge(context, weight: FontWeight.w600),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 2),
             Text(

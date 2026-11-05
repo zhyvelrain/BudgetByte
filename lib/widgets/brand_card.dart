@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../theme/bb_colors.dart';
 import '../theme/bb_text.dart';
 
 /// Variant for BrandCard styling
-enum BrandCardVariant {
-  defaultCard,
-  elevated,
-  gradient,
-}
+enum BrandCardVariant { defaultCard, elevated, gradient }
 
 /// Brand card widget with consistent styling
 class BrandCard extends StatelessWidget {
@@ -42,16 +39,18 @@ class BrandCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final effectiveColor = color ?? (isDark ? BBColors.nightSurface : BBColors.daySurface);
-    final effectiveBorder = border ??
+    final effectiveColor =
+        color ?? (isDark ? BBColors.nightSurface : BBColors.daySurface);
+    final effectiveBorder =
+        border ??
         (showBorder
             ? Border.all(
                 color: isDark ? BBColors.nightDivider : BBColors.dayDivider,
                 width: 1,
               )
             : null);
-    final effectiveRadius = borderRadius ??
-        BorderRadius.circular(BBColors.radiusLg);
+    final effectiveRadius =
+        borderRadius ?? BorderRadius.circular(BBColors.radiusLg);
     final effectiveElevation = elevation ?? 0;
 
     BoxShadow? shadow;
@@ -66,44 +65,47 @@ class BrandCard extends StatelessWidget {
     }
 
     // Apply variant-specific styling
-        Gradient? variantGradient;
-        List<BoxShadow>? variantShadows;
+    Gradient? variantGradient;
+    List<BoxShadow>? variantShadows;
 
-        switch (variant) {
-          case BrandCardVariant.elevated:
-            variantShadows = [
-              BoxShadow(
-                color: isDark
-                    ? Colors.black.withValues(alpha: 0.4)
-                    : Colors.black.withValues(alpha: 0.12),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ];
-            break;
-          case BrandCardVariant.gradient:
-            variantGradient = BrandAccents.electricGradient;
-            variantShadows = [
-              BoxShadow(
-                color: BrandAccents.electricBlue.withValues(alpha: 0.3),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ];
-            break;
-          case BrandCardVariant.defaultCard:
-            break;
-        }
+    switch (variant) {
+      case BrandCardVariant.elevated:
+        variantShadows = [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.4)
+                : Colors.black.withValues(alpha: 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ];
+        break;
+      case BrandCardVariant.gradient:
+        variantGradient = BrandAccents.electricGradient;
+        variantShadows = [
+          BoxShadow(
+            color: BrandAccents.electricBlue.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ];
+        break;
+      case BrandCardVariant.defaultCard:
+        break;
+    }
 
     final card = Container(
       margin: margin,
       padding: padding ?? const EdgeInsets.all(BBColors.padL),
       decoration: BoxDecoration(
-        color: variantGradient == null && gradient == null ? effectiveColor : null,
+        color: variantGradient == null && gradient == null
+            ? effectiveColor
+            : null,
         gradient: gradient ?? variantGradient,
         borderRadius: effectiveRadius,
         border: effectiveBorder,
-        boxShadow: variantShadows ?? (effectiveElevation > 0 ? [shadow!] : null),
+        boxShadow:
+            variantShadows ?? (effectiveElevation > 0 ? [shadow!] : null),
       ),
       child: child,
     );
@@ -177,7 +179,9 @@ class ProductCard extends StatelessWidget {
                 aspectRatio: 1,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isDark ? BBColors.nightSurfaceAlt : BBColors.daySurfaceAlt,
+                    color: isDark
+                        ? BBColors.nightSurfaceAlt
+                        : BBColors.daySurfaceAlt,
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(BBColors.radiusLg),
                     ),
@@ -194,7 +198,9 @@ class ProductCard extends StatelessWidget {
                         child: Icon(
                           Icons.image_not_supported,
                           size: 48,
-                          color: isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted,
+                          color: isDark
+                              ? BBColors.nightTextMuted
+                              : BBColors.dayTextMuted,
                         ),
                       ),
                     ),
@@ -216,8 +222,12 @@ class ProductCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(BBColors.radiusFull),
                     ),
                     child: Text(
-                      discountLabel ?? '-${((originalPrice! - price) / originalPrice! * 100).round()}%',
-                      style: BBText.labelSmall(color: Colors.white, weight: FontWeight.w700),
+                      discountLabel ??
+                          '-${((originalPrice! - price) / originalPrice! * 100).round()}%',
+                      style: BBText.labelSmall(
+                        color: Colors.white,
+                        weight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
@@ -234,8 +244,11 @@ class ProductCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: (isDark ? BBColors.nightBg : BBColors.white).withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(BBColors.radiusFull),
+                        color: (isDark ? BBColors.nightBg : BBColors.white)
+                            .withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(
+                          BBColors.radiusFull,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.1),
@@ -245,9 +258,15 @@ class ProductCard extends StatelessWidget {
                         ],
                       ),
                       child: Icon(
-                        isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        isFavorite
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
                         size: 18,
-                        color: isFavorite ? BBColors.danger : (isDark ? BBColors.nightTextSecondary : BBColors.dayTextSecondary),
+                        color: isFavorite
+                            ? BBColors.danger
+                            : (isDark
+                                  ? BBColors.nightTextSecondary
+                                  : BBColors.dayTextSecondary),
                       ),
                     ),
                   ),
@@ -264,7 +283,11 @@ class ProductCard extends StatelessWidget {
                 // Brand
                 Text(
                   brand.toUpperCase(),
-                  style: BBTextResponsive.labelSmall(context, color: effectiveCategoryColor, weight: FontWeight.w600),
+                  style: BBTextResponsive.labelSmall(
+                    context,
+                    color: effectiveCategoryColor,
+                    weight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 // Name
@@ -272,26 +295,31 @@ class ProductCard extends StatelessWidget {
                   name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600),
+                  style: BBTextResponsive.bodyMedium(
+                    context,
+                    weight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: BBColors.padS),
                 // Rating
                 Row(
                   children: [
-                    Icon(
-                      Icons.star_rounded,
-                      size: 14,
-                      color: BBColors.warning,
-                    ),
+                    Icon(Icons.star_rounded, size: 14, color: BBColors.warning),
                     const SizedBox(width: 4),
                     Text(
                       rating.toStringAsFixed(1),
-                      style: BBTextResponsive.labelSmall(context, weight: FontWeight.w600),
+                      style: BBTextResponsive.labelSmall(
+                        context,
+                        weight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '($reviewCount)',
-                      style: BBTextResponsive.labelSmall(context, color: BBColors.textMuted(context)),
+                      style: BBTextResponsive.labelSmall(
+                        context,
+                        color: BBColors.textMuted(context),
+                      ),
                     ),
                   ],
                 ),
@@ -301,16 +329,24 @@ class ProductCard extends StatelessWidget {
                   children: [
                     Text(
                       '\$${price.toStringAsFixed(2)}',
-                      style: BBTextResponsive.price(context, size: 18, weight: FontWeight.w700),
+                      style: BBTextResponsive.price(
+                        context,
+                        size: 18,
+                        weight: FontWeight.w700,
+                      ),
                     ),
                     if (hasDiscount) ...[
                       const SizedBox(width: BBColors.padS),
-                      Text(
-                        '\$${originalPrice!.toStringAsFixed(2)}',
-                        style: BBTextResponsive.bodySmall(
-                          context,
-                          color: BBColors.textMuted(context),
-                        ).copyWith(decoration: TextDecoration.lineThrough),
+                      Expanded(
+                        child: Text(
+                          '\$${originalPrice!.toStringAsFixed(2)}',
+                          style: BBTextResponsive.bodySmall(
+                            context,
+                            color: BBColors.textMuted(context),
+                          ).copyWith(decoration: TextDecoration.lineThrough),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ],
@@ -344,47 +380,53 @@ class FeatureCard extends StatelessWidget {
   });
 
   @override
-    Widget build(BuildContext context) {
-
-      return BrandCard(
-        onTap: onTap,
-        gradient: gradient,
-        padding: const EdgeInsets.all(BBColors.padL),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(BBColors.radiusMd),
-              ),
-              child: Icon(icon, size: 26, color: Colors.white),
+  Widget build(BuildContext context) {
+    return BrandCard(
+      onTap: onTap,
+      gradient: gradient,
+      padding: const EdgeInsets.all(BBColors.padL),
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(BBColors.radiusMd),
             ),
-            const SizedBox(width: BBColors.padL),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            child: Icon(icon, size: 26, color: Colors.white),
+          ),
+          const SizedBox(width: BBColors.padL),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
                   title,
-                  style: BBTextResponsive.headlineSmall(context, color: Colors.white, weight: FontWeight.w600),
+                  style: BBTextResponsive.headlineSmall(
+                    context,
+                    color: Colors.white,
+                    weight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: BBTextResponsive.bodySmall(context, color: Colors.white.withValues(alpha: 0.8)),
+                  style: BBTextResponsive.bodySmall(
+                    context,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
                 ),
               ],
             ),
           ),
-                    if (trailing case Widget w) w,
-                    if (onTap != null && trailing == null)
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 16,
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
+          if (trailing case Widget w) w,
+          if (onTap != null && trailing == null)
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: Colors.white.withValues(alpha: 0.7),
+            ),
         ],
       ),
     );
@@ -411,9 +453,8 @@ class StatCard extends StatelessWidget {
   });
 
   @override
-    Widget build(BuildContext context) {
-
-      return BrandCard(
+  Widget build(BuildContext context) {
+    return BrandCard(
       padding: const EdgeInsets.all(BBColors.padL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -432,24 +473,35 @@ class StatCard extends StatelessWidget {
               const Spacer(),
               if (trend != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
-                    color: (isPositiveTrend ? BBColors.success : BBColors.danger).withValues(alpha: 0.15),
+                    color:
+                        (isPositiveTrend ? BBColors.success : BBColors.danger)
+                            .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(BBColors.radiusFull),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        isPositiveTrend ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                        isPositiveTrend
+                            ? Icons.trending_up_rounded
+                            : Icons.trending_down_rounded,
                         size: 10,
-                        color: isPositiveTrend ? BBColors.success : BBColors.danger,
+                        color: isPositiveTrend
+                            ? BBColors.success
+                            : BBColors.danger,
                       ),
                       const SizedBox(width: 2),
                       Text(
                         trend!,
                         style: BBText.labelSmall(
-                          color: isPositiveTrend ? BBColors.success : BBColors.danger,
+                          color: isPositiveTrend
+                              ? BBColors.success
+                              : BBColors.danger,
                           weight: FontWeight.w700,
                         ),
                       ),
@@ -461,12 +513,19 @@ class StatCard extends StatelessWidget {
           const SizedBox(height: BBColors.padL),
           Text(
             value,
-            style: BBTextResponsive.displayMedium(context, size: 24, weight: FontWeight.w700),
+            style: BBTextResponsive.displayMedium(
+              context,
+              size: 24,
+              weight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: BBTextResponsive.labelMedium(context, color: BBColors.textMuted(context)),
+            style: BBTextResponsive.labelMedium(
+              context,
+              color: BBColors.textMuted(context),
+            ),
           ),
         ],
       ),

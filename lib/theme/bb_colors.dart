@@ -36,7 +36,7 @@ class BBColors {
   static const nightBorderStrong = Color(0xFF4A6FA5);
   static const nightTextPrimary = Color(0xFFF0F4F8);
   static const nightTextSecondary = Color(0xFFB8C5D6);
-  static const nightTextMuted = Color(0xFF8B9DC3);
+  static const nightTextMuted = Color(0xFFA8B8D4);
   static const nightTextBody = Color(0xFFD0D8E8);
   static const nightMuted = Color(0xFF8B9DC3);
   static const nightMutedStrong = Color(0xFF6B8DB8);
