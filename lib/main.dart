@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'theme/bb_theme.dart';
@@ -10,8 +11,43 @@ import 'providers/build_provider.dart';
 import 'services/preferences_service.dart';
 import 'services/component_data_service.dart';
 import 'screens/onboarding/onboarding_screen.dart';
+import 'screens/onboarding/terms_screen.dart';
 import 'screens/main/main_screen.dart';
+import 'screens/home/home_screen.dart';
+import 'screens/builder/builder_screen.dart';
+import 'screens/cart/cart_screen.dart';
+import 'screens/profile/profile_screen.dart';
+import 'screens/saved_builds_screen.dart';
+import 'screens/orders/orders_screen.dart';
 import 'widgets/connectivity_banner.dart';
+
+/// Custom page route for smooth transitions
+class _SmoothPageRoute<T> extends PageRouteBuilder<T> {
+  final Widget child;
+  final Duration duration;
+
+  _SmoothPageRoute({
+    required this.child,
+    this.duration = const Duration(milliseconds: 350),
+    super.settings,
+  }) : super(
+          pageBuilder: (context, animation, secondaryAnimation) => child,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.0, 0.08),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: duration,
+          reverseTransitionDuration: duration,
+        );
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +73,7 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   late final CartProvider _cartProvider;
   late final BuildProvider _buildProvider;
   late final Connectivity _connectivity;
+  bool _showTerms = false;
   bool _showOnboarding = false;
   bool _isOnline = true;
 
@@ -53,18 +90,21 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   }
 
   Future<void> _initializeApp() async {
-    await _themeProvider.init();
-    await _cartProvider.init();
-    await _buildProvider.init();
+      await _themeProvider.init();
+      await _cartProvider.init();
+      await _buildProvider.init();
 
-    // Check if onboarding is completed
-    final prefs = await PreferencesService.getPreferences();
-    _showOnboarding = !prefs.onboardingCompleted;
+      // Check if terms accepted and onboarding completed
+      final prefs = await PreferencesService.getPreferences();
+      _showTerms = !prefs.termsAccepted;
+      if (!_showTerms) {
+        _showOnboarding = !prefs.onboardingCompleted;
+      }
 
-    if (mounted) {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
-  }
 
   void _setupConnectivityListener() {
     _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) {
@@ -88,14 +128,30 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   }
 
   void _onOnboardingComplete() async {
-    final prefs = await PreferencesService.getPreferences();
-    await PreferencesService.savePreferences(prefs.copyWith(onboardingCompleted: true));
-    if (mounted) {
-      setState(() {
-        _showOnboarding = false;
-      });
+      final prefs = await PreferencesService.getPreferences();
+      await PreferencesService.savePreferences(prefs.copyWith(onboardingCompleted: true));
+      if (mounted) {
+        setState(() {
+          _showOnboarding = false;
+        });
+      }
     }
-  }
+
+    void _onTermsAccept() async {
+      final prefs = await PreferencesService.getPreferences();
+      await PreferencesService.savePreferences(prefs.copyWith(termsAccepted: true));
+      if (mounted) {
+        setState(() {
+          _showTerms = false;
+          _showOnboarding = !prefs.onboardingCompleted;
+        });
+      }
+    }
+
+    void _onTermsDecline() {
+      // Exit the app
+      SystemNavigator.pop();
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -122,22 +178,44 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   }
 
   Widget _buildAppRoot() {
-    if (!_themeProvider.isInitialized || !_cartProvider.isInitialized || !_buildProvider.isInitialized) {
-      return _buildSplashScreen();
-    }
+        if (!_themeProvider.isInitialized || !_cartProvider.isInitialized || !_buildProvider.isInitialized) {
+          return _buildSplashScreen();
+        }
 
-    if (_showOnboarding) {
-      return OnboardingScreen(onComplete: _onOnboardingComplete);
-    }
+        if (_showTerms) {
+          return TermsScreen(onAccept: _onTermsAccept, onDecline: _onTermsDecline);
+        }
 
-    return Stack(
-      children: [
-        const MainScreen(),
-        if (!_isOnline)
-          const ConnectivityBanner(),
-      ],
-    );
-  }
+        if (_showOnboarding) {
+          return OnboardingScreen(onComplete: _onOnboardingComplete);
+        }
+
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.0, 0.05),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+                child: child,
+              ),
+            );
+          },
+          child: Stack(
+            key: const ValueKey('main_app'),
+            children: [
+              const MainScreen(),
+              if (!_isOnline)
+                const ConnectivityBanner(),
+            ],
+          ),
+        );
+      }
 
   Widget _buildSplashScreen() {
       return Scaffold(
@@ -198,7 +276,22 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
     }
 
   Route<dynamic>? _generateRoute(RouteSettings settings) {
-    // Handle deep links or specific routes if needed
-    return null;
+      // Handle deep links or specific routes with smooth transitions
+      switch (settings.name) {
+        case '/builder':
+          return _SmoothPageRoute(child: const BuilderScreen(), settings: settings);
+        case '/cart':
+          return _SmoothPageRoute(child: const CartScreen(), settings: settings);
+        case '/profile':
+          return _SmoothPageRoute(child: const ProfileScreen(), settings: settings);
+        case '/home':
+          return _SmoothPageRoute(child: const HomeScreen(), settings: settings);
+        case '/saved-builds':
+          return _SmoothPageRoute(child: const SavedBuildsScreen(), settings: settings);
+        case '/orders':
+          return _SmoothPageRoute(child: const OrdersScreen(), settings: settings);
+        default:
+          return null;
+      }
+    }
   }
-}

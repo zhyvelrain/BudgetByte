@@ -297,13 +297,13 @@ class _CartItemCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    // Line total
-                    Text(
-                      '\$${item.lineTotal.toStringAsFixed(2)}',
-                      style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: categoryColor),
-                    ),
-                  ],
-                ),
+                                        // Line total
+                                        Text(
+                                          '₱${item.lineTotal.toStringAsFixed(2)}',
+                                          style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: categoryColor),
+                                        ),
+                                      ],
+                                    ),
               ],
             ),
           ),
@@ -353,24 +353,24 @@ class _ReceiptSummary extends StatelessWidget {
           const SizedBox(height: BBColors.padM),
           _ReceiptRow(
             label: 'Subtotal (${cart.itemCount} items)',
-            value: '\$${cart.subtotal.toStringAsFixed(2)}',
+            value: '₱${cart.subtotal.toStringAsFixed(2)}',
           ),
           _ReceiptRow(
             label: 'Shipping',
-            value: cart.shipping == 0 ? 'Free' : '\$${cart.shipping.toStringAsFixed(2)}',
+            value: cart.shipping == 0 ? 'Free' : '₱${cart.shipping.toStringAsFixed(2)}',
             valueColor: cart.shipping == 0 ? BBColors.accentGreen : null,
           ),
           _ReceiptRow(
-            label: 'Tax (10%)',
-            value: '\$${cart.tax.toStringAsFixed(2)}',
+            label: 'Tax (12%)',
+            value: '₱${cart.tax.toStringAsFixed(2)}',
           ),
           const Divider(height: BBColors.padL),
           _ReceiptRow(
             label: 'Total',
-            value: '\$${cart.total.toStringAsFixed(2)}',
+            value: '₱${cart.total.toStringAsFixed(2)}',
             isTotal: true,
           ),
-          if (cart.subtotal < 100 && cart.items.isNotEmpty) ...[
+          if (cart.subtotal < 5000 && cart.items.isNotEmpty) ...[
             const SizedBox(height: BBColors.padM),
             Container(
               padding: const EdgeInsets.all(BBColors.padM),
@@ -385,7 +385,7 @@ class _ReceiptSummary extends StatelessWidget {
                   const SizedBox(width: BBColors.padS),
                   Expanded(
                     child: Text(
-                      'Add \$${(100 - cart.subtotal).toStringAsFixed(2)} more for free shipping!',
+                      'Add ₱${(5000 - cart.subtotal).toStringAsFixed(2)} more for free shipping!',
                       style: BBTextResponsive.bodySmall(context, color: BBColors.accentOrange, weight: FontWeight.w500),
                     ),
                   ),
@@ -458,7 +458,7 @@ class _CartActionBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: BrandButton.primary(
-          text: 'Checkout (\$${cart.total.toStringAsFixed(2)})',
+          text: 'Checkout (₱${cart.total.toStringAsFixed(2)})',
           icon: Icons.credit_card_rounded,
           onPressed: cart.items.isNotEmpty ? () => _showCheckoutDialog(context) : null,
           fullWidth: true,
@@ -739,16 +739,16 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
                   style: BBTextResponsive.bodySmall(context),
                 ),
               ),
-              Text('\$${item.lineTotal.toStringAsFixed(2)}', style: BBTextResponsive.bodySmall(context, weight: FontWeight.w600)),
+              Text('₱${item.lineTotal.toStringAsFixed(2)}', style: BBTextResponsive.bodySmall(context, weight: FontWeight.w600)),
             ],
           ),
         )),
         const Divider(),
-        _ReceiptRow(label: 'Subtotal', value: '\$${widget.cart.subtotal.toStringAsFixed(2)}'),
-        _ReceiptRow(label: 'Shipping', value: widget.cart.shipping == 0 ? 'Free' : '\$${widget.cart.shipping.toStringAsFixed(2)}'),
-        _ReceiptRow(label: 'Tax (10%)', value: '\$${widget.cart.tax.toStringAsFixed(2)}'),
+        _ReceiptRow(label: 'Subtotal', value: '₱${widget.cart.subtotal.toStringAsFixed(2)}'),
+        _ReceiptRow(label: 'Shipping', value: widget.cart.shipping == 0 ? 'Free' : '₱${widget.cart.shipping.toStringAsFixed(2)}'),
+        _ReceiptRow(label: 'Tax (12%)', value: '₱${widget.cart.tax.toStringAsFixed(2)}'),
         const Divider(height: BBColors.padL),
-        _ReceiptRow(label: 'Total', value: '\$${widget.cart.total.toStringAsFixed(2)}', isTotal: true),
+        _ReceiptRow(label: 'Total', value: '₱${widget.cart.total.toStringAsFixed(2)}', isTotal: true),
       ],
     );
   }
@@ -931,7 +931,7 @@ class _PurchaseSuccessDialog extends StatelessWidget {
                 children: [
                   _ReceiptRow(label: 'Order ID', value: orderId),
                   const SizedBox(height: BBColors.padS),
-                  _ReceiptRow(label: 'Total Paid', value: '\$${total.toStringAsFixed(2)}', isTotal: true, valueColor: BBColors.accentGreen),
+                  _ReceiptRow(label: 'Total Paid', value: '₱${total.toStringAsFixed(2)}', isTotal: true, valueColor: BBColors.accentGreen),
                 ],
               ),
             ),

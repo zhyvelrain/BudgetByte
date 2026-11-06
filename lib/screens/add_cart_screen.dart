@@ -60,7 +60,7 @@ class AddCartScreen extends StatelessWidget {
                     child: ListTile(
                       leading: CircleAvatar(child: Text(it.emoji)),
                       title: Text(it.name),
-                      subtitle: Text('\$${it.basePrice.toStringAsFixed(2)}'),
+                      subtitle: Text('₱${it.basePrice.toStringAsFixed(2)}'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

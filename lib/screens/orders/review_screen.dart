@@ -39,7 +39,7 @@ class ReviewScreen extends StatelessWidget {
                             children: [
                               const Icon(Icons.receipt, size: 16, color: Colors.grey),
                               const SizedBox(width: 6),
-                              Text('\$${total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                              Text('₱${total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                             ],
                           ),
                           const SizedBox(height: 8),
@@ -51,7 +51,7 @@ class ReviewScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text('${e.value.emoji} ${e.value.name} x ${e.value.quantity}', style: const TextStyle(fontSize: 13)),
-                                Text('\$${(e.value.unitPrice * e.value.quantity).toStringAsFixed(2)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                Text('₱${(e.value.unitPrice * e.value.quantity).toStringAsFixed(2)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
                               ],
                             ),
                           )),

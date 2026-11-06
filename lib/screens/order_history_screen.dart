@@ -168,7 +168,7 @@ class _OrderCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text('\$${item.lineTotal.toStringAsFixed(2)}', style: BBTextResponsive.bodySmall(context, weight: FontWeight.w600)),
+                Text('₱${item.lineTotal.toStringAsFixed(2)}', style: BBTextResponsive.bodySmall(context, weight: FontWeight.w600)),
               ],
             ),
           )),
@@ -187,7 +187,7 @@ class _OrderCard extends StatelessWidget {
             children: [
               Text('${order.items.length} items', style: BBTextResponsive.bodyMedium(context)),
               Text(
-                '\$${order.total.toStringAsFixed(2)}',
+                '₱${order.total.toStringAsFixed(2)}',
                 style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: BBColors.accentBlue),
               ),
             ],

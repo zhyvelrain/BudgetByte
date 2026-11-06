@@ -319,7 +319,7 @@ class HomeScreen extends StatelessWidget {
                 _FeatureRow(
                   icon: Icons.local_shipping_rounded,
                   title: 'Fast Shipping',
-                  subtitle: 'Free shipping on orders over \$100',
+                  subtitle: 'Free shipping on orders over ₱5,000',
                   color: BBColors.accentOrange,
                 ),
               ]),

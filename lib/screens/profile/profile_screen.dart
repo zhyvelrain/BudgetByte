@@ -65,13 +65,27 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.favorite_rounded,
                 title: 'Wishlist',
                 subtitle: 'Saved items for later',
-                onTap: () {}, // TODO: Wishlist screen
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Wishlist coming soon', style: BBTextResponsive.bodyMedium(context)),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
               ),
               _MenuItem(
                 icon: Icons.location_on_rounded,
                 title: 'Addresses',
                 subtitle: 'Manage shipping addresses',
-                onTap: () {}, // TODO: Addresses screen
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Addresses coming soon', style: BBTextResponsive.bodyMedium(context)),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -97,22 +111,29 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.notifications_rounded,
                 title: 'Notifications',
                 subtitle: 'Manage push notifications',
-                onTap: () {}, // TODO: Notifications settings
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Notifications settings coming soon', style: BBTextResponsive.bodyMedium(context)),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
               ),
               _MenuItem(
-                icon: Icons.language_rounded,
-                title: 'Language',
-                subtitle: 'English (US)',
-                onTap: () {}, // TODO: Language selection
-              ),
-              _MenuItem(
-                icon: Icons.attach_money_rounded,
-                title: 'Currency',
-                subtitle: 'USD (\$)',
-                onTap: () {}, // TODO: Currency selection
-              ),
-            ],
-          ),
+                              icon: Icons.language_rounded,
+                              title: 'Language',
+                              subtitle: 'English (US)',
+                              onTap: () => _showLanguageDialog(context),
+                            ),
+                            _MenuItem(
+                              icon: Icons.attach_money_rounded,
+                              title: 'Currency',
+                              subtitle: 'Philippine Peso (₱)',
+                              onTap: () => _showCurrencyInfo(context),
+                            ),
+                          ],
+                        ),
           const SizedBox(height: BBColors.padL),
 
           _MenuSection(
@@ -122,25 +143,53 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.help_rounded,
                 title: 'Help Center',
                 subtitle: 'FAQs and guides',
-                onTap: () {}, // TODO: Help center
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Help Center coming soon', style: BBTextResponsive.bodyMedium(context)),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
               ),
               _MenuItem(
                 icon: Icons.contact_support_rounded,
                 title: 'Contact Support',
                 subtitle: 'Get in touch with us',
-                onTap: () {}, // TODO: Contact support
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Contact Support coming soon', style: BBTextResponsive.bodyMedium(context)),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
               ),
               _MenuItem(
                 icon: Icons.privacy_tip_rounded,
                 title: 'Privacy Policy',
                 subtitle: 'How we handle your data',
-                onTap: () {}, // TODO: Privacy policy
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Privacy Policy coming soon', style: BBTextResponsive.bodyMedium(context)),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
               ),
               _MenuItem(
                 icon: Icons.description_rounded,
                 title: 'Terms of Service',
                 subtitle: 'Our terms and conditions',
-                onTap: () {}, // TODO: Terms of service
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Terms of Service coming soon', style: BBTextResponsive.bodyMedium(context)),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -159,13 +208,27 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.star_rounded,
                 title: 'Rate App',
                 subtitle: 'Share your feedback',
-                onTap: () {}, // TODO: Rate app
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Rate App coming soon', style: BBTextResponsive.bodyMedium(context)),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
               ),
               _MenuItem(
                 icon: Icons.share_rounded,
                 title: 'Share ByteBudget',
                 subtitle: 'Invite friends',
-                onTap: () {}, // TODO: Share
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Share coming soon', style: BBTextResponsive.bodyMedium(context)),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -213,37 +276,93 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _showSignOutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Sign Out', style: BBTextResponsive.titleLarge(context)),
-        content: Text('Are you sure you want to sign out?', style: BBTextResponsive.bodyMedium(context)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: BBTextResponsive.labelMedium(context)),
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Sign Out', style: BBTextResponsive.titleLarge(context)),
+          content: Text('Are you sure you want to sign out?', style: BBTextResponsive.bodyMedium(context)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel', style: BBTextResponsive.labelMedium(context)),
+            ),
+            BrandButton.outline(
+              text: 'Sign Out',
+              foregroundColor: BBColors.accentRed,
+              onPressed: () {
+                // Clear preferences
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Signed out', style: BBTextResponsive.bodyMedium(context)),
+                    backgroundColor: BBColors.accentGreen,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              fullWidth: true,
+            ),
+          ],
+        ),
+      );
+    }
+
+    void _showLanguageDialog(BuildContext context) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
+          title: Text('Language', style: BBTextResponsive.titleLarge(context)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _LanguageOption(flag: '🇺🇸', name: 'English (US)', code: 'en_US', onTap: () => Navigator.pop(context)),
+              _LanguageOption(flag: '🇬🇧', name: 'English (UK)', code: 'en_GB', onTap: () => Navigator.pop(context)),
+              _LanguageOption(flag: '🇵🇭', name: 'Tagalog', code: 'tl_PH', onTap: () => Navigator.pop(context)),
+            ],
           ),
-          BrandButton.outline(
-            text: 'Sign Out',
-            foregroundColor: BBColors.accentRed,
-            onPressed: () {
-              // Clear preferences
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Signed out', style: BBTextResponsive.bodyMedium(context)),
-                  backgroundColor: BBColors.accentGreen,
-                  behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
+    void _showCurrencyInfo(BuildContext context) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
+          title: Text('Currency', style: BBTextResponsive.titleLarge(context)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(BBColors.padM),
+                  decoration: BoxDecoration(
+                    color: BBColors.accentBlueSoft,
+                    borderRadius: BorderRadius.circular(BBColors.radiusMd),
+                  ),
+                  child: const Text('₱', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: BBColors.accentBlue)),
                 ),
-              );
-            },
-            fullWidth: true,
+                title: Text('Philippine Peso', style: BBTextResponsive.bodyLarge(context, weight: FontWeight.w600)),
+                subtitle: Text('PHP (₱)', style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context))),
+              ),
+              const Divider(),
+              Text(
+                'All prices in ByteBudget are displayed in Philippine Peso (₱). '
+                'This is the only supported currency for the Philippine market.',
+                style: BBTextResponsive.bodyMedium(context),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+          ],
+        ),
+      );
+    }
   }
-}
 
 class _ProfileHeader extends StatelessWidget {
   @override
@@ -304,7 +423,14 @@ class _ProfileHeader extends StatelessWidget {
           // Edit button
           IconButton(
             icon: Icon(Icons.edit_rounded, color: BBColors.accentBlue),
-            onPressed: () {}, // TODO: Edit profile
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Edit profile coming soon', style: BBTextResponsive.bodyMedium(context)),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -351,7 +477,7 @@ class _StatsRow extends StatelessWidget {
                     const SizedBox(width: BBColors.padM),
                     Expanded(child: _StatCard(icon: Icons.build_rounded, label: 'Builds', value: '${builds.length}', color: BBColors.catMouse)),
                     const SizedBox(width: BBColors.padM),
-                    Expanded(child: _StatCard(icon: Icons.attach_money_rounded, label: 'Spent', value: '\$${totalSpent.toStringAsFixed(0)}', color: BBColors.accentGreen)),
+                    Expanded(child: _StatCard(icon: Icons.attach_money_rounded, label: 'Spent', value: '₱${totalSpent.toStringAsFixed(0)}', color: BBColors.accentGreen)),
                     const SizedBox(width: BBColors.padM),
                     Expanded(child: _StatCard(icon: Icons.favorite_rounded, label: 'Saved', value: '${favorites.length}', color: BBColors.accentRed)),
                   ],
@@ -424,6 +550,39 @@ class _MenuSection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _LanguageOption extends StatelessWidget {
+  final String flag;
+  final String name;
+  final String code;
+  final VoidCallback onTap;
+
+  const _LanguageOption({
+    required this.flag,
+    required this.name,
+    required this.code,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(BBColors.radiusMd),
+      child: Container(
+        padding: const EdgeInsets.all(BBColors.padM),
+        margin: const EdgeInsets.symmetric(vertical: BBColors.padS),
+        child: Row(
+          children: [
+            Text(flag, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: BBColors.padM),
+            Expanded(child: Text(name, style: BBTextResponsive.bodyLarge(context))),
+          ],
+        ),
+      ),
     );
   }
 }

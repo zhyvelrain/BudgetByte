@@ -97,13 +97,6 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => _showLanguageDialog(context),
                 ),
                 _divider(context),
-                _SettingsTile(
-                  icon: Icons.currency_exchange_rounded,
-                  title: 'Currency',
-                  subtitle: 'USD (\$)',
-                  onTap: () => _showCurrencyDialog(context),
-                ),
-                _divider(context),
                 Consumer<ThemeProvider>(
                   builder: (context, provider, _) => SwitchListTile(
                     secondary: Icon(Icons.nightlight_round, color: BBColors.textSecondary(context)),
@@ -127,16 +120,14 @@ class SettingsScreen extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                Consumer<CartProvider>(
-                  builder: (context, cart, _) => SwitchListTile(
-                    secondary: Icon(Icons.shopping_cart_outlined, color: BBColors.textSecondary(context)),
-                    title: Text('Cart Updates', style: BBTextResponsive.bodyLarge(context)),
-                    subtitle: Text('Price drops & restock alerts', style: BBTextResponsive.bodySmall(context)),
-                    value: cart.itemCount > 0, // Placeholder
-                    activeThumbColor: BBColors.accentBlue,
-                    onChanged: (value) => _showNotificationSettings(context, 'cart'),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: BBColors.padM, vertical: BBColors.padS),
-                  ),
+                SwitchListTile(
+                  secondary: Icon(Icons.shopping_cart_outlined, color: BBColors.textSecondary(context)),
+                  title: Text('Cart Updates', style: BBTextResponsive.bodyLarge(context)),
+                  subtitle: Text('Price drops & restock alerts', style: BBTextResponsive.bodySmall(context)),
+                  value: true,
+                  activeThumbColor: BBColors.accentBlue,
+                  onChanged: (value) => _showNotificationSettings(context, 'cart'),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: BBColors.padM, vertical: BBColors.padS),
                 ),
                 _divider(context),
                 SwitchListTile(
@@ -198,7 +189,7 @@ class SettingsScreen extends StatelessWidget {
                     leading: Icon(Icons.storage_rounded, color: BBColors.textSecondary(context)),
                     title: Text('Storage Used', style: BBTextResponsive.bodyLarge(context)),
                     subtitle: Text(
-                      '${(buildProvider.savedBuilds.length * 2)} KB (${buildProvider.savedBuilds.length} builds)',
+                      '\${(buildProvider.savedBuilds.length * 2)} KB (\${buildProvider.savedBuilds.length} builds)',
                       style: BBTextResponsive.bodySmall(context),
                     ),
                     trailing: TextButton(
@@ -234,21 +225,21 @@ class SettingsScreen extends StatelessWidget {
                   icon: Icons.help_outline_rounded,
                   title: 'Help & FAQ',
                   subtitle: 'Common questions & guides',
-                  onTap: () => _showComingSoon(context, 'Help & FAQ'),
+                  onTap: () => _showHelpDialog(context),
                 ),
                 _divider(context),
                 _SettingsTile(
                   icon: Icons.bug_report_outlined,
                   title: 'Report a Bug',
                   subtitle: 'Submit feedback or issues',
-                  onTap: () => _showComingSoon(context, 'Bug Report'),
+                  onTap: () => _showBugReportDialog(context),
                 ),
                 _divider(context),
                 _SettingsTile(
                   icon: Icons.share_rounded,
                   title: 'Share App',
                   subtitle: 'Recommend to friends',
-                  onTap: () => _showComingSoon(context, 'Share App'),
+                  onTap: () => _shareApp(context),
                 ),
                 _divider(context),
                 _SettingsTile(
@@ -277,15 +268,15 @@ class SettingsScreen extends StatelessWidget {
   }
 
   String _themeLabel(ThemeMode mode) {
-      switch (mode) {
-        case ThemeMode.light:
-          return 'Light';
-        case ThemeMode.dark:
-          return 'Dark';
-        case ThemeMode.system:
-          return 'System';
-      }
+    switch (mode) {
+      case ThemeMode.light:
+        return 'Light';
+      case ThemeMode.dark:
+        return 'Dark';
+      case ThemeMode.system:
+        return 'System';
     }
+  }
 
   Widget _divider(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: BBColors.padL),
@@ -331,12 +322,12 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showFavorites(BuildContext context) {
-      final navigator = Navigator.of(context);
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (context) => DraggableScrollableSheet(
+    final navigator = Navigator.of(context);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.6,
         maxChildSize: 0.9,
         minChildSize: 0.4,
@@ -371,60 +362,60 @@ class SettingsScreen extends StatelessWidget {
               ),
               const Divider(height: 1),
               Expanded(
-                              child: FutureBuilder<Set<String>>(
-                                future: PreferencesService.getFavorites(),
-                                builder: (context, snapshot) {
-                                  final favorites = snapshot.data ?? <String>{};
-                                  if (favorites.isEmpty) {
-                                    return Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.favorite_border_rounded, size: 64, color: BBColors.textMuted(context)),
-                                          const SizedBox(height: BBColors.padM),
-                                          Text('No favorites yet', style: BBTextResponsive.titleMedium(context, color: BBColors.textMuted(context))),
-                                          const SizedBox(height: BBColors.padS),
-                                          Text('Tap the heart on any component', style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context))),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                  final favoritesList = favorites.toList();
-                                  return ListView.builder(
-                                    controller: scrollController,
-                                    padding: const EdgeInsets.all(BBColors.padL),
-                                    itemCount: favoritesList.length,
-                                    itemBuilder: (context, index) {
-                                      final compId = favoritesList[index];
-                                      final component = ComponentDataService.getById(compId);
-                                      if (component == null) return const SizedBox();
-                                      return ListTile(
-                                        leading: component.images.isNotEmpty
-                                            ? Image.asset(component.images.first, width: 48, height: 48, fit: BoxFit.cover)
-                                            : Icon(component.category.icon, color: component.category.color, size: 32),
-                                        title: Text(component.name, style: BBTextResponsive.bodyMedium(context)),
-                                        subtitle: Text('${component.brand} • \$${component.price.toStringAsFixed(2)}', style: BBTextResponsive.bodySmall(context)),
-                                        trailing: IconButton(
-                                                                                  icon: Icon(Icons.delete_outline_rounded, color: BBColors.danger),
-                                                                                  onPressed: () async {
-                                                                                    await PreferencesService.toggleFavorite(compId);
-                                                                                    if (!context.mounted) return;
-                                                                                    navigator.pop();
-                                                                                    _showFavorites(context);
-                                                                                  },
-                                                                                ),
-                                        onTap: () {
-                                          navigator.pop();
-                                          navigator.push(
-                                            MaterialPageRoute(builder: (_) => ProductDetailScreen(component: component)),
-                                          );
-                                        },
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
+                child: FutureBuilder<Set<String>>(
+                  future: PreferencesService.getFavorites(),
+                  builder: (context, snapshot) {
+                    final favorites = snapshot.data ?? <String>{};
+                    if (favorites.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.favorite_border_rounded, size: 64, color: BBColors.textMuted(context)),
+                            const SizedBox(height: BBColors.padM),
+                            Text('No favorites yet', style: BBTextResponsive.titleMedium(context, color: BBColors.textMuted(context))),
+                            const SizedBox(height: BBColors.padS),
+                            Text('Tap the heart on any component', style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context))),
+                          ],
+                        ),
+                      );
+                    }
+                    final favoritesList = favorites.toList();
+                    return ListView.builder(
+                      controller: scrollController,
+                      padding: const EdgeInsets.all(BBColors.padL),
+                      itemCount: favoritesList.length,
+                      itemBuilder: (context, index) {
+                        final compId = favoritesList[index];
+                        final component = ComponentDataService.getById(compId);
+                        if (component == null) return const SizedBox();
+                        return ListTile(
+                          leading: component.images.isNotEmpty
+                              ? Image.asset(component.images.first, width: 48, height: 48, fit: BoxFit.cover)
+                              : Icon(component.category.icon, color: component.category.color, size: 32),
+                          title: Text(component.name, style: BBTextResponsive.bodyMedium(context)),
+                          subtitle: Text('\${component.brand} • ₱\${component.price.toStringAsFixed(2)}', style: BBTextResponsive.bodySmall(context)),
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete_outline_rounded, color: BBColors.danger),
+                            onPressed: () async {
+                              await PreferencesService.toggleFavorite(compId);
+                              if (!context.mounted) return;
+                              navigator.pop();
+                              _showFavorites(context);
+                            },
+                          ),
+                          onTap: () {
+                            navigator.pop();
+                            navigator.push(
+                              MaterialPageRoute(builder: (_) => ProductDetailScreen(component: component)),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ),
@@ -491,27 +482,7 @@ class SettingsScreen extends StatelessWidget {
           children: [
             _LanguageOption(flag: '🇺🇸', name: 'English (US)', code: 'en_US', onTap: () => Navigator.pop(context)),
             _LanguageOption(flag: '🇬🇧', name: 'English (UK)', code: 'en_GB', onTap: () => Navigator.pop(context)),
-            _LanguageOption(flag: '🇪🇸', name: 'Español', code: 'es_ES', onTap: () => Navigator.pop(context)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showCurrencyDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
-        title: Text('Currency', style: BBTextResponsive.titleLarge(context)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _CurrencyOption(symbol: '\$', code: 'USD', name: 'US Dollar', onTap: () => Navigator.pop(context)),
-            _CurrencyOption(symbol: '€', code: 'EUR', name: 'Euro', onTap: () => Navigator.pop(context)),
-            _CurrencyOption(symbol: '£', code: 'GBP', name: 'British Pound', onTap: () => Navigator.pop(context)),
-            _CurrencyOption(symbol: '¥', code: 'JPY', name: 'Japanese Yen', onTap: () => Navigator.pop(context)),
+            _LanguageOption(flag: '🇵🇭', name: 'Tagalog', code: 'tl_PH', onTap: () => Navigator.pop(context)),
           ],
         ),
       ),
@@ -521,7 +492,7 @@ class SettingsScreen extends StatelessWidget {
   void _showNotificationSettings(BuildContext context, String type) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Notification settings for $type coming soon!', style: BBTextResponsive.bodyMedium(context)),
+        content: Text('Notification settings for \$type coming soon!', style: BBTextResponsive.bodyMedium(context)),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -546,44 +517,44 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _confirmClearData(BuildContext context) {
-      final navigator = Navigator.of(context);
-      final scaffoldMessenger = ScaffoldMessenger.of(context);
-      final cartProvider = context.read<CartProvider>();
-      final buildProvider = context.read<BuildProvider>();
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
-          title: Text('Clear All Data?', style: BBTextResponsive.titleLarge(context, color: BBColors.danger)),
-          content: Text(
-            'This will permanently delete your cart, saved builds, order history, and favorites. This cannot be undone.',
-            style: BBTextResponsive.bodyMedium(context),
-          ),
-          actions: [
-            TextButton(onPressed: () => navigator.pop(), child: const Text('Cancel')),
-            BrandButton(
-              text: 'Clear Everything',
-              variant: BrandButtonVariant.secondary,
-              onPressed: () async {
-                navigator.pop();
-                await PreferencesService.clearAllData();
-                cartProvider.clear();
-                buildProvider.startNewBuild();
-                if (!context.mounted) return;
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('All data cleared', style: BBTextResponsive.bodyMedium(context)),
-                    backgroundColor: BBColors.accentGreen,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-            ),
-          ],
+    final navigator = Navigator.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final cartProvider = context.read<CartProvider>();
+    final buildProvider = context.read<BuildProvider>();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
+        title: Text('Clear All Data?', style: BBTextResponsive.titleLarge(context, color: BBColors.danger)),
+        content: Text(
+          'This will permanently delete your cart, saved builds, order history, and favorites. This cannot be undone.',
+          style: BBTextResponsive.bodyMedium(context),
         ),
-      );
-    }
+        actions: [
+          TextButton(onPressed: () => navigator.pop(), child: const Text('Cancel')),
+          BrandButton(
+            text: 'Clear Everything',
+            variant: BrandButtonVariant.secondary,
+            onPressed: () async {
+              navigator.pop();
+              await PreferencesService.clearAllData();
+              cartProvider.clear();
+              buildProvider.startNewBuild();
+              if (!context.mounted) return;
+              scaffoldMessenger.showSnackBar(
+                SnackBar(
+                  content: Text('All data cleared', style: BBTextResponsive.bodyMedium(context)),
+                  backgroundColor: BBColors.accentGreen,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   void _showStorageDetails(BuildContext context) {
     showDialog(
@@ -597,12 +568,12 @@ class SettingsScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _StorageRow(label: 'Saved Builds', value: '${buildProvider.savedBuilds.length} builds (~${buildProvider.savedBuilds.length * 2} KB)'),
-              _StorageRow(label: 'Cart Items', value: '${context.read<CartProvider>().itemCount} items'),
+              _StorageRow(label: 'Saved Builds', value: '\${buildProvider.savedBuilds.length} builds (~\${buildProvider.savedBuilds.length * 2} KB)'),
+              _StorageRow(label: 'Cart Items', value: '\${context.read<CartProvider>().itemCount} items'),
               _StorageRow(label: 'Favorites', value: 'Loading...'),
               _StorageRow(label: 'App Cache', value: '~2.4 MB'),
               const Divider(height: BBColors.space16),
-              _StorageRow(label: 'Total', value: '~${2400 + buildProvider.savedBuilds.length * 2} KB', isTotal: true),
+              _StorageRow(label: 'Total', value: '~\${2400 + buildProvider.savedBuilds.length * 2} KB', isTotal: true),
             ],
           ),
         ),
@@ -613,10 +584,102 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showComingSoon(BuildContext context, String feature) {
+  void _showHelpDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
+        title: Text('Help & FAQ', style: BBTextResponsive.titleLarge(context)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _HelpItem(
+                question: 'How do I build a PC?',
+                answer: 'Go to the Builder tab, select components for each category, then tap "Add to Cart" when complete.',
+              ),
+              _HelpItem(
+                question: 'Can I save my builds?',
+                answer: 'Yes! Tap "Save Build" in the builder to save your configuration for later.',
+              ),
+              _HelpItem(
+                question: 'How do I change the theme?',
+                answer: 'Go to Settings > Preferences > Theme to choose Light, Dark, or System.',
+              ),
+              _HelpItem(
+                question: 'What currency is used?',
+                answer: 'All prices are in Philippine Peso (₱). Currency selection is not available.',
+              ),
+              _HelpItem(
+                question: 'How do I clear my data?',
+                answer: 'Settings > Data & Storage > Clear All Data. This removes cart, builds, history, and favorites.',
+              ),
+              _HelpItem(
+                question: 'Where can I get support?',
+                answer: 'Use "Report a Bug" in Settings or email support@bytebudget.ph',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+        ],
+      ),
+    );
+  }
+
+  void _showBugReportDialog(BuildContext context) {
+    final TextEditingController controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
+        title: Text('Report a Bug', style: BBTextResponsive.titleLarge(context)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Describe the issue you encountered:', style: BBTextResponsive.bodyMedium(context)),
+            const SizedBox(height: BBColors.padM),
+            TextField(
+              controller: controller,
+              maxLines: 5,
+              decoration: InputDecoration(
+                hintText: 'Steps to reproduce, expected vs actual behavior...',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(BBColors.radiusMd)),
+              ),
+            ),
+            const SizedBox(height: BBColors.padM),
+            Text('We\'ll review your report and get back to you.', style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context))),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          BrandButton(
+            text: 'Submit Report',
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Bug report submitted!', style: BBTextResponsive.bodyMedium(context)),
+                  backgroundColor: BBColors.accentGreen,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _shareApp(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$feature coming soon!', style: BBTextResponsive.bodyMedium(context)),
+        content: Text('Share feature coming soon!', style: BBTextResponsive.bodyMedium(context)),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -696,9 +759,8 @@ class _SettingsTile extends StatelessWidget {
   });
 
   @override
-    Widget build(BuildContext context) {
-
-      return ListTile(
+  Widget build(BuildContext context) {
+    return ListTile(
       leading: Container(
         width: 40,
         height: 40,
@@ -811,55 +873,6 @@ class _LanguageOption extends StatelessWidget {
   }
 }
 
-class _CurrencyOption extends StatelessWidget {
-  final String symbol;
-  final String code;
-  final String name;
-  final VoidCallback onTap;
-
-  const _CurrencyOption({
-    required this.symbol,
-    required this.code,
-    required this.name,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(BBColors.radiusMd),
-      child: Container(
-        padding: const EdgeInsets.all(BBColors.padM),
-        margin: const EdgeInsets.symmetric(vertical: BBColors.padS),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: BBColors.accentBlueSoft,
-                borderRadius: BorderRadius.circular(BBColors.radiusMd),
-              ),
-              child: Center(child: Text(symbol, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: BBColors.accentBlue))),
-            ),
-            const SizedBox(width: BBColors.padM),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: BBTextResponsive.bodyLarge(context, weight: FontWeight.w600)),
-                  Text('$code ($symbol)', style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context))),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _StorageRow extends StatelessWidget {
   final String label;
   final String value;
@@ -876,6 +889,28 @@ class _StorageRow extends StatelessWidget {
         children: [
           Text(label, style: BBTextResponsive.bodyMedium(context, weight: isTotal ? FontWeight.w600 : FontWeight.w400)),
           Text(value, style: BBTextResponsive.bodyMedium(context, weight: isTotal ? FontWeight.w600 : FontWeight.w400, color: isTotal ? BBColors.accentBlue : BBColors.textSecondary(context))),
+        ],
+      ),
+    );
+  }
+}
+
+class _HelpItem extends StatelessWidget {
+  final String question;
+  final String answer;
+
+  const _HelpItem({required this.question, required this.answer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: BBColors.padM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(question, style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600)),
+          const SizedBox(height: BBColors.padXS),
+          Text(answer, style: BBTextResponsive.bodySmall(context, color: BBColors.textSecondary(context))),
         ],
       ),
     );

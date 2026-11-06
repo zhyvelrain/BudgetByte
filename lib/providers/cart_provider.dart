@@ -11,8 +11,8 @@ class CartProvider extends ChangeNotifier {
   bool get isInitialized => _isInitialized;
   int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
   double get subtotal => _items.fold(0, (sum, item) => sum + item.subtotal);
-  double get tax => subtotal * 0.1; // 10% tax
-  double get shipping => subtotal > 100 ? 0 : 9.99; // Free shipping over $100
+  double get tax => subtotal * 0.12; // 12% VAT (Philippines)
+  double get shipping => subtotal > 5000 ? 0 : 150; // Free shipping over ₱5,000
   double get total => subtotal + tax + shipping;
 
   Future<void> init() async {

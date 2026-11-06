@@ -45,14 +45,12 @@ class BuilderScreen extends StatelessWidget {
                     children: ComponentCategory.values.map((category) {
                       final components = ComponentDataService.getByCategory(category);
                       final selected = buildProvider.getSelectedComponent(category);
+                      final selectedOption = buildProvider.getSelectedOption(category);
                       return _ComponentList(
                         category: category,
                         components: components,
                         selectedComponent: selected,
-                        selectedOption: selected?.options.firstWhere(
-                          (o) => o.isDefault,
-                          orElse: () => selected.options.first,
-                        ),
+                        selectedOption: selectedOption,
                         onSelect: (component, option) {
                           buildProvider.selectComponent(category, component, option: option);
                         },
@@ -135,7 +133,7 @@ class _BuildSummaryCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '\$${price.toStringAsFixed(2)}',
+                            '₱${price.toStringAsFixed(2)}',
                             style: BBTextResponsive.displayMedium(context, color: BBColors.accentBlue, weight: FontWeight.w700, size: 28),
                           ),
                           if (build?.isComplete ?? false)
@@ -383,13 +381,13 @@ class _ComponentCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '\$${(selectedOption.price ?? 0).toStringAsFixed(2)}',
+                        '₱${(selectedOption.price ?? 0).toStringAsFixed(2)}',
                         style: BBTextResponsive.titleMedium(context, color: categoryColor, weight: FontWeight.w700),
                       ),
                       if (selectedOption.originalPrice != null && selectedOption.originalPrice! > (selectedOption.price ?? 0)) ...[
                         const SizedBox(width: 8),
                         Text(
-                          '\$${selectedOption.originalPrice!.toStringAsFixed(2)}',
+                          '₱${selectedOption.originalPrice!.toStringAsFixed(2)}',
                           style: BBTextResponsive.bodySmall(context).copyWith(decoration: TextDecoration.lineThrough),
                         ),
                       ],
@@ -557,12 +555,12 @@ class _ComponentOptionSheet extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                '\$${(option.price ?? 0).toStringAsFixed(2)}',
+                                '₱${(option.price ?? 0).toStringAsFixed(2)}',
                                 style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: component.category.color),
                               ),
                               if (option.originalPrice != null && option.originalPrice! > (option.price ?? 0))
                                 Text(
-                                  '\$${option.originalPrice!.toStringAsFixed(2)}',
+                                  '₱${option.originalPrice!.toStringAsFixed(2)}',
                                   style: BBTextResponsive.caption(context).copyWith(decoration: TextDecoration.lineThrough),
                                 ),
                             ],
@@ -625,7 +623,7 @@ class _BuildActionBar extends StatelessWidget {
             Expanded(
               flex: 2,
               child: BrandButton(
-                text: isComplete ? 'Add to Cart (\$${totalPrice.toStringAsFixed(2)})' : 'Complete Build First',
+                text: isComplete ? 'Add to Cart (₱${totalPrice.toStringAsFixed(2)})' : 'Complete Build First',
                 icon: Icons.shopping_cart_rounded,
                 onPressed: isComplete ? () => _addToCart(context) : null,
                 isLoading: false,
@@ -638,16 +636,45 @@ class _BuildActionBar extends StatelessWidget {
   }
 
   void _saveBuild(BuildContext context) {
-    // TODO: Show name input dialog
-    final name = 'My Build ${DateTime.now().toString().substring(0, 16)}';
-    buildProvider.setBuildName(name);
-    buildProvider.saveBuild();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Build saved!', style: BBTextResponsive.bodyMedium(context)),
-        backgroundColor: BBColors.accentGreen,
-        behavior: SnackBarBehavior.floating,
-      ),
+    showDialog(
+      context: context,
+      builder: (context) {
+        final controller = TextEditingController(
+          text: 'My Build ${DateTime.now().day}/${DateTime.now().month}',
+        );
+        return AlertDialog(
+          title: Text('Save Build', style: BBTextResponsive.titleLarge(context)),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: 'Enter build name'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel', style: BBTextResponsive.bodyMedium(context)),
+            ),
+            FilledButton(
+              onPressed: () {
+                final name = controller.text.trim();
+                if (name.isNotEmpty) {
+                  buildProvider.setBuildName(name);
+                  buildProvider.saveBuild();
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Build saved!', style: BBTextResponsive.bodyMedium(context)),
+                      backgroundColor: BBColors.accentGreen,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+              child: Text('Save', style: BBTextResponsive.bodyMedium(context)),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -658,13 +685,7 @@ class _BuildActionBar extends StatelessWidget {
       if (build == null || !build.isComplete) return;
 
       for (final component in build.components) {
-        ComponentOption? selectedOption;
-        if (component.options.isNotEmpty) {
-          selectedOption = component.options.firstWhere(
-            (o) => o.isDefault,
-            orElse: () => component.options.first,
-          );
-        }
+        final selectedOption = buildProvider.getSelectedOption(component.category);
         cartProvider.addItem(CartItem(
           id: 'cart_${component.id}_${DateTime.now().millisecondsSinceEpoch}',
           component: component,

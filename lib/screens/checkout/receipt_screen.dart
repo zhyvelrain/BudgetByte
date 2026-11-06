@@ -63,7 +63,7 @@ class ReceiptScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('${e.value.emoji} ${e.value.name}', style: const TextStyle(fontSize: 14)),
-                        Text('\$${e.value.unitPrice.toStringAsFixed(2)} x ${e.value.quantity}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                        Text('₱${e.value.unitPrice.toStringAsFixed(2)} x ${e.value.quantity}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                       ],
                     ),
                   )),
@@ -72,7 +72,7 @@ class ReceiptScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Total', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      Text('\$${total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1C3A6B))),
+                      Text('₱${total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1C3A6B))),
                     ],
                   ),
                   const SizedBox(height: 8),

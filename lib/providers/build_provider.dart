@@ -8,6 +8,8 @@ class BuildProvider extends ChangeNotifier {
   BuildConfig? _currentBuild;
   List<BuildConfig> _savedBuilds = [];
   bool _isInitialized = false;
+  // Track selected option per category
+  final Map<ComponentCategory, ComponentOption?> _selectedOptions = {};
 
   BuildConfig? get currentBuild => _currentBuild;
   // Alias for compatibility with screens
@@ -18,6 +20,10 @@ class BuildProvider extends ChangeNotifier {
   double get currentBuildTotal => _currentBuild?.totalPrice ?? 0;
   int get currentBuildComponentCount => _currentBuild?.componentCount ?? 0;
   bool get isCurrentBuildComplete => _currentBuild?.isComplete ?? false;
+
+  ComponentOption? getSelectedOption(ComponentCategory category) {
+    return _selectedOptions[category];
+  }
 
   Future<void> init() async {
     if (_isInitialized) return;
@@ -55,11 +61,17 @@ class BuildProvider extends ChangeNotifier {
       selectedComponents: newComponents,
       updatedAt: DateTime.now(),
     );
+    if (component != null && option != null) {
+      _selectedOptions[category] = option;
+    } else {
+      _selectedOptions.remove(category);
+    }
     notifyListeners();
   }
 
   void clearComponent(ComponentCategory category) {
     selectComponent(category, null);
+    _selectedOptions.remove(category);
   }
 
   void setColorTheme(String? colorTheme) {

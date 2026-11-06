@@ -628,23 +628,26 @@ enum OrderStatus {
 class UserPreferences {
   final String themeMode; // 'light', 'dark', 'system'
   final bool onboardingCompleted;
+  final bool termsAccepted;
   final String? preferredCurrency;
   final bool notificationsEnabled;
   final String? preferredLanguage;
   final String? userId;
 
   UserPreferences({
-    this.themeMode = 'system',
-    this.onboardingCompleted = false,
-    this.preferredCurrency = 'USD',
-    this.notificationsEnabled = true,
-    this.preferredLanguage = 'en',
-    this.userId,
-  });
+      this.themeMode = 'system',
+      this.onboardingCompleted = false,
+      this.termsAccepted = false,
+      this.preferredCurrency = 'PHP',
+      this.notificationsEnabled = true,
+      this.preferredLanguage = 'en',
+      this.userId,
+    });
 
   UserPreferences copyWith({
     String? themeMode,
     bool? onboardingCompleted,
+    bool? termsAccepted,
     String? preferredCurrency,
     bool? notificationsEnabled,
     String? preferredLanguage,
@@ -653,6 +656,7 @@ class UserPreferences {
       UserPreferences(
         themeMode: themeMode ?? this.themeMode,
         onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+        termsAccepted: termsAccepted ?? this.termsAccepted,
         preferredCurrency: preferredCurrency ?? this.preferredCurrency,
         notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
         preferredLanguage: preferredLanguage ?? this.preferredLanguage,
@@ -660,17 +664,19 @@ class UserPreferences {
       );
 
   factory UserPreferences.fromJson(Map<String, dynamic> json) => UserPreferences(
-        themeMode: json['themeMode'] as String? ?? 'system',
-        onboardingCompleted: json['onboardingCompleted'] as bool? ?? false,
-        preferredCurrency: json['preferredCurrency'] as String? ?? 'USD',
-        notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
-        preferredLanguage: json['preferredLanguage'] as String? ?? 'en',
-        userId: json['userId'] as String?,
-      );
+          themeMode: json['themeMode'] as String? ?? 'system',
+          onboardingCompleted: json['onboardingCompleted'] as bool? ?? false,
+          termsAccepted: json['termsAccepted'] as bool? ?? false,
+          preferredCurrency: json['preferredCurrency'] as String? ?? 'PHP',
+          notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
+          preferredLanguage: json['preferredLanguage'] as String? ?? 'en',
+          userId: json['userId'] as String?,
+        );
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
         'onboardingCompleted': onboardingCompleted,
+        'termsAccepted': termsAccepted,
         'preferredCurrency': preferredCurrency,
         'notificationsEnabled': notificationsEnabled,
         'preferredLanguage': preferredLanguage,
