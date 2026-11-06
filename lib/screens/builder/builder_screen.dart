@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/shop_provider.dart';
 import 'package:provider/provider.dart';
 import '../../theme/bb_colors.dart';
 import '../../theme/bb_text.dart';
@@ -49,10 +50,7 @@ class BuilderScreen extends StatelessWidget {
                         category: category,
                         components: components,
                         selectedComponent: selected,
-                        selectedOption: selected?.options.firstWhere(
-                          (o) => o.isDefault,
-                          orElse: () => selected.options.first,
-                        ),
+                        selectedOption: selected?.options.where((o) => o.isDefault).firstOrNull ?? selected?.options.firstOrNull,
                         onSelect: (component, option) {
                           buildProvider.selectComponent(category, component, option: option);
                         },
@@ -135,7 +133,7 @@ class _BuildSummaryCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '\$${price.toStringAsFixed(2)}',
+                            context.money(price),
                             style: BBTextResponsive.displayMedium(context, color: BBColors.accentBlue, weight: FontWeight.w700, size: 28),
                           ),
                           if (build?.isComplete ?? false)
@@ -230,7 +228,7 @@ class _ComponentList extends StatelessWidget {
       itemBuilder: (context, index) {
         final component = components[index];
         final isSelected = selectedComponent?.id == component.id;
-        final option = isSelected ? (selectedOption ?? component.options.first) : component.options.first;
+        final option = isSelected ? (selectedOption ?? component.options.firstOrNull) : component.options.firstOrNull;
 
         return _ComponentCard(
           component: component,
@@ -260,7 +258,7 @@ class _ComponentList extends StatelessWidget {
 
 class _ComponentCard extends StatelessWidget {
   final Component component;
-  final ComponentOption selectedOption;
+  final ComponentOption? selectedOption;
   final bool isSelected;
   final Color categoryColor;
   final VoidCallback onTap;
@@ -353,15 +351,15 @@ class _ComponentCard extends StatelessWidget {
                   Text(component.brand, style: BBTextResponsive.caption(context)),
                   const SizedBox(height: BBColors.padS),
                   // Selected option
-                  if (isSelected) ...[
+                  if (isSelected && selectedOption != null) ...[
                     Row(
                       children: [
                         Container(
                           width: 16,
                           height: 16,
                           decoration: BoxDecoration(
-                            color: selectedOption.colorHex != null
-                                                            ? Color(int.parse(selectedOption.colorHex!.replaceFirst('#', '0xFF')))
+                            color: selectedOption!.colorHex != null
+                                                            ? Color(int.parse(selectedOption!.colorHex!.replaceFirst('#', '0xFF')))
                                                             : categoryColor,
                                                         shape: BoxShape.circle,
                                                         border: Border.all(
@@ -371,25 +369,28 @@ class _ComponentCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          selectedOption.name,
+                        Flexible(child: Text(
+                          selectedOption!.name,
                           style: BBTextResponsive.bodySmall(context, weight: FontWeight.w500),
-                        ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )),
                       ],
                     ),
                     const SizedBox(height: 4),
                   ],
                   // Price
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text(
-                        '\$${(selectedOption.price ?? 0).toStringAsFixed(2)}',
+                        context.money((selectedOption?.price ?? component.price)),
                         style: BBTextResponsive.titleMedium(context, color: categoryColor, weight: FontWeight.w700),
                       ),
-                      if (selectedOption.originalPrice != null && selectedOption.originalPrice! > (selectedOption.price ?? 0)) ...[
-                        const SizedBox(width: 8),
+                      if ((selectedOption?.originalPrice ?? component.originalPrice ?? 0) > (selectedOption?.price ?? component.price)) ...[
                         Text(
-                          '\$${selectedOption.originalPrice!.toStringAsFixed(2)}',
+                          context.money((selectedOption?.originalPrice ?? component.originalPrice!)),
                           style: BBTextResponsive.bodySmall(context).copyWith(decoration: TextDecoration.lineThrough),
                         ),
                       ],
@@ -557,12 +558,12 @@ class _ComponentOptionSheet extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                '\$${(option.price ?? 0).toStringAsFixed(2)}',
+                                context.money((option.price ?? 0)),
                                 style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: component.category.color),
                               ),
                               if (option.originalPrice != null && option.originalPrice! > (option.price ?? 0))
                                 Text(
-                                  '\$${option.originalPrice!.toStringAsFixed(2)}',
+                                  context.money(option.originalPrice!),
                                   style: BBTextResponsive.caption(context).copyWith(decoration: TextDecoration.lineThrough),
                                 ),
                             ],
@@ -625,7 +626,7 @@ class _BuildActionBar extends StatelessWidget {
             Expanded(
               flex: 2,
               child: BrandButton(
-                text: isComplete ? 'Add to Cart (\$${totalPrice.toStringAsFixed(2)})' : 'Complete Build First',
+                text: isComplete ? 'Add to Cart (${context.money(totalPrice)})' : 'Complete Build First',
                 icon: Icons.shopping_cart_rounded,
                 onPressed: isComplete ? () => _addToCart(context) : null,
                 isLoading: false,

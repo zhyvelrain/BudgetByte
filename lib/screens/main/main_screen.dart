@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/theme_provider.dart';
+
 import '../../providers/cart_provider.dart';
-import '../../providers/build_provider.dart';
 import '../../widgets/custom_bottom_nav.dart';
 import '../home/home_screen.dart';
 import '../builder/builder_screen.dart';
 import '../cart/cart_screen.dart';
 import '../profile/profile_screen.dart';
+
+/// Selected bottom tab: 0 home, 1 builder, 2 cart, 3 profile.
+final mainTab = ValueNotifier<int>(0);
+
+/// Close any pushed screens and switch to a bottom tab.
+void goToTab(BuildContext context, int index) {
+  Navigator.of(context).popUntil((route) => route.isFirst);
+  mainTab.value = index;
+}
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -17,36 +25,31 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
-  late final List<Widget> _screens;
+  static const _screens = [
+    HomeScreen(),
+    BuilderScreen(),
+    CartScreen(),
+    ProfileScreen(),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _screens = [
-      const HomeScreen(),
-      const BuilderScreen(),
-      const CartScreen(),
-      const ProfileScreen(),
-    ];
+    mainTab.value = 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer3<ThemeProvider, CartProvider, BuildProvider>(
-      builder: (context, themeProvider, cartProvider, buildProvider, _) {
-        return Scaffold(
-          body: IndexedStack(
-            index: _selectedIndex,
-            children: _screens,
-          ),
-          bottomNavigationBar: CustomBottomNavBar(
-            currentIndex: _selectedIndex,
-            onTap: (index) => setState(() => _selectedIndex = index),
-            cartItemCount: cartProvider.itemCount,
-          ),
-        );
-      },
+    return ValueListenableBuilder<int>(
+      valueListenable: mainTab,
+      builder: (context, index, _) => Scaffold(
+        body: IndexedStack(index: index, children: _screens),
+        bottomNavigationBar: CustomBottomNavBar(
+          currentIndex: index,
+          onTap: (i) => mainTab.value = i,
+          cartItemCount: context.watch<CartProvider>().itemCount,
+        ),
+      ),
     );
   }
 }

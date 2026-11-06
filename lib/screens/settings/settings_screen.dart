@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/shop_provider.dart';
 import 'package:provider/provider.dart';
 import '../../theme/bb_colors.dart';
 import '../../theme/bb_text.dart';
@@ -13,6 +14,7 @@ import '../../screens/onboarding/onboarding_screen.dart';
 import '../../screens/saved_builds_screen.dart';
 import '../../screens/orders/orders_screen.dart';
 import '../product_detail_screen.dart';
+import '../profile/profile_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -100,8 +102,8 @@ class SettingsScreen extends StatelessWidget {
                 _SettingsTile(
                   icon: Icons.currency_exchange_rounded,
                   title: 'Currency',
-                  subtitle: 'USD (\$)',
-                  onTap: () => _showCurrencyDialog(context),
+                  subtitle: ShopProvider.currencies[context.watch<ShopProvider>().currency]!,
+                  onTap: () => showCurrencyPicker(context),
                 ),
                 _divider(context),
                 Consumer<ThemeProvider>(
@@ -403,7 +405,7 @@ class SettingsScreen extends StatelessWidget {
                                             ? Image.asset(component.images.first, width: 48, height: 48, fit: BoxFit.cover)
                                             : Icon(component.category.icon, color: component.category.color, size: 32),
                                         title: Text(component.name, style: BBTextResponsive.bodyMedium(context)),
-                                        subtitle: Text('${component.brand} • \$${component.price.toStringAsFixed(2)}', style: BBTextResponsive.bodySmall(context)),
+                                        subtitle: Text('${component.brand} • ${context.money(component.price)}', style: BBTextResponsive.bodySmall(context)),
                                         trailing: IconButton(
                                                                                   icon: Icon(Icons.delete_outline_rounded, color: BBColors.danger),
                                                                                   onPressed: () async {
@@ -492,26 +494,6 @@ class SettingsScreen extends StatelessWidget {
             _LanguageOption(flag: '🇺🇸', name: 'English (US)', code: 'en_US', onTap: () => Navigator.pop(context)),
             _LanguageOption(flag: '🇬🇧', name: 'English (UK)', code: 'en_GB', onTap: () => Navigator.pop(context)),
             _LanguageOption(flag: '🇪🇸', name: 'Español', code: 'es_ES', onTap: () => Navigator.pop(context)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showCurrencyDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
-        title: Text('Currency', style: BBTextResponsive.titleLarge(context)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _CurrencyOption(symbol: '\$', code: 'USD', name: 'US Dollar', onTap: () => Navigator.pop(context)),
-            _CurrencyOption(symbol: '€', code: 'EUR', name: 'Euro', onTap: () => Navigator.pop(context)),
-            _CurrencyOption(symbol: '£', code: 'GBP', name: 'British Pound', onTap: () => Navigator.pop(context)),
-            _CurrencyOption(symbol: '¥', code: 'JPY', name: 'Japanese Yen', onTap: () => Navigator.pop(context)),
           ],
         ),
       ),
@@ -804,55 +786,6 @@ class _LanguageOption extends StatelessWidget {
             Text(flag, style: const TextStyle(fontSize: 24)),
             const SizedBox(width: BBColors.padM),
             Expanded(child: Text(name, style: BBTextResponsive.bodyLarge(context))),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CurrencyOption extends StatelessWidget {
-  final String symbol;
-  final String code;
-  final String name;
-  final VoidCallback onTap;
-
-  const _CurrencyOption({
-    required this.symbol,
-    required this.code,
-    required this.name,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(BBColors.radiusMd),
-      child: Container(
-        padding: const EdgeInsets.all(BBColors.padM),
-        margin: const EdgeInsets.symmetric(vertical: BBColors.padS),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: BBColors.accentBlueSoft,
-                borderRadius: BorderRadius.circular(BBColors.radiusMd),
-              ),
-              child: Center(child: Text(symbol, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: BBColors.accentBlue))),
-            ),
-            const SizedBox(width: BBColors.padM),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: BBTextResponsive.bodyLarge(context, weight: FontWeight.w600)),
-                  Text('$code ($symbol)', style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context))),
-                ],
-              ),
-            ),
           ],
         ),
       ),

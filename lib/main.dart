@@ -7,8 +7,11 @@ import 'theme/bb_text.dart';
 import 'providers/theme_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/build_provider.dart';
+import 'providers/shop_provider.dart';
 import 'services/preferences_service.dart';
 import 'services/component_data_service.dart';
+import 'services/auth_service.dart';
+import 'screens/auth/login_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/main/main_screen.dart';
 import 'widgets/connectivity_banner.dart';
@@ -36,6 +39,8 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   late final ThemeProvider _themeProvider;
   late final CartProvider _cartProvider;
   late final BuildProvider _buildProvider;
+  final AuthService _authService = AuthService()..init();
+  final ShopProvider _shopProvider = ShopProvider();
   late final Connectivity _connectivity;
   bool _showOnboarding = false;
   bool _isOnline = true;
@@ -56,6 +61,7 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
     await _themeProvider.init();
     await _cartProvider.init();
     await _buildProvider.init();
+    await _shopProvider.init();
 
     // Check if onboarding is completed
     final prefs = await PreferencesService.getPreferences();
@@ -104,9 +110,11 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
         ChangeNotifierProvider.value(value: _themeProvider),
         ChangeNotifierProvider.value(value: _cartProvider),
         ChangeNotifierProvider.value(value: _buildProvider),
+        ChangeNotifierProvider.value(value: _authService),
+        ChangeNotifierProvider.value(value: _shopProvider),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, _) {
+      child: Consumer2<ThemeProvider, AuthService>(
+        builder: (context, themeProvider, _, _) {
           return MaterialApp(
             title: 'ByteBudget',
             debugShowCheckedModeBanner: false,
@@ -128,6 +136,10 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
 
     if (_showOnboarding) {
       return OnboardingScreen(onComplete: _onOnboardingComplete);
+    }
+
+    if (!_authService.signedIn) {
+      return const LoginScreen();
     }
 
     return Stack(
