@@ -9,6 +9,7 @@ class PreferencesService {
   static const _buildsKey = 'bytebudget_builds';
   static const _ordersKey = 'bytebudget_orders';
   static const _favoritesKey = 'bytebudget_favorites';
+  static const _addressKey = 'bytebudget_address';
 
   static SharedPreferences? _prefs;
 
@@ -54,6 +55,7 @@ class PreferencesService {
     final cart = await getCart();
     final existingIndex = cart.indexWhere((i) =>
         i.component.id == item.component.id &&
+        i.option?.id == item.option?.id &&
         i.selectedColor == item.selectedColor);
     if (existingIndex >= 0) {
       cart[existingIndex] = cart[existingIndex].copyWith(
@@ -169,6 +171,16 @@ class PreferencesService {
   static Future<bool> isFavorite(String componentId) async {
     final favorites = await getFavorites();
     return favorites.contains(componentId);
+  }
+
+  // Saved shipping address
+  static Address? getAddress() {
+    final jsonStr = prefs.getString(_addressKey);
+    return jsonStr == null ? null : Address.fromJson(jsonDecode(jsonStr));
+  }
+
+  static Future<void> saveAddress(Address address) async {
+    await prefs.setString(_addressKey, jsonEncode(address.toJson()));
   }
 
   static Future<void> clearAllData() async {

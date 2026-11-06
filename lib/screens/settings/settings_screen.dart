@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/shop_provider.dart';
 import 'package:provider/provider.dart';
 import '../../theme/bb_colors.dart';
 import '../../theme/bb_text.dart';
@@ -13,6 +14,7 @@ import '../../screens/onboarding/onboarding_screen.dart';
 import '../../screens/saved_builds_screen.dart';
 import '../../screens/orders/orders_screen.dart';
 import '../product_detail_screen.dart';
+import '../profile/profile_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -95,6 +97,13 @@ class SettingsScreen extends StatelessWidget {
                   title: 'Language',
                   subtitle: 'English (US)',
                   onTap: () => _showLanguageDialog(context),
+                ),
+                _divider(context),
+                _SettingsTile(
+                  icon: Icons.currency_exchange_rounded,
+                  title: 'Currency',
+                  subtitle: ShopProvider.currencies[context.watch<ShopProvider>().currency]!,
+                  onTap: () => showCurrencyPicker(context),
                 ),
                 _divider(context),
                 Consumer<ThemeProvider>(
@@ -362,60 +371,60 @@ class SettingsScreen extends StatelessWidget {
               ),
               const Divider(height: 1),
               Expanded(
-                child: FutureBuilder<Set<String>>(
-                  future: PreferencesService.getFavorites(),
-                  builder: (context, snapshot) {
-                    final favorites = snapshot.data ?? <String>{};
-                    if (favorites.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.favorite_border_rounded, size: 64, color: BBColors.textMuted(context)),
-                            const SizedBox(height: BBColors.padM),
-                            Text('No favorites yet', style: BBTextResponsive.titleMedium(context, color: BBColors.textMuted(context))),
-                            const SizedBox(height: BBColors.padS),
-                            Text('Tap the heart on any component', style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context))),
-                          ],
-                        ),
-                      );
-                    }
-                    final favoritesList = favorites.toList();
-                    return ListView.builder(
-                      controller: scrollController,
-                      padding: const EdgeInsets.all(BBColors.padL),
-                      itemCount: favoritesList.length,
-                      itemBuilder: (context, index) {
-                        final compId = favoritesList[index];
-                        final component = ComponentDataService.getById(compId);
-                        if (component == null) return const SizedBox();
-                        return ListTile(
-                          leading: component.images.isNotEmpty
-                              ? Image.asset(component.images.first, width: 48, height: 48, fit: BoxFit.cover)
-                              : Icon(component.category.icon, color: component.category.color, size: 32),
-                          title: Text(component.name, style: BBTextResponsive.bodyMedium(context)),
-                          subtitle: Text('\${component.brand} • ₱\${component.price.toStringAsFixed(2)}', style: BBTextResponsive.bodySmall(context)),
-                          trailing: IconButton(
-                            icon: Icon(Icons.delete_outline_rounded, color: BBColors.danger),
-                            onPressed: () async {
-                              await PreferencesService.toggleFavorite(compId);
-                              if (!context.mounted) return;
-                              navigator.pop();
-                              _showFavorites(context);
-                            },
-                          ),
-                          onTap: () {
-                            navigator.pop();
-                            navigator.push(
-                              MaterialPageRoute(builder: (_) => ProductDetailScreen(component: component)),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
+                              child: FutureBuilder<Set<String>>(
+                                future: PreferencesService.getFavorites(),
+                                builder: (context, snapshot) {
+                                  final favorites = snapshot.data ?? <String>{};
+                                  if (favorites.isEmpty) {
+                                    return Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.favorite_border_rounded, size: 64, color: BBColors.textMuted(context)),
+                                          const SizedBox(height: BBColors.padM),
+                                          Text('No favorites yet', style: BBTextResponsive.titleMedium(context, color: BBColors.textMuted(context))),
+                                          const SizedBox(height: BBColors.padS),
+                                          Text('Tap the heart on any component', style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context))),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                  final favoritesList = favorites.toList();
+                                  return ListView.builder(
+                                    controller: scrollController,
+                                    padding: const EdgeInsets.all(BBColors.padL),
+                                    itemCount: favoritesList.length,
+                                    itemBuilder: (context, index) {
+                                      final compId = favoritesList[index];
+                                      final component = ComponentDataService.getById(compId);
+                                      if (component == null) return const SizedBox();
+                                      return ListTile(
+                                        leading: component.images.isNotEmpty
+                                            ? Image.asset(component.images.first, width: 48, height: 48, fit: BoxFit.cover)
+                                            : Icon(component.category.icon, color: component.category.color, size: 32),
+                                        title: Text(component.name, style: BBTextResponsive.bodyMedium(context)),
+                                        subtitle: Text('${component.brand} • ${context.money(component.price)}', style: BBTextResponsive.bodySmall(context)),
+                                        trailing: IconButton(
+                                                                                  icon: Icon(Icons.delete_outline_rounded, color: BBColors.danger),
+                                                                                  onPressed: () async {
+                                                                                    await PreferencesService.toggleFavorite(compId);
+                                                                                    if (!context.mounted) return;
+                                                                                    navigator.pop();
+                                                                                    _showFavorites(context);
+                                                                                  },
+                                                                                ),
+                                        onTap: () {
+                                          navigator.pop();
+                                          navigator.push(
+                                            MaterialPageRoute(builder: (_) => ProductDetailScreen(component: component)),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
             ],
           ),
         ),
@@ -482,7 +491,7 @@ class SettingsScreen extends StatelessWidget {
           children: [
             _LanguageOption(flag: '🇺🇸', name: 'English (US)', code: 'en_US', onTap: () => Navigator.pop(context)),
             _LanguageOption(flag: '🇬🇧', name: 'English (UK)', code: 'en_GB', onTap: () => Navigator.pop(context)),
-            _LanguageOption(flag: '🇵🇭', name: 'Tagalog', code: 'tl_PH', onTap: () => Navigator.pop(context)),
+            _LanguageOption(flag: '🇪🇸', name: 'Español', code: 'es_ES', onTap: () => Navigator.pop(context)),
           ],
         ),
       ),

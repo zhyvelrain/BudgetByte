@@ -441,7 +441,28 @@ class ComponentDataService {
         ],
       ),
     ];
+    _components = [for (final c in _components) c.copyWith(options: _placeholderVariants(c))];
     _initialized = true;
+  }
+
+  // ponytail: placeholder variants (max 3 per item) until real SKUs exist.
+  static const _swatches = {'Black': '#1E1E1E', 'White': '#F2F2F2', 'Pink': '#F4A7B9', 'Black/Red': '#5A1A1A'};
+
+  static List<ComponentOption> _placeholderVariants(Component c) {
+    final names = [...c.colors, 'Special Edition', 'Pro Bundle'].take(3).toList();
+    return [
+      for (var i = 0; i < names.length; i++)
+        ComponentOption(
+          id: '${c.id}_v$i',
+          name: names[i],
+          type: _swatches.containsKey(names[i]) ? 'color' : 'edition',
+          isDefault: i == 0,
+          colorHex: _swatches[names[i]],
+          // Colorways share the base price; editions cost a little more.
+          price: _swatches.containsKey(names[i]) ? c.price : c.price + 20.0 * i,
+          originalPrice: _swatches.containsKey(names[i]) ? c.originalPrice : null,
+        ),
+    ];
   }
 
   static List<Component> getByCategory(ComponentCategory category) {

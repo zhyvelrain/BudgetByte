@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/shop_provider.dart';
 import 'package:provider/provider.dart';
 import '../../theme/bb_colors.dart';
 import '../../theme/bb_text.dart';
@@ -6,9 +7,12 @@ import '../../widgets/brand_card.dart';
 import '../../widgets/brand_button.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/preferences_service.dart';
+import '../../services/auth_service.dart';
 import '../../models/app_models.dart';
-import '../../screens/orders/orders_screen.dart';
-import '../../screens/saved_builds_screen.dart';
+import '../../services/component_data_service.dart';
+import '../order_history_screen.dart';
+import '../saved_builds_screen.dart';
+import '../home/home_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -49,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
                 subtitle: 'View past purchases',
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const OrdersScreen()),
+                  MaterialPageRoute(builder: (_) => const OrderHistoryScreen()),
                 ),
               ),
               _MenuItem(
@@ -65,14 +69,10 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.favorite_rounded,
                 title: 'Wishlist',
                 subtitle: 'Saved items for later',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Wishlist coming soon', style: BBTextResponsive.bodyMedium(context)),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const WishlistScreen()),
+                ),
               ),
               _MenuItem(
                 icon: Icons.location_on_rounded,
@@ -121,19 +121,19 @@ class ProfileScreen extends StatelessWidget {
                 },
               ),
               _MenuItem(
-                              icon: Icons.language_rounded,
-                              title: 'Language',
-                              subtitle: 'English (US)',
-                              onTap: () => _showLanguageDialog(context),
-                            ),
-                            _MenuItem(
-                              icon: Icons.attach_money_rounded,
-                              title: 'Currency',
-                              subtitle: 'Philippine Peso (₱)',
-                              onTap: () => _showCurrencyInfo(context),
-                            ),
-                          ],
-                        ),
+                icon: Icons.language_rounded,
+                title: 'Language',
+                subtitle: 'English (US)',
+                onTap: () {}, // TODO: Language selection
+              ),
+              _MenuItem(
+                icon: Icons.attach_money_rounded,
+                title: 'Currency',
+                subtitle: ShopProvider.currencies[context.watch<ShopProvider>().currency]!,
+                onTap: () => showCurrencyPicker(context),
+              ),
+            ],
+          ),
           const SizedBox(height: BBColors.padL),
 
           _MenuSection(
@@ -322,39 +322,15 @@ class ProfileScreen extends StatelessWidget {
               _LanguageOption(flag: '🇵🇭', name: 'Tagalog', code: 'tl_PH', onTap: () => Navigator.pop(context)),
             ],
           ),
-        ),
-      );
-    }
-
-    void _showCurrencyInfo(BuildContext context) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
-          title: Text('Currency', style: BBTextResponsive.titleLarge(context)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(BBColors.padM),
-                  decoration: BoxDecoration(
-                    color: BBColors.accentBlueSoft,
-                    borderRadius: BorderRadius.circular(BBColors.radiusMd),
-                  ),
-                  child: const Text('₱', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: BBColors.accentBlue)),
-                ),
-                title: Text('Philippine Peso', style: BBTextResponsive.bodyLarge(context, weight: FontWeight.w600)),
-                subtitle: Text('PHP (₱)', style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context))),
-              ),
-              const Divider(),
-              Text(
-                'All prices in ByteBudget are displayed in Philippine Peso (₱). '
-                'This is the only supported currency for the Philippine market.',
-                style: BBTextResponsive.bodyMedium(context),
-              ),
-            ],
+          BrandButton.outline(
+            text: 'Sign Out',
+            foregroundColor: BBColors.accentRed,
+            onPressed: () {
+              final auth = context.read<AuthService>();
+              Navigator.pop(context);
+              auth.signOut();
+            },
+            fullWidth: true,
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
@@ -367,7 +343,7 @@ class ProfileScreen extends StatelessWidget {
 class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-
+    final user = context.watch<AuthService>().currentUser;
     return BrandCard(
       gradient: LinearGradient(
         colors: [
@@ -397,12 +373,16 @@ class _ProfileHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'PC Enthusiast',
+                  user?.name ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: BBTextResponsive.titleLarge(context, weight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'enthusiast@bytebudget.com',
+                  user?.email ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: BBTextResponsive.bodyMedium(context, color: BBColors.textMuted(context)),
                 ),
                 const SizedBox(height: BBColors.padS),
@@ -413,7 +393,7 @@ class _ProfileHeader extends StatelessWidget {
                     borderRadius: BorderRadius.circular(BBColors.radiusSm),
                   ),
                   child: Text(
-                    'Pro Member',
+                    'Member since ${user?.createdAt.year ?? DateTime.now().year}',
                     style: BBTextResponsive.labelSmall(context, color: BBColors.accentBlue, weight: FontWeight.w600),
                   ),
                 ),
@@ -477,7 +457,7 @@ class _StatsRow extends StatelessWidget {
                     const SizedBox(width: BBColors.padM),
                     Expanded(child: _StatCard(icon: Icons.build_rounded, label: 'Builds', value: '${builds.length}', color: BBColors.catMouse)),
                     const SizedBox(width: BBColors.padM),
-                    Expanded(child: _StatCard(icon: Icons.attach_money_rounded, label: 'Spent', value: '₱${totalSpent.toStringAsFixed(0)}', color: BBColors.accentGreen)),
+                    Expanded(child: _StatCard(icon: Icons.attach_money_rounded, label: 'Spent', value: context.money(totalSpent), color: BBColors.accentGreen)),
                     const SizedBox(width: BBColors.padM),
                     Expanded(child: _StatCard(icon: Icons.favorite_rounded, label: 'Saved', value: '${favorites.length}', color: BBColors.accentRed)),
                   ],
@@ -641,6 +621,74 @@ class _MenuItem extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+/// Lets the user switch the display currency (USD or PHP).
+void showCurrencyPicker(BuildContext context) {
+  final shop = context.read<ShopProvider>();
+  showDialog(
+    context: context,
+    builder: (dialogContext) => SimpleDialog(
+      title: Text('Currency', style: BBTextResponsive.titleLarge(dialogContext)),
+      children: [
+        for (final entry in ShopProvider.currencies.entries)
+          ListTile(
+            title: Text(entry.value),
+            trailing: shop.currency == entry.key ? const Icon(Icons.check_rounded, color: BBColors.accentBlue) : null,
+            selected: shop.currency == entry.key,
+            onTap: () {
+              shop.setCurrency(entry.key);
+              Navigator.pop(dialogContext);
+            },
+          ),
+      ],
+    ),
+  );
+}
+
+/// Favorited products.
+class WishlistScreen extends StatelessWidget {
+  const WishlistScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final favorites = context.watch<ShopProvider>().favorites;
+    final products = ComponentDataService.components.where((c) => favorites.contains(c.id)).toList();
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Wishlist', style: BBTextResponsive.headlineMedium(context, weight: FontWeight.w600))),
+      body: products.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(BBColors.padXL),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.favorite_border_rounded, size: 56, color: BBColors.textMuted(context)),
+                    const SizedBox(height: BBColors.padL),
+                    Text('No favorites yet', style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600)),
+                    const SizedBox(height: BBColors.padS),
+                    Text(
+                      'Tap the heart on any product to save it here.',
+                      textAlign: TextAlign.center,
+                      style: BBTextResponsive.bodyMedium(context, color: BBColors.textMuted(context)),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : GridView.builder(
+              padding: const EdgeInsets.all(BBColors.padM),
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 220,
+                childAspectRatio: 0.62,
+                crossAxisSpacing: BBColors.padM,
+                mainAxisSpacing: BBColors.padM,
+              ),
+              itemCount: products.length,
+              itemBuilder: (context, i) => ShopProductCard(product: products[i]),
+            ),
     );
   }
 }

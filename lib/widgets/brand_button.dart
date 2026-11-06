@@ -133,9 +133,13 @@ class BrandButton extends StatelessWidget {
                 Icon(icon, size: 20, color: effectiveFgColor),
                 const SizedBox(width: BBColors.padS),
               ],
-              Text(
-                text,
-                style: BBText.button(color: effectiveFgColor),
+              Flexible(
+                child: Text(
+                  text,
+                  style: BBText.button(color: effectiveFgColor),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               if (icon != null && iconPosition == IconPosition.trailing) ...[
                 const SizedBox(width: BBColors.padS),

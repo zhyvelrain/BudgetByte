@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../providers/shop_provider.dart';
 import 'package:provider/provider.dart';
 import '../../theme/bb_colors.dart';
 import '../../theme/bb_text.dart';
@@ -203,7 +204,7 @@ class _BuildCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '\$${buildConfig.totalPrice.toStringAsFixed(2)}',
+                context.money(buildConfig.totalPrice),
                 style: BBTextResponsive.titleLarge(context, weight: FontWeight.w700, color: BBColors.accentBlue),
               ),
               Row(

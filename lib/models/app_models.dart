@@ -279,7 +279,8 @@ class CartItem {
     this.option,
   });
 
-  double get subtotal => component.price * quantity;
+  double get unitPrice => option?.price ?? component.price;
+  double get subtotal => unitPrice * quantity;
   double get lineTotal => subtotal;
   String? get selectedOptionValue => selectedOption ?? selectedColor;
 

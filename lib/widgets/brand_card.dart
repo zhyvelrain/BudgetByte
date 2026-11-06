@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../providers/shop_provider.dart';
 
 import '../theme/bb_colors.dart';
 import '../theme/bb_text.dart';
@@ -140,6 +141,7 @@ class ProductCard extends StatelessWidget {
   final int reviewCount;
   final VoidCallback? onTap;
   final VoidCallback? onFavorite;
+  final VoidCallback? onAddToCart;
   final bool isFavorite;
   final Color? categoryColor;
 
@@ -155,6 +157,7 @@ class ProductCard extends StatelessWidget {
     required this.reviewCount,
     this.onTap,
     this.onFavorite,
+    this.onAddToCart,
     this.isFavorite = false,
     this.categoryColor,
   });
@@ -173,10 +176,10 @@ class ProductCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Image with favorite button
-          Stack(
+          Expanded(
+            child: Stack(
             children: [
-              AspectRatio(
-                aspectRatio: 1,
+              SizedBox.expand(
                 child: Container(
                   decoration: BoxDecoration(
                     color: isDark
@@ -235,7 +238,9 @@ class ProductCard extends StatelessWidget {
               Positioned(
                 top: BBColors.padS,
                 right: BBColors.padS,
-                child: Material(
+                child: Tooltip(
+                  message: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+                  child: Material(
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(BBColors.radiusFull),
                   child: InkWell(
@@ -271,8 +276,10 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                ),
               ),
             ],
+          ),
           ),
           // Content
           Padding(
@@ -283,6 +290,8 @@ class ProductCard extends StatelessWidget {
                 // Brand
                 Text(
                   brand.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: BBTextResponsive.labelSmall(
                     context,
                     color: effectiveCategoryColor,
@@ -314,32 +323,36 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Text(
+                    Flexible(child: Text(
                       '($reviewCount)',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: BBTextResponsive.labelSmall(
                         context,
                         color: BBColors.textMuted(context),
                       ),
-                    ),
+                    )),
                   ],
                 ),
                 const SizedBox(height: BBColors.padS),
                 // Price
                 Row(
                   children: [
-                    Text(
-                      '\$${price.toStringAsFixed(2)}',
+                    Flexible(child: Text(
+                      context.money(price),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: BBTextResponsive.price(
                         context,
                         size: 18,
                         weight: FontWeight.w700,
                       ),
-                    ),
+                    )),
                     if (hasDiscount) ...[
                       const SizedBox(width: BBColors.padS),
                       Expanded(
                         child: Text(
-                          '\$${originalPrice!.toStringAsFixed(2)}',
+                          context.money(originalPrice!),
                           style: BBTextResponsive.bodySmall(
                             context,
                             color: BBColors.textMuted(context),
@@ -348,7 +361,15 @@ class ProductCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    ],
+                    ] else
+                      const Spacer(),
+                    if (onAddToCart != null)
+                      IconButton.filledTonal(
+                        onPressed: onAddToCart,
+                        tooltip: 'Add to cart',
+                        icon: const Icon(Icons.add_shopping_cart_rounded, size: 18),
+                        visualDensity: VisualDensity.compact,
+                      ),
                   ],
                 ),
               ],
