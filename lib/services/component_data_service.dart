@@ -15,15 +15,15 @@ class ComponentDataService {
     _components = [
       // Keyboards (2)
       Component(
-        id: 'kb_001',
-        name: 'Apex Pro TKL',
-        brand: 'SteelSeries',
-        category: ComponentCategory.keyboard,
-        price: 11199.00,
-        originalPrice: 12879.00,
-        description:
-            'The world\'s fastest mechanical gaming keyboard with OmniPoint 2.0 adjustable switches. Per-key RGB illumination and OLED smart display.',
-        images: ['assets/images/apex_pro_tkl.jpg'],
+              id: 'kb_001',
+              name: 'Apex Pro TKL',
+              brand: 'SteelSeries',
+              category: ComponentCategory.keyboard,
+              price: 11199.00,
+              originalPrice: 12879.00,
+              description:
+                                'The world\'s fastest mechanical gaming keyboard with OmniPoint 2.0 adjustable switches. Per-key RGB illumination and OLED smart display.',
+                      images: ['assets/images/kb_001.png'],
         specifications: {
           'Switch Type': 'OmniPoint 2.0 Adjustable Mechanical',
           'Actuation Point': '0.2mm - 3.8mm Adjustable',
@@ -61,14 +61,14 @@ class ComponentDataService {
         ],
       ),
       Component(
-        id: 'kb_002',
-        name: 'G915 TKL Lightspeed',
-        brand: 'Logitech G',
-        category: ComponentCategory.keyboard,
-        price: 12879.00,
-        description:
-            'Low-profile GL mechanical switches with Lightspeed wireless. 40-hour battery life and premium aluminum alloy design.',
-        images: ['assets/images/g915_tkl.jpg'],
+              id: 'kb_002',
+              name: 'G915 TKL Lightspeed',
+              brand: 'Logitech G',
+              category: ComponentCategory.keyboard,
+              price: 12879.00,
+              description:
+                  'Low-profile GL mechanical switches with Lightspeed wireless. 40-hour battery life and premium aluminum alloy design.',
+              images: ['assets/images/kb_002.png'],
         specifications: {
           'Switch Type': 'GL Linear / Tactile / Clicky (Low Profile)',
           'Polling Rate': '1000Hz (Lightspeed)',
@@ -106,14 +106,14 @@ class ComponentDataService {
 
       // Mice (2)
       Component(
-        id: 'ms_001',
-        name: 'DeathAdder V3 Pro',
-        brand: 'Razer',
-        category: ComponentCategory.mouse,
-        price: 8959.00,
-        description:
-            'Ultra-lightweight 63g ergonomic esports mouse with Focus Pro 30K optical sensor. Gen-3 optical switches.',
-        images: ['assets/images/deathadder_v3_pro.jpg'],
+              id: 'ms_001',
+              name: 'DeathAdder V3 Pro',
+              brand: 'Razer',
+              category: ComponentCategory.mouse,
+              price: 8959.00,
+              description:
+                  'Ultra-lightweight 63g ergonomic esports mouse with Focus Pro 30K optical sensor. Gen-3 optical switches.',
+              images: ['assets/images/mouse_001.png'],
         specifications: {
           'Sensor': 'Focus Pro 30K Optical',
           'DPI': '30,000',
@@ -150,15 +150,15 @@ class ComponentDataService {
         ],
       ),
       Component(
-        id: 'ms_002',
-        name: 'GPX Superlight 2',
-        brand: 'Logitech G',
-        category: ComponentCategory.mouse,
-        price: 8959.00,
-        originalPrice: 10079.00,
-        description:
-            'Sub-60g wireless gaming mouse with Hero 2 sensor. 95-hour battery and hybrid optical-mechanical switches.',
-        images: ['assets/images/gpx_superlight2.jpg'],
+              id: 'ms_002',
+              name: 'GPX Superlight 2',
+              brand: 'Logitech G',
+              category: ComponentCategory.mouse,
+              price: 8959.00,
+              originalPrice: 10079.00,
+              description:
+                  'Sub-60g wireless gaming mouse with Hero 2 sensor. 95-hour battery and hybrid optical-mechanical switches.',
+              images: ['assets/images/mouse_002.png'],
         specifications: {
           'Sensor': 'Hero 2 44K',
           'DPI': '44,000',
@@ -211,7 +211,7 @@ class ComponentDataService {
         price: 55999.00,
         description:
             '26.5" 1440p OLED 240Hz gaming monitor with 0.03ms response time. G-SYNC compatible and true 10-bit color.',
-        images: ['assets/images/pg27aqdm.jpg'],
+        images: ['assets/images/mon_001.png'],
         specifications: {
           'Panel': '26.5" OLED',
           'Resolution': '2560 x 1440 (QHD)',
@@ -249,7 +249,7 @@ class ComponentDataService {
         originalPrice: 36399.00,
         description:
             '27" 4K 144Hz Nano IPS with HDMI 2.1. DisplayHDR 600 and 98% DCI-P3 for content creation and gaming.',
-        images: ['assets/images/27gp95r.jpg'],
+        images: ['assets/images/mon_002.png'],
         specifications: {
           'Panel': '27" Nano IPS',
           'Resolution': '3840 x 2160 (4K UHD)',
@@ -288,7 +288,7 @@ class ComponentDataService {
         price: 19599.00,
         description:
             'Premium wireless gaming headset with Active Noise Cancellation. Infinity Power System with hot-swappable batteries.',
-        images: ['assets/images/arctis_nova_pro.jpg'],
+        images: ['assets/images/aud_001.png'],
         specifications: {
           'Driver': '40mm Neodymium',
           'Frequency Response': '10Hz - 40kHz',
@@ -332,7 +332,7 @@ class ComponentDataService {
         price: 11199.00,
         description:
             'Ultra-lightweight 282g esports headset with Titanium 50mm drivers. HyperSpeed wireless and 70-hour battery.',
-        images: ['assets/images/blackshark_v2_pro.jpg'],
+        images: ['assets/images/aud_002.png'],
         specifications: {
           'Driver': 'Titanium 50mm TriForce',
           'Frequency Response': '12Hz - 28kHz',
@@ -377,7 +377,7 @@ class ComponentDataService {
         price: 16799.00,
         description:
             '4K60/1080p120 studio-grade webcam with Sony STARVIS sensor. Fixed focus f/2.0 lens and uncompressed video.',
-        images: ['assets/images/facecam_pro.jpg'],
+        images: ['assets/images/cam_001.png'],
         specifications: {
           'Sensor': 'Sony STARVIS 1/1.8" CMOS',
           'Max Resolution': '4K @ 60fps / 1080p @ 120fps',
@@ -415,7 +415,7 @@ class ComponentDataService {
         price: 1679.00,
         description:
             'Extra-thick 6mm micro-woven cloth mousepad. Non-slip rubber base and optimized for low/high DPI tracking.',
-        images: ['assets/images/qck_heavy_xl.jpg'],
+        images: ['assets/images/cam_002.png'],
         specifications: {
           'Dimensions': '900 x 400 x 6mm',
           'Surface': 'Micro-woven Cloth',

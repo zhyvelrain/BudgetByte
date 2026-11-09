@@ -103,14 +103,14 @@ class _EmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: isDark ? BBColors.nightSurface : BBColors.daySurface,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 56, color: BBColors.textMuted(context)),
-            ),
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            gradient: isDark ? BBColors.cardGradientDark : BBColors.cardGradientLight,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(icon, size: 56, color: BBColors.accentBlue),
+                        ),
             const SizedBox(height: BBColors.padXL),
             Text(title, style: BBTextResponsive.headlineMedium(context, weight: FontWeight.w600)),
             const SizedBox(height: BBColors.padS),

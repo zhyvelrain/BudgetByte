@@ -109,13 +109,13 @@ class _EmptyCartState extends StatelessWidget {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: isDark ? BBColors.nightSurface : BBColors.daySurface,
+                gradient: isDark ? BBColors.cardGradientDark : BBColors.cardGradientLight,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.shopping_cart_outlined,
                 size: 56,
-                color: BBColors.textMuted(context),
+                color: BBColors.accentBlue,
               ),
             ),
             const SizedBox(height: BBColors.padXL),
@@ -135,15 +135,17 @@ class _EmptyCartState extends StatelessWidget {
               spacing: BBColors.padM,
               runSpacing: BBColors.padM,
               children: [
-                BrandButton.outline(
+                BrandButton(
                   text: 'Start Building',
                   icon: Icons.build_rounded,
                   onPressed: () => goToTab(context, 1),
+                  variant: BrandButtonVariant.secondary,
                 ),
                 BrandButton(
                   text: 'Browse Shop',
                   icon: Icons.store_rounded,
                   onPressed: () => goToTab(context, 0),
+                  variant: BrandButtonVariant.primary,
                 ),
               ],
             ),

@@ -148,48 +148,48 @@ class _HomeScreenState extends State<HomeScreen> {
                 StretchMode.fadeTitle,
               ],
               background: Container(
-                decoration: BoxDecoration(
-                  gradient: isDark
-                      ? BrandAccents.darkSurfaceGradient
-                      : BrandAccents.lightSurfaceGradient,
-                ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      top: -50,
-                      right: -30,
-                      child: Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              BBColors.accentBlue.withValues(alpha: 0.15),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: -80,
-                      left: -50,
-                      child: Container(
-                        width: 250,
-                        height: 250,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              BBColors.accentTeal.withValues(alpha: 0.1),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    SafeArea(
+                              decoration: BoxDecoration(
+                                gradient: isDark
+                                    ? BBColors.heroGradientDark
+                                    : BBColors.heroGradientLight,
+                              ),
+                              child: Stack(
+                                children: [
+                                  Positioned(
+                                    top: -50,
+                                    right: -30,
+                                    child: Container(
+                                      width: 200,
+                                      height: 200,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: RadialGradient(
+                                          colors: [
+                                            BBColors.accentBlue.withValues(alpha: 0.15),
+                                            Colors.transparent,
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: -80,
+                                    left: -50,
+                                    child: Container(
+                                      width: 250,
+                                      height: 250,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: RadialGradient(
+                                          colors: [
+                                            BBColors.accentTeal.withValues(alpha: 0.1),
+                                            Colors.transparent,
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SafeArea(
                       child: Padding(
                         padding: EdgeInsets.all(horizontalPadding),
                         child: Column(
@@ -549,13 +549,26 @@ class _CategoryChip extends StatelessWidget {
     final productCount = ComponentDataService.getByCategory(category).length;
     final radius = BorderRadius.circular(BBColors.radiusLg);
 
+    // Category-specific gradients
+    final Gradient categoryGradient = LinearGradient(
+      colors: selected
+          ? [
+              category.color.withValues(alpha: isDark ? 0.3 : 0.15),
+              category.color.withValues(alpha: isDark ? 0.1 : 0.05),
+            ]
+          : [
+              isDark ? BBColors.nightSurface : BBColors.daySurface,
+              isDark ? BBColors.nightSurface : BBColors.daySurface,
+            ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
     return Semantics(
       button: true,
       selected: selected,
       child: Material(
-        color: selected
-            ? category.color.withValues(alpha: 0.12)
-            : (isDark ? BBColors.nightSurface : BBColors.daySurface),
+        color: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: radius,
           side: BorderSide(
@@ -571,6 +584,10 @@ class _CategoryChip extends StatelessWidget {
           child: Container(
             width: 140,
             padding: const EdgeInsets.all(BBColors.padM),
+            decoration: BoxDecoration(
+              gradient: categoryGradient,
+              borderRadius: radius,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -578,7 +595,12 @@ class _CategoryChip extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: category.color.withValues(alpha: 0.15),
+                    gradient: LinearGradient(
+                      colors: [
+                        category.color.withValues(alpha: 0.2),
+                        category.color.withValues(alpha: 0.05),
+                      ],
+                    ),
                     borderRadius: BorderRadius.circular(BBColors.radiusMd),
                   ),
                   child: Icon(category.icon, size: 22, color: category.color),
@@ -589,6 +611,7 @@ class _CategoryChip extends StatelessWidget {
                   style: BBTextResponsive.labelMedium(
                     context,
                     weight: FontWeight.w600,
+                    color: selected ? category.color : BBColors.textPrimary(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -614,17 +637,11 @@ class _CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final productCount = ComponentDataService.getByCategory(category).length;
+    final gradient = BrandAccents.categoryGradient(category);
 
     return BrandCard(
       onTap: onTap,
-      gradient: LinearGradient(
-        colors: [
-          category.color.withValues(alpha: 0.2),
-          category.color.withValues(alpha: 0.05),
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
+      gradient: gradient,
       padding: const EdgeInsets.all(BBColors.padM),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -633,7 +650,12 @@ class _CategoryCard extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: category.color.withValues(alpha: 0.15),
+              gradient: LinearGradient(
+                colors: [
+                  category.color.withValues(alpha: 0.2),
+                  category.color.withValues(alpha: 0.05),
+                ],
+              ),
               borderRadius: BorderRadius.circular(BBColors.radiusMd),
             ),
             child: Icon(category.icon, size: 26, color: category.color),
@@ -644,6 +666,7 @@ class _CategoryCard extends StatelessWidget {
             style: BBTextResponsive.labelLarge(
               context,
               weight: FontWeight.w600,
+              color: BBColors.textPrimary(context),
             ),
             textAlign: TextAlign.center,
             maxLines: 1,

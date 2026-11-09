@@ -13,6 +13,7 @@ import '../../services/component_data_service.dart';
 import '../order_history_screen.dart';
 import '../saved_builds_screen.dart';
 import '../home/home_screen.dart';
+import '../profile/edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -121,11 +122,11 @@ class ProfileScreen extends StatelessWidget {
                 },
               ),
               _MenuItem(
-                icon: Icons.language_rounded,
-                title: 'Language',
-                subtitle: 'English (US)',
-                onTap: () {}, // TODO: Language selection
-              ),
+                              icon: Icons.language_rounded,
+                              title: 'Language',
+                              subtitle: 'English (US)',
+                              onTap: () => _showLanguageDialog(context),
+                            ),
               _MenuItem(
                 icon: Icons.attach_money_rounded,
                 title: 'Currency',
@@ -313,32 +314,32 @@ class ProfileScreen extends StatelessWidget {
         builder: (context) => AlertDialog(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
-          title: Text('Language', style: BBTextResponsive.titleLarge(context)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _LanguageOption(flag: '🇺🇸', name: 'English (US)', code: 'en_US', onTap: () => Navigator.pop(context)),
-              _LanguageOption(flag: '🇬🇧', name: 'English (UK)', code: 'en_GB', onTap: () => Navigator.pop(context)),
-              _LanguageOption(flag: '🇵🇭', name: 'Tagalog', code: 'tl_PH', onTap: () => Navigator.pop(context)),
-            ],
-          ),
-          BrandButton.outline(
-            text: 'Sign Out',
-            foregroundColor: BBColors.accentRed,
-            onPressed: () {
-              final auth = context.read<AuthService>();
-              Navigator.pop(context);
-              auth.signOut();
-            },
-            fullWidth: true,
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
-          ],
-        ),
-      );
-    }
-  }
+                    title: Text('Language', style: BBTextResponsive.titleLarge(context)),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _LanguageOption(flag: '🇺🇸', name: 'English (US)', code: 'en_US', onTap: () => Navigator.pop(context)),
+                        _LanguageOption(flag: '🇬🇧', name: 'English (UK)', code: 'en_GB', onTap: () => Navigator.pop(context)),
+                        _LanguageOption(flag: '🇵🇭', name: 'Tagalog', code: 'tl_PH', onTap: () => Navigator.pop(context)),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+                      BrandButton.outline(
+                        text: 'Sign Out',
+                        foregroundColor: BBColors.accentRed,
+                        onPressed: () {
+                          final auth = context.read<AuthService>();
+                          Navigator.pop(context);
+                          auth.signOut();
+                        },
+                        fullWidth: true,
+                      ),
+                    ],
+                  ),
+                );
+              }
+            }
 
 class _ProfileHeader extends StatelessWidget {
   @override
@@ -401,17 +402,15 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
           // Edit button
-          IconButton(
-            icon: Icon(Icons.edit_rounded, color: BBColors.accentBlue),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Edit profile coming soon', style: BBTextResponsive.bodyMedium(context)),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-          ),
+                    IconButton(
+                      icon: Icon(Icons.edit_rounded, color: BBColors.accentBlue),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                        );
+                      },
+                    ),
         ],
       ),
     );
@@ -447,21 +446,21 @@ class _StatsRow extends StatelessWidget {
                 }
 
                 final orders = ordersSnapshot.data ?? [];
-                final builds = buildsSnapshot.data ?? [];
-                final favorites = favoritesSnapshot.data ?? <String>{};
-                final totalSpent = orders.fold<double>(0, (sum, o) => sum + o.total);
+                                final builds = buildsSnapshot.data ?? [];
+                                final favorites = favoritesSnapshot.data ?? <String>{};
+                                final totalSpent = orders.fold<double>(0, (sum, o) => sum + o.total);
 
-                return Row(
-                  children: [
-                    Expanded(child: _StatCard(icon: Icons.shopping_bag_rounded, label: 'Orders', value: '${orders.length}', color: BBColors.accentBlue)),
-                    const SizedBox(width: BBColors.padM),
-                    Expanded(child: _StatCard(icon: Icons.build_rounded, label: 'Builds', value: '${builds.length}', color: BBColors.catMouse)),
-                    const SizedBox(width: BBColors.padM),
-                    Expanded(child: _StatCard(icon: Icons.attach_money_rounded, label: 'Spent', value: context.money(totalSpent), color: BBColors.accentGreen)),
-                    const SizedBox(width: BBColors.padM),
-                    Expanded(child: _StatCard(icon: Icons.favorite_rounded, label: 'Saved', value: '${favorites.length}', color: BBColors.accentRed)),
-                  ],
-                );
+                                return Row(
+                                  children: [
+                                    Expanded(child: _StatCard(icon: Icons.shopping_bag_rounded, label: 'Orders', value: '${orders.length}', color: BBColors.accentBlue, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderHistoryScreen())))),
+                                    const SizedBox(width: BBColors.padM),
+                                    Expanded(child: _StatCard(icon: Icons.build_rounded, label: 'Builds', value: '${builds.length}', color: BBColors.catMouse, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedBuildsScreen())))),
+                                    const SizedBox(width: BBColors.padM),
+                                    Expanded(child: _StatCard(icon: Icons.attach_money_rounded, label: 'Spent', value: context.money(totalSpent), color: BBColors.accentGreen, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderHistoryScreen())))),
+                                    const SizedBox(width: BBColors.padM),
+                                    Expanded(child: _StatCard(icon: Icons.favorite_rounded, label: 'Saved', value: '${favorites.length}', color: BBColors.accentRed, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WishlistScreen())))),
+                                  ],
+                                );
               },
             );
           },
@@ -476,33 +475,39 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+  final VoidCallback? onTap;
 
   const _StatCard({
     required this.icon,
     required this.label,
     required this.value,
     required this.color,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return BrandCard(
-      padding: const EdgeInsets.all(BBColors.padM),
-      child: Column(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(BBColors.radiusMd),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(BBColors.radiusMd),
+      child: BrandCard(
+        padding: const EdgeInsets.all(BBColors.padM),
+        child: Column(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(BBColors.radiusMd),
+              ),
+              child: Icon(icon, size: 20, color: color),
             ),
-            child: Icon(icon, size: 20, color: color),
-          ),
-          const SizedBox(height: BBColors.padS),
-          Text(value, style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: color)),
-          Text(label, style: BBTextResponsive.caption(context)),
-        ],
+            const SizedBox(height: BBColors.padS),
+            Text(value, style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: color)),
+            Text(label, style: BBTextResponsive.caption(context)),
+          ],
+        ),
       ),
     );
   }

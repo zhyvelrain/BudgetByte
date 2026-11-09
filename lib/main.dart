@@ -13,7 +13,6 @@ import 'services/preferences_service.dart';
 import 'services/component_data_service.dart';
 import 'services/auth_service.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/onboarding/terms_screen.dart';
 import 'screens/main/main_screen.dart';
 import 'screens/home/home_screen.dart';
@@ -79,7 +78,6 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   final ShopProvider _shopProvider = ShopProvider();
   late final Connectivity _connectivity;
   bool _showTerms = false;
-  bool _showOnboarding = false;
   bool _isOnline = true;
 
   @override
@@ -100,47 +98,34 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
     await _buildProvider.init();
     await _shopProvider.init();
 
-      // Check if terms accepted and onboarding completed
-      final prefs = await PreferencesService.getPreferences();
-      _showTerms = !prefs.termsAccepted;
-      if (!_showTerms) {
-        _showOnboarding = !prefs.onboardingCompleted;
-      }
+    // Check if terms accepted and onboarding completed
+    final prefs = await PreferencesService.getPreferences();
+    _showTerms = !prefs.termsAccepted;
 
-      if (mounted) {
-        setState(() {});
-      }
+    if (mounted) {
+      setState(() {});
     }
-
-  void _setupConnectivityListener() {
-    _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) {
-      final isOnline = results.any((r) => r != ConnectivityResult.none);
-      if (_isOnline != isOnline && mounted) {
-        setState(() {
-          _isOnline = isOnline;
-        });
-      }
-    });
-
-    // Check initial connectivity
-    _connectivity.checkConnectivity().then((List<ConnectivityResult> results) {
-      final isOnline = results.any((r) => r != ConnectivityResult.none);
-      if (mounted) {
-        setState(() {
-          _isOnline = isOnline;
-        });
-      }
-    });
   }
 
-  void _onOnboardingComplete() async {
-      final prefs = await PreferencesService.getPreferences();
-      await PreferencesService.savePreferences(prefs.copyWith(onboardingCompleted: true));
-      if (mounted) {
-        setState(() {
-          _showOnboarding = false;
-        });
-      }
+  void _setupConnectivityListener() {
+      _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) {
+        final isOnline = results.any((r) => r != ConnectivityResult.none);
+        if (_isOnline != isOnline && mounted) {
+          setState(() {
+            _isOnline = isOnline;
+          });
+        }
+      });
+
+      // Check initial connectivity
+      _connectivity.checkConnectivity().then((List<ConnectivityResult> results) {
+        final isOnline = results.any((r) => r != ConnectivityResult.none);
+        if (mounted) {
+          setState(() {
+            _isOnline = isOnline;
+          });
+        }
+      });
     }
 
     void _onTermsAccept() async {
@@ -149,7 +134,6 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
       if (mounted) {
         setState(() {
           _showTerms = false;
-          _showOnboarding = !prefs.onboardingCompleted;
         });
       }
     }
@@ -159,7 +143,7 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
       SystemNavigator.pop();
     }
 
-  @override
+    @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [

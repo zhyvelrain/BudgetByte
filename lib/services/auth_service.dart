@@ -127,12 +127,34 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<String?> _startSession(User u) async {
-    _currentUser = u;
-    await PreferencesService.prefs.setString(_sessionKey, u.email);
-    notifyListeners();
-    return null;
-  }
+      _currentUser = u;
+      await PreferencesService.prefs.setString(_sessionKey, u.email);
+      notifyListeners();
+      return null;
+    }
 
-  static String _hash(String salt, String password) =>
-      sha256.convert(utf8.encode('$salt:$password')).toString();
-}
+    /// Updates the current user's name. Returns error message or null on success.
+    Future<String?> updateProfile({required String name}) async {
+      if (_currentUser == null) return 'No user signed in.';
+      final error = validateName(name);
+      if (error != null) return error;
+      final updatedUser = User(
+        email: _currentUser!.email,
+        name: name.trim(),
+        salt: _currentUser!.salt,
+        passwordHash: _currentUser!.passwordHash,
+        createdAt: _currentUser!.createdAt,
+      );
+      _users[updatedUser.email] = updatedUser;
+      _currentUser = updatedUser;
+      await PreferencesService.prefs.setString(
+        _usersKey,
+        jsonEncode(_users.values.map((u) => u.toJson()).toList()),
+      );
+      notifyListeners();
+      return null;
+    }
+
+    static String _hash(String salt, String password) =>
+        sha256.convert(utf8.encode('$salt:$password')).toString();
+  }

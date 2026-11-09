@@ -184,29 +184,40 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 const SizedBox(height: BBColors.padL),
 
                 // Price
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        context.money(price),
-                        style: BBTextResponsive.displayLarge(context, color: categoryColor, weight: FontWeight.w800, size: 32),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (originalPrice != null && originalPrice > price) ...[
-                      const SizedBox(width: BBColors.padM),
-                      Text(
-                        context.money(originalPrice),
-                        style: BBTextResponsive.titleMedium(context).copyWith(decoration: TextDecoration.lineThrough),
-                      ),
-                    ],
-                    const Spacer(),
-                    const SizedBox(width: BBColors.padM),
-                    _StockBadge(stock: component.stockCount),
-                  ],
-                ),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Flexible(
+                                      flex: 1,
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(minWidth: 0),
+                                        child: Text(
+                                          context.money(price),
+                                          style: BBTextResponsive.displayLarge(context, color: categoryColor, weight: FontWeight.w800, size: 28),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ),
+                                    if (originalPrice != null && originalPrice > price) ...[
+                                      const SizedBox(width: BBColors.padS),
+                                      Flexible(
+                                        child: ConstrainedBox(
+                                          constraints: const BoxConstraints(minWidth: 0),
+                                          child: Text(
+                                            context.money(originalPrice),
+                                            style: BBTextResponsive.titleMedium(context).copyWith(decoration: TextDecoration.lineThrough),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                    const Spacer(flex: 1),
+                                    const SizedBox(width: BBColors.padM),
+                                    _StockBadge(stock: component.stockCount),
+                                  ],
+                                ),
                 const SizedBox(height: BBColors.padXL),
 
                 // Description

@@ -15,6 +15,8 @@ import '../../screens/saved_builds_screen.dart';
 import '../../screens/orders/orders_screen.dart';
 import '../product_detail_screen.dart';
 import '../profile/profile_screen.dart';
+import '../profile/edit_profile_screen.dart';
+import '../../services/auth_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -293,42 +295,51 @@ class SettingsScreen extends StatelessWidget {
       );
 
   void _showProfileDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
-        title: Text('Profile', style: BBTextResponsive.titleLarge(context)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: BBColors.accentBlueSoft,
-              child: Icon(Icons.person_rounded, size: 40, color: BBColors.accentBlue),
+      final auth = context.read<AuthService>();
+      final user = auth.currentUser;
+      if (user == null) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusXl)),
+            title: Text('Profile', style: BBTextResponsive.titleLarge(context)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: BBColors.accentBlueSoft,
+                  child: Icon(Icons.person_rounded, size: 40, color: BBColors.accentBlue),
+                ),
+                const SizedBox(height: BBColors.padM),
+                Text('Guest User', style: BBTextResponsive.titleMedium(context, weight: FontWeight.w600)),
+                Text('Not signed in', style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context))),
+                const SizedBox(height: BBColors.padM),
+                BrandButton(
+                  text: 'Sign In',
+                  icon: Icons.login_rounded,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Sign in coming soon!', style: BBTextResponsive.bodyMedium(context))),
+                    );
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: BBColors.padM),
-            Text('Guest User', style: BBTextResponsive.titleMedium(context, weight: FontWeight.w600)),
-            Text('Not signed in', style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context))),
-            const SizedBox(height: BBColors.padM),
-            BrandButton(
-              text: 'Sign In',
-              icon: Icons.login_rounded,
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Sign in coming soon!', style: BBTextResponsive.bodyMedium(context))),
-                );
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
-        ],
-      ),
-    );
-  }
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+            ],
+          ),
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+        );
+      }
+    }
 
   void _showFavorites(BuildContext context) {
     final navigator = Navigator.of(context);

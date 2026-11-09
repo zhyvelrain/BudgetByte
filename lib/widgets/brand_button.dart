@@ -219,35 +219,49 @@ class BrandButton extends StatelessWidget {
           ),
         );
       case BrandButtonVariant.secondary:
-        return SizedBox(
-          width: fullWidth ? double.infinity : width,
-          height: height,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: isDark ? BBColors.nightSurfaceAlt : BBColors.daySurfaceAlt,
-              borderRadius: BorderRadius.circular(borderRadius),
-              border: Border.all(
-                color: isDark ? BBColors.nightDivider : BBColors.dayDivider,
-                width: 1,
-              ),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(borderRadius),
-              child: InkWell(
-                onTap: onPressed,
-                borderRadius: BorderRadius.circular(borderRadius),
-                splashColor: BBColors.accentBlue.withValues(alpha: 0.1),
-                highlightColor: BBColors.accentBlue.withValues(alpha: 0.05),
-                child: Container(
-                  padding: padding ?? const EdgeInsets.symmetric(horizontal: BBColors.padXL, vertical: BBColors.padM),
-                  alignment: Alignment.center,
-                  child: buttonChild,
+              return SizedBox(
+                width: fullWidth ? double.infinity : width,
+                height: height,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: isDark ? BBColors.cardGradientDark : BBColors.cardGradientLight,
+                    borderRadius: BorderRadius.circular(borderRadius),
+                    border: Border.all(
+                      color: isDark ? BBColors.nightBorderStrong : BBColors.dayBorderStrong,
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDark 
+                            ? BBColors.accentBlue.withValues(alpha: 0.1)
+                            : BBColors.accentBlue.withValues(alpha: 0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(borderRadius),
+                    child: InkWell(
+                      onTap: onPressed,
+                      borderRadius: BorderRadius.circular(borderRadius),
+                      splashColor: BBColors.accentBlue.withValues(alpha: 0.15),
+                      highlightColor: BBColors.accentBlue.withValues(alpha: 0.05),
+                      child: Container(
+                        padding: padding ?? const EdgeInsets.symmetric(horizontal: BBColors.padXL, vertical: BBColors.padM),
+                        alignment: Alignment.center,
+                        child: DefaultTextStyle.merge(
+                          style: TextStyle(
+                            color: isDark ? BBColors.nightTextPrimary : BBColors.dayTextPrimary,
+                          ),
+                          child: buttonChild,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-        );
+              );
       case BrandButtonVariant.primary:
               final primaryGradient = gradient ?? BrandAccents.electricGradient;
               return SizedBox(

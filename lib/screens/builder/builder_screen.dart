@@ -43,24 +43,23 @@ class BuilderScreen extends StatelessWidget {
                 // Component Selection
                 Expanded(
                   child: TabBarView(
-                    children: ComponentCategory.values.map((category) {
-                      final components = ComponentDataService.getByCategory(category);
-                      final selected = buildProvider.getSelectedComponent(category);
-                      final selectedOption = buildProvider.getSelectedOption(category);
-                      return _ComponentList(
-                        category: category,
-                        components: components,
-                        selectedComponent: selected,
-                        selectedOption: selected?.options.where((o) => o.isDefault).firstOrNull ?? selected?.options.firstOrNull,
-                        onSelect: (component, option) {
-                          buildProvider.selectComponent(category, component, option: option);
-                        },
-                        onClear: () {
-                          buildProvider.clearComponent(category);
-                        },
-                      );
-                    }).toList(),
-                  ),
+                                      children: ComponentCategory.values.map((category) {
+                                        final components = ComponentDataService.getByCategory(category);
+                                        final selected = buildProvider.getSelectedComponent(category);
+                                        return _ComponentList(
+                                          category: category,
+                                          components: components,
+                                          selectedComponent: selected,
+                                          selectedOption: selected?.options.where((o) => o.isDefault).firstOrNull ?? selected?.options.firstOrNull,
+                                          onSelect: (component, option) {
+                                            buildProvider.selectComponent(category, component, option: option);
+                                          },
+                                          onClear: () {
+                                            buildProvider.clearComponent(category);
+                                          },
+                                        );
+                                      }).toList(),
+                                    ),
                 ),
                 // Action Buttons
                 _BuildActionBar(buildProvider: buildProvider),
