@@ -151,10 +151,10 @@ class _OrderCard extends StatelessWidget {
                     color: isDark ? BBColors.nightSurface : BBColors.daySurface,
                     borderRadius: BorderRadius.circular(BBColors.radiusSm),
                   ),
-                  child: item.component.images.isNotEmpty
+                  child: item.image != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(BBColors.radiusSm),
-                          child: Image.asset(item.component.images.first, fit: BoxFit.cover),
+                          child: Image.asset(item.image!, fit: BoxFit.cover),
                         )
                       : Icon(item.component.category.icon, size: 18, color: item.component.category.color),
                 ),

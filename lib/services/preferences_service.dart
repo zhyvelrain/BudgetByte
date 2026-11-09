@@ -51,45 +51,6 @@ class PreferencesService {
     await prefs.setString(_cartKey, jsonEncode(cart.map((e) => e.toJson()).toList()));
   }
 
-  static Future<void> addToCart(CartItem item) async {
-    final cart = await getCart();
-    final existingIndex = cart.indexWhere((i) =>
-        i.component.id == item.component.id &&
-        i.option?.id == item.option?.id &&
-        i.selectedColor == item.selectedColor);
-    if (existingIndex >= 0) {
-      cart[existingIndex] = cart[existingIndex].copyWith(
-        quantity: cart[existingIndex].quantity + item.quantity,
-      );
-    } else {
-      cart.add(item);
-    }
-    await saveCart(cart);
-  }
-
-  static Future<void> removeFromCart(String cartItemId) async {
-    final cart = await getCart();
-    cart.removeWhere((i) => i.id == cartItemId);
-    await saveCart(cart);
-  }
-
-  static Future<void> updateCartQuantity(String cartItemId, int quantity) async {
-    final cart = await getCart();
-    final index = cart.indexWhere((i) => i.id == cartItemId);
-    if (index >= 0) {
-      if (quantity <= 0) {
-        cart.removeAt(index);
-      } else {
-        cart[index] = cart[index].copyWith(quantity: quantity);
-      }
-      await saveCart(cart);
-    }
-  }
-
-  static Future<void> clearCart() async {
-    await prefs.remove(_cartKey);
-  }
-
   // Build Configurations
   static Future<List<BuildConfig>> getBuilds() async {
     final jsonStr = prefs.getString(_buildsKey);
@@ -102,27 +63,6 @@ class PreferencesService {
 
   static Future<void> saveBuilds(List<BuildConfig> builds) async {
     await prefs.setString(_buildsKey, jsonEncode(builds.map((e) => e.toJson()).toList()));
-  }
-
-  static Future<void> addBuild(BuildConfig build) async {
-    final builds = await getBuilds();
-    builds.add(build);
-    await saveBuilds(builds);
-  }
-
-  static Future<void> updateBuild(BuildConfig build) async {
-    final builds = await getBuilds();
-    final index = builds.indexWhere((b) => b.id == build.id);
-    if (index >= 0) {
-      builds[index] = build;
-      await saveBuilds(builds);
-    }
-  }
-
-  static Future<void> deleteBuild(String buildId) async {
-    final builds = await getBuilds();
-    builds.removeWhere((b) => b.id == buildId);
-    await saveBuilds(builds);
   }
 
   // Orders

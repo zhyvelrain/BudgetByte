@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 /// Component categories for PC peripherals
 enum ComponentCategory {
-  keyboard('Keyboard', Icons.keyboard_rounded, 0xFF3A8FD6),
-  mouse('Mouse', Icons.mouse_rounded, 0xFF5A9FE8),
-  monitor('Monitor', Icons.monitor_rounded, 0xFF2AA9A1),
-  audio('Audio', Icons.headphones_rounded, 0xFF4AA3D6),
-  camera('Camera', Icons.videocam_rounded, 0xFF3A7FD6),
-  accessory('Accessory', Icons.devices_other_rounded, 0xFF6AB0E8);
+  keyboard('Keyboard', Icons.keyboard_rounded, 0xFFE4572E),
+  mouse('Mouse', Icons.mouse_rounded, 0xFFE4572E),
+  monitor('Monitor', Icons.monitor_rounded, 0xFFE4572E),
+  audio('Audio', Icons.headphones_rounded, 0xFFE4572E),
+  camera('Camera', Icons.videocam_rounded, 0xFFE4572E),
+  accessory('Accessory', Icons.devices_other_rounded, 0xFFE4572E);
 
   const ComponentCategory(this.label, this.icon, this.colorValue);
   final String label;
@@ -73,6 +73,7 @@ class ComponentOption {
   final double? originalPrice;
   final String? discountLabel;
   final Map<String, String>? specs;
+  final String? image; // asset path of this variant's photo
 
   ComponentOption({
     required this.id,
@@ -86,6 +87,7 @@ class ComponentOption {
     this.originalPrice,
     this.discountLabel,
     this.specs,
+    this.image,
   });
 
   factory ComponentOption.fromJson(Map<String, dynamic> json) => ComponentOption(
@@ -99,6 +101,7 @@ class ComponentOption {
         price: (json['price'] as num?)?.toDouble(),
         originalPrice: (json['originalPrice'] as num?)?.toDouble(),
         discountLabel: json['discountLabel'] as String?,
+        image: json['image'] as String?,
         specs: json['specs'] != null
             ? Map<String, String>.from(json['specs'] as Map)
             : null,
@@ -116,6 +119,7 @@ class ComponentOption {
         'originalPrice': originalPrice,
         'discountLabel': discountLabel,
         'specs': specs,
+        'image': image,
       };
 }
 
@@ -280,6 +284,7 @@ class CartItem {
   });
 
   double get unitPrice => option?.price ?? component.price;
+  String? get image => option?.image ?? component.images.firstOrNull;
   double get subtotal => unitPrice * quantity;
   double get lineTotal => subtotal;
   String? get selectedOptionValue => selectedOption ?? selectedColor;
@@ -347,13 +352,9 @@ class BuildConfig {
   // Alias for compatibility with screens
   BuildConfig get build => this;
   
-  double get totalPrice {
-    double total = 0;
-    for (final component in selectedComponents.values) {
-      if (component != null) total += component.price;
-    }
-    return total;
-  }
+  /// Builder stores each part with only its chosen variant in `options`.
+  double get totalPrice =>
+      components.fold(0, (sum, c) => sum + (c.options.firstOrNull?.price ?? c.price));
 
   int get componentCount {
     int count = 0;

@@ -74,12 +74,6 @@ class ProfileScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const WishlistScreen()),
                 ),
               ),
-              _MenuItem(
-                icon: Icons.location_on_rounded,
-                title: 'Addresses',
-                subtitle: 'Manage shipping addresses',
-                onTap: () {}, // TODO: Addresses screen
-              ),
             ],
           ),
           const SizedBox(height: BBColors.padL),
@@ -95,59 +89,15 @@ class ProfileScreen extends StatelessWidget {
                   trailing: Switch(
                     value: themeProvider.isDarkMode,
                     onChanged: (_) => themeProvider.toggleTheme(),
-                    activeThumbColor: BBColors.accentBlue,
                   ),
                   onTap: () => themeProvider.toggleTheme(),
                 ),
-              ),
-              _MenuItem(
-                icon: Icons.notifications_rounded,
-                title: 'Notifications',
-                subtitle: 'Manage push notifications',
-                onTap: () {}, // TODO: Notifications settings
-              ),
-              _MenuItem(
-                icon: Icons.language_rounded,
-                title: 'Language',
-                subtitle: 'English (US)',
-                onTap: () {}, // TODO: Language selection
               ),
               _MenuItem(
                 icon: Icons.attach_money_rounded,
                 title: 'Currency',
                 subtitle: ShopProvider.currencies[context.watch<ShopProvider>().currency]!,
                 onTap: () => showCurrencyPicker(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: BBColors.padL),
-
-          _MenuSection(
-            title: 'Support',
-            children: [
-              _MenuItem(
-                icon: Icons.help_rounded,
-                title: 'Help Center',
-                subtitle: 'FAQs and guides',
-                onTap: () {}, // TODO: Help center
-              ),
-              _MenuItem(
-                icon: Icons.contact_support_rounded,
-                title: 'Contact Support',
-                subtitle: 'Get in touch with us',
-                onTap: () {}, // TODO: Contact support
-              ),
-              _MenuItem(
-                icon: Icons.privacy_tip_rounded,
-                title: 'Privacy Policy',
-                subtitle: 'How we handle your data',
-                onTap: () {}, // TODO: Privacy policy
-              ),
-              _MenuItem(
-                icon: Icons.description_rounded,
-                title: 'Terms of Service',
-                subtitle: 'Our terms and conditions',
-                onTap: () {}, // TODO: Terms of service
               ),
             ],
           ),
@@ -161,18 +111,6 @@ class ProfileScreen extends StatelessWidget {
                 title: 'About ByteBudget',
                 subtitle: 'Version 1.0.0',
                 onTap: () => _showAboutDialog(context),
-              ),
-              _MenuItem(
-                icon: Icons.star_rounded,
-                title: 'Rate App',
-                subtitle: 'Share your feedback',
-                onTap: () {}, // TODO: Rate app
-              ),
-              _MenuItem(
-                icon: Icons.share_rounded,
-                title: 'Share ByteBudget',
-                subtitle: 'Invite friends',
-                onTap: () {}, // TODO: Share
               ),
             ],
           ),
@@ -305,11 +243,6 @@ class _ProfileHeader extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-          // Edit button
-          IconButton(
-            icon: Icon(Icons.edit_rounded, color: BBColors.accentBlue),
-            onPressed: () {}, // TODO: Edit profile
           ),
         ],
       ),

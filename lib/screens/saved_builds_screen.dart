@@ -1,78 +1,67 @@
 import 'package:flutter/material.dart';
-import '../providers/shop_provider.dart';
 import 'package:provider/provider.dart';
-import '../../theme/bb_colors.dart';
-import '../../theme/bb_text.dart';
-import '../../widgets/brand_card.dart';
-import '../../widgets/brand_button.dart';
-import '../../models/app_models.dart';
-import '../../services/preferences_service.dart';
-import '../../providers/build_provider.dart';
-import '../../providers/cart_provider.dart';
-import 'builder/builder_screen.dart';
 
+import '../providers/shop_provider.dart';
+import '../theme/bb_colors.dart';
+import '../theme/bb_text.dart';
+import '../widgets/brand_card.dart';
+import '../widgets/brand_button.dart';
+import '../models/app_models.dart';
+import '../providers/build_provider.dart';
+import '../providers/cart_provider.dart';
+import 'main/main_screen.dart';
+
+/// Saved builds ("build history"). Reads and writes through [BuildProvider] so
+/// every change shows up immediately.
 class SavedBuildsScreen extends StatelessWidget {
   const SavedBuildsScreen({super.key});
 
+  static void _newBuild(BuildContext context) {
+    context.read<BuildProvider>().startNewBuild();
+    goToTab(context, 1);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final builds = context.watch<BuildProvider>().savedBuilds;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Saved Builds', style: BBTextResponsive.headlineMedium(context, weight: FontWeight.w600)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_rounded),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const BuilderScreen()),
-            ),
-            tooltip: 'Create New Build',
+        title: Text(
+          'Saved Builds',
+          style: BBTextResponsive.headlineMedium(
+            context,
+            weight: FontWeight.w600,
           ),
-        ],
-      ),
-      body: FutureBuilder<List<BuildConfig>>(
-        future: PreferencesService.getBuilds(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final builds = snapshot.data ?? [];
-
-          if (builds.isEmpty) {
-            return _EmptyState(
-              icon: Icons.build_circle_rounded,
-              title: 'No Saved Builds',
-              subtitle: 'Create and save your custom PC builds',
-              actionText: 'Start Building',
-              onAction: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const BuilderScreen()),
-              ),
-            );
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(BBColors.padL),
-            itemCount: builds.length,
-            separatorBuilder: (_, _) => const SizedBox(height: BBColors.padM),
-            itemBuilder: (context, index) {
-              final build = builds[index];
-              return _BuildCard(buildConfig: build);
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const BuilderScreen()),
         ),
-        icon: const Icon(Icons.add_rounded),
-        label: Text('New Build', style: BBTextResponsive.labelLarge(context)),
-        backgroundColor: BBColors.accentBlue,
-        foregroundColor: Colors.white,
       ),
+      body: builds.isEmpty
+          ? _EmptyState(
+              icon: Icons.build_circle_rounded,
+              title: 'No saved builds',
+              subtitle: 'Pick parts in the Builder, then tap Save Build.',
+              actionText: 'Start building',
+              onAction: () => _newBuild(context),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.fromLTRB(
+                BBColors.padL,
+                BBColors.padL,
+                BBColors.padL,
+                96,
+              ),
+              itemCount: builds.length,
+              separatorBuilder: (_, _) => const SizedBox(height: BBColors.padM),
+              itemBuilder: (context, index) =>
+                  _BuildCard(buildConfig: builds[index]),
+            ),
+      floatingActionButton: builds.isEmpty
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () => _newBuild(context),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('New build'),
+            ),
     );
   }
 }
@@ -112,11 +101,28 @@ class _EmptyState extends StatelessWidget {
               child: Icon(icon, size: 56, color: BBColors.textMuted(context)),
             ),
             const SizedBox(height: BBColors.padXL),
-            Text(title, style: BBTextResponsive.headlineMedium(context, weight: FontWeight.w600)),
+            Text(
+              title,
+              style: BBTextResponsive.headlineMedium(
+                context,
+                weight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: BBColors.padS),
-            Text(subtitle, style: BBTextResponsive.bodyLarge(context, color: BBColors.textMuted(context)), textAlign: TextAlign.center),
+            Text(
+              subtitle,
+              style: BBTextResponsive.bodyLarge(
+                context,
+                color: BBColors.textMuted(context),
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: BBColors.padXL),
-            BrandButton(text: actionText, icon: Icons.build_rounded, onPressed: onAction),
+            BrandButton(
+              text: actionText,
+              icon: Icons.build_rounded,
+              onPressed: onAction,
+            ),
           ],
         ),
       ),
@@ -131,267 +137,266 @@ class _BuildCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final completed = buildConfig.selectedComponents.values.where((c) => c != null).length;
+    final completed = buildConfig.componentCount;
     final total = ComponentCategory.values.length;
-    final progress = completed / total;
 
     return BrandCard(
-      padding: const EdgeInsets.all(BBColors.padM),
+      padding: const EdgeInsets.all(BBColors.padL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(buildConfig.name, style: BBTextResponsive.titleMedium(context, weight: FontWeight.w600)),
-                    Text('Updated ${_formatDate(buildConfig.updatedAt)}', style: BBTextResponsive.caption(context)),
-                  ],
-                ),
-              ),
-              // Progress indicator
-              SizedBox(
-                width: 60,
-                height: 60,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      value: progress,
-                      strokeWidth: 4,
-                      backgroundColor: isDark ? BBColors.nightBorder : BBColors.dayBorder,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        buildConfig.isComplete ? BBColors.accentGreen : BBColors.accentBlue,
+                    Text(
+                      buildConfig.name,
+                      style: BBTextResponsive.titleMedium(
+                        context,
+                        weight: FontWeight.w600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$completed of $total parts · updated ${_formatDate(buildConfig.updatedAt)}',
+                      style: BBTextResponsive.bodySmall(
+                        context,
+                        color: BBColors.textMuted(context),
                       ),
                     ),
-                    Text(
-                      '${(progress * 100).round()}%',
-                      style: BBTextResponsive.labelSmall(context, weight: FontWeight.w700),
-                    ),
                   ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: BBColors.padM),
-          // Selected components preview
-          Wrap(
-            spacing: BBColors.padS,
-            runSpacing: BBColors.padS,
-            children: buildConfig.selectedComponents.entries
-                .where((e) => e.value != null)
-                .map((entry) {
-              final component = entry.value!;
-              // BuildConfig doesn't store selectedOption per component, so pass null
-              return _ComponentChip(
-                component: component,
-                option: null,
-              );
-            }).toList(),
-          ),
-          if (buildConfig.selectedComponents.values.every((v) => v == null))
-            Text(
-              'No components selected',
-              style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context)),
-            ),
-          const SizedBox(height: BBColors.padM),
-          // Footer
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                context.money(buildConfig.totalPrice),
-                style: BBTextResponsive.titleLarge(context, weight: FontWeight.w700, color: BBColors.accentBlue),
-              ),
-              Row(
-                children: [
-                  if (!buildConfig.isComplete)
-                    BrandButton.outline(
-                      text: 'Continue',
-                      onPressed: () => _loadBuild(context, buildConfig),
-                    ),
-                  if (!buildConfig.isComplete) const SizedBox(width: BBColors.padS),
-                  BrandButton(
-                    text: buildConfig.isComplete ? 'Add to Cart' : 'Edit',
-                    onPressed: () => buildConfig.isComplete
-                        ? _addToCart(context, buildConfig)
-                        : _loadBuild(context, buildConfig),
+              PopupMenuButton<String>(
+                tooltip: 'More actions',
+                icon: Icon(
+                  Icons.more_vert_rounded,
+                  color: BBColors.textMuted(context),
+                ),
+                onSelected: (value) => _handleMenuAction(context, value),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'duplicate',
+                    child: Text('Duplicate'),
                   ),
-                  const SizedBox(width: BBColors.padS),
-                  PopupMenuButton<String>(
-                    icon: Icon(Icons.more_vert_rounded, color: BBColors.textMuted(context)),
-                    onSelected: (value) => _handleMenuAction(context, value, buildConfig),
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(value: 'duplicate', child: Text('Duplicate')),
-                      const PopupMenuItem(value: 'rename', child: Text('Rename')),
-                      const PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Colors.red))),
-                    ],
+                  const PopupMenuItem(value: 'rename', child: Text('Rename')),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(
+                      'Delete',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ],
           ),
+          const SizedBox(height: BBColors.padM),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(BBColors.radiusSm),
+            child: LinearProgressIndicator(
+              value: completed / total,
+              minHeight: 6,
+            ),
+          ),
+          const SizedBox(height: BBColors.padM),
+          if (completed == 0)
+            Text(
+              'No parts picked yet',
+              style: BBTextResponsive.bodySmall(
+                context,
+                color: BBColors.textMuted(context),
+              ),
+            )
+          else
+            Wrap(
+              spacing: BBColors.padS,
+              runSpacing: BBColors.padS,
+              children: [
+                for (final c in buildConfig.components)
+                  _ComponentChip(component: c),
+              ],
+            ),
+          const SizedBox(height: BBColors.padL),
+          Text(
+            context.money(buildConfig.totalPrice),
+            style: BBTextResponsive.titleLarge(
+              context,
+              weight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: BBColors.padM),
+          Row(
+            children: [
+              Expanded(
+                child: BrandButton.outline(
+                  text: buildConfig.isComplete ? 'Edit' : 'Continue',
+                  onPressed: () => _open(context),
+                  fullWidth: true,
+                ),
+              ),
+              if (buildConfig.isComplete) ...[
+                const SizedBox(width: BBColors.padM),
+                Expanded(
+                  child: BrandButton(
+                    text: 'Add to Cart',
+                    icon: Icons.add_shopping_cart_rounded,
+                    onPressed: () => _addToCart(context),
+                    fullWidth: true,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ],
       ),
     );
   }
 
-  void _loadBuild(BuildContext context, BuildConfig buildConfig) {
-    final buildProvider = context.read<BuildProvider>();
-    buildProvider.loadBuild(buildConfig.id);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const BuilderScreen()),
-    );
+  void _open(BuildContext context) {
+    context.read<BuildProvider>().loadBuild(buildConfig.id);
+    goToTab(context, 1);
   }
 
-  void _addToCart(BuildContext context, BuildConfig buildConfig) {
-    final cartProvider = context.read<CartProvider>();
-    for (final entry in buildConfig.selectedComponents.entries) {
-      final component = entry.value;
-      if (component != null) {
-        cartProvider.addItem(CartItem(
-          id: '${component.id}_${DateTime.now().millisecondsSinceEpoch}',
-          component: component,
-          quantity: 1,
-        ));
-      }
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
+  Future<void> _addToCart(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    await context.read<CartProvider>().addBuild(buildConfig);
+    if (!context.mounted) return;
+    goToTab(context, 2);
+    messenger.showSnackBar(
       SnackBar(
-        content: Text('Build added to cart!', style: BBTextResponsive.bodyMedium(context)),
-        backgroundColor: BBColors.accentGreen,
+        content: Text('${buildConfig.componentCount} parts added to your cart'),
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
-  void _handleMenuAction(BuildContext context, String action, BuildConfig buildConfig) async {
+  void _handleMenuAction(BuildContext context, String action) {
+    final builds = context.read<BuildProvider>();
     switch (action) {
       case 'duplicate':
-        final newBuild = buildConfig.copyWith(
-          id: 'build_${DateTime.now().millisecondsSinceEpoch}',
-          name: '${buildConfig.name} (Copy)',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        );
-        await PreferencesService.addBuild(newBuild);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Build duplicated'), backgroundColor: BBColors.accentGreen),
-          );
-        }
-        break;
+        builds.duplicateBuild(buildConfig.id);
       case 'rename':
-        _showRenameDialog(context, buildConfig);
-        break;
+        _showRenameDialog(context, builds);
       case 'delete':
-        _showDeleteDialog(context, buildConfig.id);
-        break;
+        _showDeleteDialog(context, builds);
     }
   }
 
-  void _showRenameDialog(BuildContext context, BuildConfig buildConfig) {
+  Future<void> _showRenameDialog(
+    BuildContext context,
+    BuildProvider builds,
+  ) async {
     final controller = TextEditingController(text: buildConfig.name);
-    showDialog(
+    final name = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Rename Build', style: BBTextResponsive.titleLarge(context)),
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Rename build'),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(labelText: 'Build Name'),
           autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(labelText: 'Build name'),
+          onSubmitted: (v) => Navigator.pop(dialogContext, v),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: BBTextResponsive.labelMedium(context)),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
           ),
-          BrandButton(
-            text: 'Save',
-            onPressed: () async {
-              final newBuild = buildConfig.copyWith(name: controller.text, updatedAt: DateTime.now());
-              await PreferencesService.updateBuild(newBuild);
-              if (context.mounted) Navigator.pop(context);
-            },
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
+            child: const Text('Save'),
           ),
         ],
       ),
     );
+    controller.dispose();
+    if (name != null) await builds.renameBuild(buildConfig.id, name);
   }
 
-  void _showDeleteDialog(BuildContext context, String buildId) {
-    showDialog(
+  Future<void> _showDeleteDialog(
+    BuildContext context,
+    BuildProvider builds,
+  ) async {
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Build', style: BBTextResponsive.titleLarge(context)),
-        content: Text('This action cannot be undone.', style: BBTextResponsive.bodyMedium(context)),
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Delete "${buildConfig.name}"?'),
+        content: const Text(
+          'This removes the saved build. Items already in your cart stay there.',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: BBTextResponsive.labelMedium(context)),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
           ),
-          BrandButton.outline(
-            text: 'Delete',
-            foregroundColor: BBColors.accentRed,
-            onPressed: () async {
-              await PreferencesService.deleteBuild(buildId);
-              if (context.mounted) Navigator.pop(context);
-            },
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            child: const Text('Delete'),
           ),
         ],
       ),
     );
+    if (confirmed == true) await builds.deleteBuild(buildConfig.id);
   }
 
   String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-    if (diff.inDays == 0) {
-      if (diff.inHours == 0) return '${diff.inMinutes}m ago';
-      return '${diff.inHours}h ago';
-    } else if (diff.inDays < 7) {
-      return '${diff.inDays}d ago';
-    }
+    final diff = DateTime.now().difference(date);
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    if (diff.inDays < 1) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
     return '${date.month}/${date.day}/${date.year}';
   }
 }
 
 class _ComponentChip extends StatelessWidget {
   final Component component;
-  final ComponentOption? option;
 
-  const _ComponentChip({required this.component, this.option});
+  const _ComponentChip({required this.component});
 
   @override
   Widget build(BuildContext context) {
+    final variant = component.options.length == 1
+        ? component.options.first.name
+        : null;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: component.category.color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(BBColors.radiusLg),
-        border: Border.all(color: component.category.color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(component.category.icon, size: 14, color: component.category.color),
-          const SizedBox(width: 4),
-          Text(
-            component.name,
-            style: BBTextResponsive.labelSmall(context, weight: FontWeight.w600, color: component.category.color),
+          Icon(
+            component.category.icon,
+            size: 14,
+            color: component.category.color,
           ),
-          if (option != null) ...[
-            const SizedBox(width: 4),
-            Text(
-              '• ${option!.name}',
-              style: BBTextResponsive.labelSmall(context, color: BBColors.textMuted(context)),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              variant == null ? component.name : '${component.name} · $variant',
+              style: BBTextResponsive.labelSmall(
+                context,
+                weight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ],
+          ),
         ],
       ),
     );

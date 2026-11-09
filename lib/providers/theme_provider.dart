@@ -7,7 +7,11 @@ class ThemeProvider extends ChangeNotifier {
   bool _isInitialized = false;
 
   ThemeMode get themeMode => _themeMode;
-  bool get isDarkMode => _themeMode == ThemeMode.dark;
+  /// What is actually on screen: "system" resolves to the device's current brightness.
+  bool get isDarkMode =>
+      _themeMode == ThemeMode.dark ||
+      (_themeMode == ThemeMode.system &&
+          WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark);
   bool get isInitialized => _isInitialized;
 
   Future<void> init() async {
@@ -18,12 +22,8 @@ class ThemeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> toggleTheme() async {
-    _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    notifyListeners();
-    final prefs = await PreferencesService.getPreferences();
-    await PreferencesService.savePreferences(prefs.copyWith(themeMode: _themeModeToString(_themeMode)));
-  }
+  /// Flips what the user currently sees (not the stored setting), then pins that choice.
+  Future<void> toggleTheme() => setThemeMode(isDarkMode ? ThemeMode.light : ThemeMode.dark);
 
   Future<void> setThemeMode(ThemeMode mode) async {
     if (_themeMode == mode) return;

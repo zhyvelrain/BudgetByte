@@ -82,12 +82,14 @@ class BrandCard extends StatelessWidget {
         ];
         break;
       case BrandCardVariant.gradient:
+        // Selected state: callers pass a light tint; a neutral lift, not a colored glow
+        // (a glow bleeds through translucent tints and swamps the text).
         variantGradient = BrandAccents.electricGradient;
         variantShadows = [
           BoxShadow(
-            color: BrandAccents.electricBlue.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: isDark ? Colors.black.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.10),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ];
         break;
@@ -197,6 +199,9 @@ class ProductCard extends StatelessWidget {
                       imageUrl,
                       fit: BoxFit.cover,
                       width: double.infinity,
+                      height: double.infinity,
+                      cacheWidth: 600,
+                      semanticLabel: name,
                       errorBuilder: (_, _, _) => Center(
                         child: Icon(
                           Icons.image_not_supported,

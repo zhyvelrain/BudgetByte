@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'bb_colors.dart';
 import 'bb_text.dart';
 
-/// ByteBudget Theme - Light & Dark themes with electric blue accent
+/// ByteBudget Theme - Light & Dark themes with burnt-orange accent
 /// Inspired by ProduceAIQ's AppTheme but adapted for PC peripheral e-commerce
 class BBTheme {
   BBTheme._();
@@ -17,6 +17,8 @@ class BBTheme {
 
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
+    final accent = isDark ? BBColors.accentBlueLight : BBColors.accentBlueDim;
+    final onAccent = isDark ? BBColors.nightBg : Colors.white;
 
     return ThemeData(
       useMaterial3: true,
@@ -25,14 +27,14 @@ class BBTheme {
 
       colorScheme: ColorScheme(
         brightness: brightness,
-        primary: BBColors.accentBlue,
-        onPrimary: isDark ? BBColors.nightBg : BBColors.dayTextPrimary,
+        primary: accent,
+        onPrimary: onAccent,
         primaryContainer: isDark ? BBColors.accentBlueDeep : BBColors.accentBlueSoft,
         onPrimaryContainer: isDark ? BBColors.white : BBColors.nightTextPrimary,
         secondary: BBColors.accentPurple,
         onSecondary: Colors.white,
-        secondaryContainer: isDark ? BBColors.accentPurpleSoft : BBColors.accentPurpleSoft,
-        onSecondaryContainer: isDark ? BBColors.nightBg : BBColors.dayTextPrimary,
+        secondaryContainer: isDark ? BBColors.accentBlueContainer : BBColors.accentBlueSoft,
+        onSecondaryContainer: isDark ? BBColors.nightTextPrimary : BBColors.dayTextPrimary,
         tertiary: BBColors.accentOrange,
         onTertiary: Colors.white,
         tertiaryContainer: isDark ? BBColors.accentOrangeSoft : BBColors.accentOrangeSoft,
@@ -100,7 +102,7 @@ class BBTheme {
         backgroundColor: isDark
             ? BBColors.nightSurface.withValues(alpha: 0.95)
             : BBColors.daySurface.withValues(alpha: 0.95),
-        selectedItemColor: BBColors.accentBlue,
+        selectedItemColor: accent,
         unselectedItemColor: isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted,
         type: BottomNavigationBarType.fixed,
         elevation: BBColors.elevationLg,
@@ -119,13 +121,13 @@ class BBTheme {
         indicatorColor: isDark ? BBColors.accentBlueWash : BBColors.accentBlueSoft,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return BBText.labelSmall(color: BBColors.accentBlue);
+            return BBText.labelSmall(color: accent);
           }
           return BBText.labelSmall(color: isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted);
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return IconThemeData(color: BBColors.accentBlue, size: 24);
+            return IconThemeData(color: accent, size: 24);
           }
           return IconThemeData(
               color: isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted, size: 22);
@@ -182,7 +184,7 @@ class BBTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(BBColors.radiusMd),
-          borderSide: const BorderSide(color: BBColors.accentBlue, width: 2),
+          borderSide: BorderSide(color: accent, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(BBColors.radiusMd),
@@ -206,18 +208,18 @@ class BBTheme {
           color: isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted,
         ),
         errorStyle: BBText.bodySmall(color: BBColors.danger),
-        floatingLabelStyle: BBText.labelMedium(color: BBColors.accentBlue),
+        floatingLabelStyle: BBText.labelMedium(color: accent),
         prefixIconColor: WidgetStateColor.resolveWith((states) =>
-            states.contains(WidgetState.focused) ? BBColors.accentBlue : (isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted)),
+            states.contains(WidgetState.focused) ? accent : (isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted)),
         suffixIconColor: WidgetStateColor.resolveWith((states) =>
-            states.contains(WidgetState.focused) ? BBColors.accentBlue : (isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted)),
+            states.contains(WidgetState.focused) ? accent : (isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted)),
       ),
 
       // Button Themes
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: BBColors.accentBlue,
-          foregroundColor: Colors.white,
+          backgroundColor: accent,
+          foregroundColor: onAccent,
           disabledBackgroundColor: isDark ? BBColors.nightDivider : BBColors.dayDivider,
           disabledForegroundColor: isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted,
           shape: RoundedRectangleBorder(
@@ -243,8 +245,8 @@ class BBTheme {
 
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: BBColors.accentBlue,
-          foregroundColor: Colors.white,
+          backgroundColor: accent,
+          foregroundColor: onAccent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(BBColors.radiusMd),
           ),
@@ -255,13 +257,13 @@ class BBTheme {
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: BBColors.accentBlue,
-          side: const BorderSide(color: BBColors.accentBlue, width: 1.5),
+          foregroundColor: accent,
+          side: BorderSide(color: accent, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(BBColors.radiusMd),
           ),
           padding: const EdgeInsets.symmetric(horizontal: BBColors.padXL, vertical: BBColors.padM),
-          textStyle: BBText.button(color: BBColors.accentBlue),
+          textStyle: BBText.button(color: accent),
         ).copyWith(
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.pressed)) {
@@ -277,7 +279,7 @@ class BBTheme {
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: BBColors.accentBlue,
+          foregroundColor: accent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(BBColors.radiusMd),
           ),
@@ -288,8 +290,8 @@ class BBTheme {
 
       // FAB Theme
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: BBColors.accentBlue,
-        foregroundColor: Colors.white,
+        backgroundColor: accent,
+        foregroundColor: onAccent,
         elevation: BBColors.elevationMd,
         focusElevation: BBColors.elevationMd,
         hoverElevation: BBColors.elevationLg,
@@ -308,7 +310,7 @@ class BBTheme {
         selectedColor: isDark ? BBColors.accentBlueWash : BBColors.accentBlueSoft,
         secondarySelectedColor: isDark ? BBColors.accentBlueWash : BBColors.accentBlueSoft,
         padding: const EdgeInsets.symmetric(horizontal: BBColors.padM, vertical: BBColors.padS),
-        labelStyle: BBText.labelMedium(),
+        labelStyle: BBText.labelMedium(color: isDark ? BBColors.nightTextPrimary : BBColors.dayTextPrimary),
         secondaryLabelStyle: BBText.labelMedium(color: Colors.white),
         brightness: brightness,
         elevation: 0,
@@ -342,16 +344,16 @@ class BBTheme {
         ),
         tileColor: Colors.transparent,
         selectedTileColor: isDark ? BBColors.nightAccentSoft : BBColors.dayAccentSoft,
-        selectedColor: BBColors.accentBlue,
+        selectedColor: accent,
         iconColor: WidgetStateColor.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return BBColors.accentBlue;
+            return accent;
           }
           return isDark ? BBColors.nightTextSecondary : BBColors.dayTextSecondary;
         }),
         textColor: WidgetStateColor.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return BBColors.accentBlue;
+            return accent;
           }
           return isDark ? BBColors.nightTextPrimary : BBColors.dayTextPrimary;
         }),
@@ -372,8 +374,8 @@ class BBTheme {
             width: 1,
           ),
         ),
-        titleTextStyle: BBText.displaySmall(),
-        contentTextStyle: BBText.bodyMedium(),
+        titleTextStyle: BBText.displaySmall(color: isDark ? BBColors.nightTextPrimary : BBColors.dayTextPrimary),
+        contentTextStyle: BBText.bodyMedium(color: isDark ? BBColors.nightTextPrimary : BBColors.dayTextPrimary),
         alignment: Alignment.center,
       ),
 
@@ -398,8 +400,8 @@ class BBTheme {
       // Snackbar Theme
       snackBarTheme: SnackBarThemeData(
         backgroundColor: isDark ? BBColors.nightSurfaceElevated : BBColors.daySurfaceElevated,
-        contentTextStyle: BBText.bodyMedium(),
-        actionTextColor: BBColors.accentBlue,
+        contentTextStyle: BBText.bodyMedium(color: isDark ? BBColors.nightTextPrimary : BBColors.dayTextPrimary),
+        actionTextColor: accent,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(BBColors.radiusLg),
@@ -427,7 +429,7 @@ class BBTheme {
 
       // Progress Indicator Theme
       progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: BBColors.accentBlue,
+        color: accent,
         linearTrackColor: isDark ? BBColors.nightDivider : BBColors.dayDivider,
         circularTrackColor: isDark ? BBColors.nightDivider : BBColors.dayDivider,
         refreshBackgroundColor: isDark ? BBColors.nightSurfaceAlt : BBColors.daySurfaceAlt,
@@ -435,11 +437,11 @@ class BBTheme {
 
       // Slider Theme
       sliderTheme: SliderThemeData(
-        activeTrackColor: BBColors.accentBlue,
+        activeTrackColor: accent,
         inactiveTrackColor: isDark ? BBColors.nightDivider : BBColors.dayDivider,
-        thumbColor: BBColors.accentBlue,
+        thumbColor: accent,
         overlayColor: BBColors.electricBlueAt(0.15),
-        valueIndicatorColor: BBColors.accentBlue,
+        valueIndicatorColor: accent,
         valueIndicatorTextStyle: BBText.labelSmall(color: Colors.white),
         trackHeight: 4,
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
@@ -448,12 +450,12 @@ class BBTheme {
 
       // Tab Bar Theme
       tabBarTheme: TabBarThemeData(
-        labelColor: BBColors.accentBlue,
+        labelColor: accent,
         unselectedLabelColor: isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted,
-        indicatorColor: BBColors.accentBlue,
+        indicatorColor: accent,
         indicatorSize: TabBarIndicatorSize.label,
         labelStyle: BBText.labelMedium(weight: FontWeight.w600),
-        unselectedLabelStyle: BBText.labelMedium(),
+        unselectedLabelStyle: BBText.labelMedium(color: isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted),
         dividerColor: Colors.transparent,
         overlayColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.pressed)) {
@@ -470,7 +472,7 @@ class BBTheme {
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return BBColors.accentBlue;
+            return accent;
           }
           return Colors.transparent;
         }),
@@ -497,7 +499,7 @@ class BBTheme {
       radioTheme: RadioThemeData(
         fillColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return BBColors.accentBlue;
+            return accent;
           }
           return isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted;
         }),
@@ -513,7 +515,7 @@ class BBTheme {
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return BBColors.accentBlue;
+            return accent;
           }
           return isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted;
         }),
@@ -531,7 +533,7 @@ class BBTheme {
         }),
         trackOutlineColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return BBColors.accentBlue;
+            return accent;
           }
           return isDark ? BBColors.nightDivider : BBColors.dayDivider;
         }),
@@ -544,7 +546,7 @@ class BBTheme {
       ),
 
       primaryIconTheme: IconThemeData(
-        color: BBColors.accentBlue,
+        color: accent,
         size: 24,
       ),
 

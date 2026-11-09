@@ -185,9 +185,9 @@ class _CartItemCard extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(BBColors.radiusMd),
-              child: item.component.images.isNotEmpty
+              child: item.image != null
                   ? Image.asset(
-                      item.component.images.first,
+                      item.image!,
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => Icon(
                         item.component.category.icon,
