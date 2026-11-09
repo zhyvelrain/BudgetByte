@@ -6,16 +6,59 @@ import '../../widgets/brand_card.dart';
 import '../../widgets/brand_button.dart';
 import '../../models/app_models.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/shop_provider.dart';
+import 'main/main_screen.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+/// Adds one unit (default variant unless given) to the cart and confirms with a snackbar.
+void addToCartWithFeedback(BuildContext context, Component component, [ComponentOption? option]) {
+  option ??= component.options.where((o) => o.isDefault).firstOrNull ?? component.options.firstOrNull;
+  context.read<CartProvider>().addItem(CartItem(
+        id: '${component.id}_${option?.id}_${DateTime.now().millisecondsSinceEpoch}',
+        component: component,
+        selectedOption: option?.name,
+        option: option,
+        quantity: 1,
+      ));
+  final navigator = Navigator.of(context);
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(
+      content: Text('${component.name}${option == null ? '' : ' (${option.name})'} added to cart'),
+      behavior: SnackBarBehavior.floating,
+      action: SnackBarAction(
+        label: 'View Cart',
+        onPressed: () {
+          navigator.popUntil((route) => route.isFirst);
+          mainTab.value = 2;
+        },
+      ),
+    ));
+}
+
+class ProductDetailScreen extends StatefulWidget {
   final Component component;
 
   const ProductDetailScreen({super.key, required this.component});
 
   @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  late ComponentOption? _option =
+      widget.component.options.where((o) => o.isDefault).firstOrNull ?? widget.component.options.firstOrNull;
+
+  Component get component => widget.component;
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final categoryColor = component.category.color;
+    final shop = context.watch<ShopProvider>();
+    final isFavorite = shop.isFavorite(component.id);
+    final price = _option?.price ?? component.price;
+    final originalPrice = _option == null ? component.originalPrice : _option!.originalPrice;
+    final image = _option?.image ?? component.images.firstOrNull;
 
     return Scaffold(
       body: CustomScrollView(
@@ -26,6 +69,17 @@ class ProductDetailScreen extends StatelessWidget {
             pinned: true,
             stretch: true,
             backgroundColor: Colors.transparent,
+            actions: [
+              IconButton.filledTonal(
+                tooltip: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+                onPressed: () => shop.toggleFavorite(component.id),
+                icon: Icon(
+                  isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: isFavorite ? BBColors.danger : null,
+                ),
+              ),
+              const SizedBox(width: BBColors.padS),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               stretchModes: const [
                 StretchMode.zoomBackground,
@@ -36,13 +90,21 @@ class ProductDetailScreen extends StatelessWidget {
                 children: [
                   // Main Image
                   Positioned.fill(
-                    child: component.images.isNotEmpty
-                        ? Image.asset(
-                            component.images.first,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => _placeholderImage(categoryColor),
-                          )
-                        : _placeholderImage(categoryColor),
+                    child: AnimatedSwitcher(
+                      duration: BBColors.animNormal,
+                      switchInCurve: Curves.easeOutCubic,
+                      child: image != null
+                          ? Image.asset(
+                              image,
+                              key: ValueKey(image),
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              semanticLabel: '${component.name}, ${_option?.name ?? ''}',
+                              errorBuilder: (_, _, _) => _placeholderImage(categoryColor),
+                            )
+                          : _placeholderImage(categoryColor),
+                    ),
                   ),
                   // Gradient overlay
                   Positioned.fill(
@@ -67,8 +129,8 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   if (component.discountLabel != null)
                     Positioned(
-                      top: BBColors.padL + MediaQuery.of(context).padding.top,
-                      right: BBColors.padL,
+                      bottom: BBColors.padL,
+                      left: BBColors.padL,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
@@ -134,18 +196,24 @@ class ProductDetailScreen extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      '\$${component.price.toStringAsFixed(2)}',
-                      style: BBTextResponsive.displayLarge(context, color: categoryColor, weight: FontWeight.w800, size: 36),
-                    ),
-                    if (component.originalPrice != null && component.originalPrice! > component.price) ...[
-                      const SizedBox(width: BBColors.padM),
-                      Text(
-                        '\$${component.originalPrice!.toStringAsFixed(2)}',
-                        style: BBTextResponsive.titleMedium(context).copyWith(decoration: TextDecoration.lineThrough),
+                    Expanded(
+                      child: Wrap(
+                        spacing: BBColors.padM,
+                        crossAxisAlignment: WrapCrossAlignment.end,
+                        children: [
+                          Text(
+                            context.money(price),
+                            style: BBTextResponsive.displayLarge(context, color: categoryColor, weight: FontWeight.w800, size: 32),
+                          ),
+                          if (originalPrice != null && originalPrice > price)
+                            Text(
+                              context.money(originalPrice),
+                              style: BBTextResponsive.titleMedium(context).copyWith(decoration: TextDecoration.lineThrough),
+                            ),
+                        ],
                       ),
-                    ],
-                    const Spacer(),
+                    ),
+                    const SizedBox(width: BBColors.padM),
                     _StockBadge(stock: component.stockCount),
                   ],
                 ),
@@ -167,12 +235,16 @@ class ProductDetailScreen extends StatelessWidget {
                       children: component.specs.entries.map((entry) => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(entry.key, style: BBTextResponsive.bodyMedium(context)),
-                            Text(
-                              entry.value,
-                              style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600),
+                            Expanded(child: Text(entry.key, style: BBTextResponsive.bodyMedium(context))),
+                            const SizedBox(width: BBColors.padM),
+                            Expanded(
+                              child: Text(
+                                entry.value,
+                                textAlign: TextAlign.end,
+                                style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600),
+                              ),
                             ),
                           ],
                         ),
@@ -182,49 +254,22 @@ class ProductDetailScreen extends StatelessWidget {
                   const SizedBox(height: BBColors.padXL),
                 ],
 
-                // Color/Option Selection
-                Text('Select Variant', style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600)),
-                const SizedBox(height: BBColors.padM),
-                _OptionSelector(
-                  component: component,
-                  onOptionSelected: (option) {
-                    // Could update a provider or just use locally
-                  },
-                ),
-                const SizedBox(height: BBColors.padXL),
-
-                // Add to Cart Button
-                Consumer<CartProvider>(
-                  builder: (context, cart, _) => BrandButton(
-                    text: 'Add to Cart - \$${component.price.toStringAsFixed(2)}',
-                    icon: Icons.shopping_cart_rounded,
-                    onPressed: () {
-                      final option = component.options.first; // Default option
-                      cart.addItem(CartItem(
-                        id: '${component.id}_${option.id}_${DateTime.now().millisecondsSinceEpoch}',
-                        component: component,
-                        selectedOption: option.name,
-                        option: option,
-                        quantity: 1,
-                      ));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Added to cart!', style: BBTextResponsive.bodyMedium(context)),
-                          backgroundColor: BBColors.accentGreen,
-                          behavior: SnackBarBehavior.floating,
-                          action: SnackBarAction(
-                            label: 'View Cart',
-                            textColor: Colors.white,
-                            onPressed: () {
-                              // Navigate to cart tab
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    fullWidth: true,
-                    height: 56,
+                if (component.options.isNotEmpty) ...[
+                  Text('Select Variant', style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600)),
+                  const SizedBox(height: BBColors.padM),
+                  _OptionSelector(
+                    component: component,
+                    onOptionSelected: (option) => setState(() => _option = option),
                   ),
+                  const SizedBox(height: BBColors.padXL),
+                ],
+
+                BrandButton(
+                  text: component.isInStock ? 'Add to Cart - ${context.money(price)}' : 'Out of Stock',
+                  icon: Icons.shopping_cart_rounded,
+                  onPressed: component.isInStock ? () => addToCartWithFeedback(context, component, _option) : null,
+                  fullWidth: true,
+                  height: 56,
                 ),
                 const SizedBox(height: BBColors.padXXL),
               ]),
@@ -431,6 +476,20 @@ class _OptionSelectorState extends State<_OptionSelector> {
                 padding: const EdgeInsets.all(BBColors.padM),
                 child: Row(
                   children: [
+                    if (option.image != null) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(BBColors.radiusSm),
+                        child: Image.asset(
+                          option.image!,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          cacheWidth: 144,
+                          errorBuilder: (_, _, _) => const SizedBox(width: 48, height: 48),
+                        ),
+                      ),
+                      const SizedBox(width: BBColors.padM),
+                    ],
                     // Color indicator
                     if (option.colorHex != null) ...[
                       Container(
@@ -469,12 +528,12 @@ class _OptionSelectorState extends State<_OptionSelector> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '\$${option.price?.toStringAsFixed(2) ?? '0.00'}',
+                          context.money(option.price ?? widget.component.price),
                           style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: widget.component.category.color),
                         ),
                         if (option.originalPrice != null && option.price != null && option.originalPrice! > option.price!)
                           Text(
-                            '\$${option.originalPrice!.toStringAsFixed(2)}',
+                            context.money(option.originalPrice!),
                             style: BBTextResponsive.caption(context).copyWith(decoration: TextDecoration.lineThrough),
                           ),
                       ],

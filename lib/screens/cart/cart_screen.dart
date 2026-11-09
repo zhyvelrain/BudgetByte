@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/shop_provider.dart';
 import 'package:provider/provider.dart';
 import '../../theme/bb_colors.dart';
 import '../../theme/bb_text.dart';
@@ -7,6 +8,8 @@ import '../../widgets/brand_button.dart';
 import '../../models/app_models.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/preferences_service.dart';
+import '../../services/auth_service.dart';
+import '../main/main_screen.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -127,23 +130,20 @@ class _EmptyCartState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: BBColors.padXL),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: BBColors.padM,
+              runSpacing: BBColors.padM,
               children: [
                 BrandButton.outline(
                   text: 'Start Building',
                   icon: Icons.build_rounded,
-                  onPressed: () {
-                    // Navigate to builder tab
-                  },
+                  onPressed: () => goToTab(context, 1),
                 ),
-                const SizedBox(width: BBColors.padM),
                 BrandButton(
                   text: 'Browse Shop',
                   icon: Icons.store_rounded,
-                  onPressed: () {
-                    // Navigate to home tab
-                  },
+                  onPressed: () => goToTab(context, 0),
                 ),
               ],
             ),
@@ -185,9 +185,9 @@ class _CartItemCard extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(BBColors.radiusMd),
-              child: item.component.images.isNotEmpty
+              child: item.image != null
                   ? Image.asset(
-                      item.component.images.first,
+                      item.image!,
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => Icon(
                         item.component.category.icon,
@@ -255,9 +255,13 @@ class _CartItemCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                     ],
-                    Text(
-                      item.option?.name ?? item.selectedOptionValue ?? 'Default',
-                      style: BBTextResponsive.bodySmall(context, weight: FontWeight.w500),
+                    Flexible(
+                      child: Text(
+                        item.option?.name ?? item.selectedOptionValue ?? 'Default',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: BBTextResponsive.bodySmall(context, weight: FontWeight.w500),
+                      ),
                     ),
                   ],
                 ),
@@ -296,11 +300,16 @@ class _CartItemCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: BBColors.padS),
                     // Line total
-                    Text(
-                      '\$${item.lineTotal.toStringAsFixed(2)}',
-                      style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: categoryColor),
+                    Expanded(
+                      child: Text(
+                        context.money(item.lineTotal),
+                        textAlign: TextAlign.end,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: categoryColor),
+                      ),
                     ),
                   ],
                 ),
@@ -353,21 +362,21 @@ class _ReceiptSummary extends StatelessWidget {
           const SizedBox(height: BBColors.padM),
           _ReceiptRow(
             label: 'Subtotal (${cart.itemCount} items)',
-            value: '\$${cart.subtotal.toStringAsFixed(2)}',
+            value: context.money(cart.subtotal),
           ),
           _ReceiptRow(
             label: 'Shipping',
-            value: cart.shipping == 0 ? 'Free' : '\$${cart.shipping.toStringAsFixed(2)}',
+            value: cart.shipping == 0 ? 'Free' : context.money(cart.shipping),
             valueColor: cart.shipping == 0 ? BBColors.accentGreen : null,
           ),
           _ReceiptRow(
             label: 'Tax (10%)',
-            value: '\$${cart.tax.toStringAsFixed(2)}',
+            value: context.money(cart.tax),
           ),
           const Divider(height: BBColors.padL),
           _ReceiptRow(
             label: 'Total',
-            value: '\$${cart.total.toStringAsFixed(2)}',
+            value: context.money(cart.total),
             isTotal: true,
           ),
           if (cart.subtotal < 100 && cart.items.isNotEmpty) ...[
@@ -385,7 +394,7 @@ class _ReceiptSummary extends StatelessWidget {
                   const SizedBox(width: BBColors.padS),
                   Expanded(
                     child: Text(
-                      'Add \$${(100 - cart.subtotal).toStringAsFixed(2)} more for free shipping!',
+                      'Add ${context.money((100 - cart.subtotal))} more for free shipping!',
                       style: BBTextResponsive.bodySmall(context, color: BBColors.accentOrange, weight: FontWeight.w500),
                     ),
                   ),
@@ -417,14 +426,16 @@ class _ReceiptRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: isTotal
-                ? BBTextResponsive.titleMedium(context, weight: FontWeight.w600)
-                : BBTextResponsive.bodyMedium(context),
+          Expanded(
+            child: Text(
+              label,
+              style: isTotal
+                  ? BBTextResponsive.titleMedium(context, weight: FontWeight.w600)
+                  : BBTextResponsive.bodyMedium(context),
+            ),
           ),
+          const SizedBox(width: BBColors.padS),
           Text(
             value,
             style: isTotal
@@ -458,7 +469,7 @@ class _CartActionBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: BrandButton.primary(
-          text: 'Checkout (\$${cart.total.toStringAsFixed(2)})',
+          text: 'Checkout (${context.money(cart.total)})',
           icon: Icons.credit_card_rounded,
           onPressed: cart.items.isNotEmpty ? () => _showCheckoutDialog(context) : null,
           fullWidth: true,
@@ -496,8 +507,21 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
   final _cardController = TextEditingController();
   final _expiryController = TextEditingController();
   final _cvvController = TextEditingController();
-  bool _saveInfo = false;
+  bool _saveInfo = true;
   bool _processing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Prefill from the last saved address, falling back to the signed-in account.
+    final saved = PreferencesService.getAddress();
+    final user = context.read<AuthService>().currentUser;
+    _nameController.text = saved?.name ?? user?.name ?? '';
+    _emailController.text = saved?.email ?? user?.email ?? '';
+    _addressController.text = saved?.street ?? '';
+    _cityController.text = saved?.city ?? '';
+    _zipController.text = saved?.zipCode ?? '';
+  }
 
   @override
   void dispose() {
@@ -603,20 +627,28 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
         TextFormField(
           controller: _nameController,
           decoration: const InputDecoration(labelText: 'Full Name', prefixIcon: Icon(Icons.person_rounded)),
-          validator: (v) => v?.isEmpty == true ? 'Required' : null,
+          textCapitalization: TextCapitalization.words,
+          autofillHints: const [AutofillHints.name],
+          validator: AuthService.validateName,
         ),
         const SizedBox(height: BBColors.padM),
         TextFormField(
           controller: _emailController,
           decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_rounded)),
           keyboardType: TextInputType.emailAddress,
-          validator: (v) => v?.isEmpty == true ? 'Required' : (v!.contains('@') ? null : 'Invalid email'),
+          autofillHints: const [AutofillHints.email],
+          validator: AuthService.validateEmail,
         ),
         const SizedBox(height: BBColors.padM),
         TextFormField(
           controller: _addressController,
-          decoration: const InputDecoration(labelText: 'Address', prefixIcon: Icon(Icons.home_rounded)),
-          validator: (v) => v?.isEmpty == true ? 'Required' : null,
+          decoration: const InputDecoration(
+            labelText: 'Street address',
+            hintText: 'House no., street, barangay',
+            prefixIcon: Icon(Icons.home_rounded),
+          ),
+          autofillHints: const [AutofillHints.fullStreetAddress],
+          validator: (v) => (v?.trim().length ?? 0) < 5 ? 'Enter your street address.' : null,
         ),
         const SizedBox(height: BBColors.padM),
         Row(
@@ -625,7 +657,8 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
               child: TextFormField(
                 controller: _cityController,
                 decoration: const InputDecoration(labelText: 'City', prefixIcon: Icon(Icons.location_city_rounded)),
-                validator: (v) => v?.isEmpty == true ? 'Required' : null,
+                autofillHints: const [AutofillHints.addressCity],
+                validator: (v) => (v?.trim().length ?? 0) < 2 ? 'Enter your city.' : null,
               ),
             ),
             const SizedBox(width: BBColors.padM),
@@ -634,21 +667,23 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
                 controller: _zipController,
                 decoration: const InputDecoration(labelText: 'ZIP Code', prefixIcon: Icon(Icons.pin_rounded)),
                 keyboardType: TextInputType.number,
-                validator: (v) => v?.isEmpty == true ? 'Required' : null,
+                autofillHints: const [AutofillHints.postalCode],
+                validator: (v) => RegExp(r'^\d{4,10}$').hasMatch(v?.trim() ?? '') ? null : 'Use 4–10 digits.',
               ),
             ),
           ],
         ),
         const SizedBox(height: BBColors.padM),
-        Row(
-          children: [
-            Checkbox(
-              value: _saveInfo,
-              onChanged: (v) => setState(() => _saveInfo = v ?? false),
-              activeColor: BBColors.accentBlue,
-            ),
-            Text('Save for future orders', style: BBTextResponsive.bodyMedium(context)),
-          ],
+        Material(
+          type: MaterialType.transparency,
+          child: CheckboxListTile(
+            value: _saveInfo,
+            onChanged: (v) => setState(() => _saveInfo = v ?? false),
+            activeColor: BBColors.accentBlue,
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            title: Text('Save address for future orders', style: BBTextResponsive.bodyMedium(context)),
+          ),
         ),
       ],
     );
@@ -680,7 +715,6 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
                 controller: _expiryController,
                 decoration: const InputDecoration(
                   labelText: 'MM/YY',
-                  prefixIcon: Icon(Icons.calendar_today_rounded),
                   hintText: '12/28',
                 ),
                 keyboardType: TextInputType.datetime,
@@ -693,7 +727,6 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
                 controller: _cvvController,
                 decoration: const InputDecoration(
                   labelText: 'CVV',
-                  prefixIcon: Icon(Icons.lock_rounded),
                   hintText: '123',
                 ),
                 keyboardType: TextInputType.number,
@@ -739,16 +772,16 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
                   style: BBTextResponsive.bodySmall(context),
                 ),
               ),
-              Text('\$${item.lineTotal.toStringAsFixed(2)}', style: BBTextResponsive.bodySmall(context, weight: FontWeight.w600)),
+              Text(context.money(item.lineTotal), style: BBTextResponsive.bodySmall(context, weight: FontWeight.w600)),
             ],
           ),
         )),
         const Divider(),
-        _ReceiptRow(label: 'Subtotal', value: '\$${widget.cart.subtotal.toStringAsFixed(2)}'),
-        _ReceiptRow(label: 'Shipping', value: widget.cart.shipping == 0 ? 'Free' : '\$${widget.cart.shipping.toStringAsFixed(2)}'),
-        _ReceiptRow(label: 'Tax (10%)', value: '\$${widget.cart.tax.toStringAsFixed(2)}'),
+        _ReceiptRow(label: 'Subtotal', value: context.money(widget.cart.subtotal)),
+        _ReceiptRow(label: 'Shipping', value: widget.cart.shipping == 0 ? 'Free' : context.money(widget.cart.shipping)),
+        _ReceiptRow(label: 'Tax (10%)', value: context.money(widget.cart.tax)),
         const Divider(height: BBColors.padL),
-        _ReceiptRow(label: 'Total', value: '\$${widget.cart.total.toStringAsFixed(2)}', isTotal: true),
+        _ReceiptRow(label: 'Total', value: context.money(widget.cart.total), isTotal: true),
       ],
     );
   }
@@ -766,11 +799,18 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
   void _placeOrder() async {
     setState(() => _processing = true);
 
-    // Simulate processing
-    await Future.delayed(const Duration(seconds: 2));
+    final navigator = Navigator.of(context);
+    final rootContext = navigator.context;
+    // Simulate payment processing
+    await Future.delayed(const Duration(seconds: 1));
 
-    // Create order
-    await PreferencesService.init();
+    final address = Address(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      street: _addressController.text.trim(),
+      city: _cityController.text.trim(),
+      zipCode: _zipController.text.trim(),
+    );
     final order = Order(
       id: 'BB-${DateTime.now().millisecondsSinceEpoch}',
       items: List.from(widget.cart.items),
@@ -780,13 +820,7 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
       total: widget.cart.total,
       status: OrderStatus.confirmed,
       createdAt: DateTime.now(),
-      shippingAddress: Address(
-        name: _nameController.text,
-        email: _emailController.text,
-        street: _addressController.text,
-        city: _cityController.text,
-        zipCode: _zipController.text,
-      ),
+      shippingAddress: address,
       paymentMethod: PaymentMethod(
         type: 'card',
         last4: _cardController.text.replaceAll(' ', '').substring(12),
@@ -794,23 +828,18 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
     );
 
     await PreferencesService.addOrder(order);
-        widget.cart.clear();
+    if (_saveInfo) await PreferencesService.saveAddress(address);
+    await widget.cart.clear();
 
-        if (!mounted) return;
-        Navigator.pop(context); // Close dialog
-
-        // Show success dialog
-        _showSuccessDialog(context);
-  }
-
-  void _showSuccessDialog(BuildContext context) {
+    navigator.pop(); // Close checkout
+    if (!rootContext.mounted) return;
     showDialog(
-      context: context,
+      context: rootContext,
       barrierDismissible: false,
-      builder: (context) => _PurchaseSuccessDialog(
-        orderId: 'BB-${DateTime.now().millisecondsSinceEpoch}',
-        total: widget.cart.total,
-        onContinue: () => Navigator.pop(context),
+      builder: (dialogContext) => _PurchaseSuccessDialog(
+        orderId: order.id,
+        total: order.total,
+        onContinue: () => goToTab(dialogContext, 0),
       ),
     );
   }
@@ -931,7 +960,7 @@ class _PurchaseSuccessDialog extends StatelessWidget {
                 children: [
                   _ReceiptRow(label: 'Order ID', value: orderId),
                   const SizedBox(height: BBColors.padS),
-                  _ReceiptRow(label: 'Total Paid', value: '\$${total.toStringAsFixed(2)}', isTotal: true, valueColor: BBColors.accentGreen),
+                  _ReceiptRow(label: 'Total Paid', value: context.money(total), isTotal: true, valueColor: BBColors.accentGreen),
                 ],
               ),
             ),

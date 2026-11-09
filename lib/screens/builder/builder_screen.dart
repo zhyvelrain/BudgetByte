@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/shop_provider.dart';
 import 'package:provider/provider.dart';
 import '../../theme/bb_colors.dart';
 import '../../theme/bb_text.dart';
@@ -8,6 +9,7 @@ import '../../services/component_data_service.dart';
 import '../../models/app_models.dart';
 import '../../providers/build_provider.dart';
 import '../../providers/cart_provider.dart';
+import '../main/main_screen.dart';
 
 class BuilderScreen extends StatelessWidget {
   const BuilderScreen({super.key});
@@ -22,9 +24,6 @@ class BuilderScreen extends StatelessWidget {
           bottom: TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.start,
-            indicatorColor: BBColors.accentBlue,
-            labelColor: BBColors.accentBlue,
-            unselectedLabelColor: BBColors.textMuted(context),
             labelStyle: BBTextResponsive.labelMedium(context, weight: FontWeight.w600),
             unselectedLabelStyle: BBTextResponsive.labelMedium(context),
             tabs: ComponentCategory.values.map((cat) => Tab(
@@ -49,12 +48,10 @@ class BuilderScreen extends StatelessWidget {
                         category: category,
                         components: components,
                         selectedComponent: selected,
-                        selectedOption: selected?.options.firstWhere(
-                          (o) => o.isDefault,
-                          orElse: () => selected.options.first,
-                        ),
+                        selectedOption: selected?.options.where((o) => o.isDefault).firstOrNull ?? selected?.options.firstOrNull,
                         onSelect: (component, option) {
                           buildProvider.selectComponent(category, component, option: option);
+                          _goToNextStep(context, buildProvider);
                         },
                         onClear: () {
                           buildProvider.clearComponent(category);
@@ -72,6 +69,19 @@ class BuilderScreen extends StatelessWidget {
       ),
     );
   }
+
+  /// Moves to the next category that still has nothing picked (wrapping around).
+  static void _goToNextStep(BuildContext context, BuildProvider buildProvider) {
+    final tabs = DefaultTabController.of(context);
+    const steps = ComponentCategory.values;
+    for (var offset = 1; offset < steps.length; offset++) {
+      final next = (tabs.index + offset) % steps.length;
+      if (buildProvider.getSelectedComponent(steps[next]) == null) {
+        tabs.animateTo(next);
+        return;
+      }
+    }
+  }
 }
 
 class _BuildSummaryCard extends StatelessWidget {
@@ -85,107 +95,58 @@ class _BuildSummaryCard extends StatelessWidget {
     final build = buildProvider.currentBuild;
     final completed = build?.componentCount ?? 0;
     final total = ComponentCategory.values.length;
-    final price = build?.totalPrice ?? 0;
+    final complete = build?.isComplete ?? false;
 
     return Container(
-      margin: const EdgeInsets.all(BBColors.padL),
-      padding: const EdgeInsets.all(BBColors.padL),
+      margin: const EdgeInsets.fromLTRB(BBColors.padM, BBColors.padM, BBColors.padM, BBColors.padS),
+      padding: const EdgeInsets.all(BBColors.padM),
       decoration: BoxDecoration(
-        gradient: isDark ? BrandAccents.electricGradient : null,
-        color: isDark ? null : BBColors.accentBlueSoft,
-        borderRadius: BorderRadius.circular(BBColors.radiusXl),
-        border: Border.all(
-          color: isDark ? BBColors.nightDivider : BBColors.dayDivider,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.3)
-                : Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: isDark ? BBColors.nightSurfaceAlt : BBColors.daySurface,
+        borderRadius: BorderRadius.circular(BBColors.radiusLg),
+        border: Border.all(color: isDark ? BBColors.nightDivider : BBColors.dayDivider),
       ),
       child: Column(
         children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          gradient: BrandAccents.electricGradient,
-                          borderRadius: BorderRadius.circular(BBColors.radiusMd),
-                        ),
-                        child: const Icon(Icons.memory_rounded, color: Colors.white, size: 28),
-                      ),
-                      const SizedBox(width: BBColors.padM),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Your Build', style: BBTextResponsive.titleMedium(context, weight: FontWeight.w600)),
-                            Text('$completed of $total components', style: BBTextResponsive.bodySmall(context)),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '\$${price.toStringAsFixed(2)}',
-                            style: BBTextResponsive.displayMedium(context, color: BBColors.accentBlue, weight: FontWeight.w700, size: 28),
-                          ),
-                          if (build?.isComplete ?? false)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: BBColors.accentGreen.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(BBColors.radiusSm),
-                              ),
-                              child: Text(
-                                'Ready to Buy',
-                                style: BBTextResponsive.labelSmall(context, color: BBColors.accentGreen, weight: FontWeight.w600),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: BBColors.padL),
-                  // Progress Bar
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(BBColors.radiusSm),
-                    child: LinearProgressIndicator(
-                      value: completed / total,
-                      minHeight: 8,
-                      backgroundColor: isDark ? BBColors.nightBorder : BBColors.dayBorder,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        (build?.isComplete ?? false) ? BBColors.accentGreen : BBColors.accentBlue,
-                      ),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      build?.name ?? 'Your build',
+                      style: BBTextResponsive.titleMedium(context, weight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: BBColors.padS),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        (build?.isComplete ?? false) ? 'Build complete!' : '${total - completed} more to go',
-                        style: BBTextResponsive.bodySmall(context),
-                      ),
-                      Text(
-                        '${((completed / total) * 100).round()}%',
-                        style: BBTextResponsive.labelMedium(context, weight: FontWeight.w600, color: BBColors.accentBlue),
-                      ),
-                    ],
-                  ),
-                ],
+                    Text(
+                      complete ? 'All $total parts picked' : '$completed of $total parts · ${total - completed} to go',
+                      style: BBTextResponsive.bodySmall(context, color: complete ? BBColors.accentGreen : null),
+                    ),
+                  ],
+                ),
               ),
-            );
-          }
-        }
+              const SizedBox(width: BBColors.padM),
+              Text(
+                context.money(build?.totalPrice ?? 0),
+                style: BBTextResponsive.titleLarge(context, weight: FontWeight.w700),
+              ),
+            ],
+          ),
+          const SizedBox(height: BBColors.padM),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(BBColors.radiusSm),
+            child: LinearProgressIndicator(
+              value: completed / total,
+              minHeight: 6,
+              color: complete ? BBColors.accentGreen : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _ComponentList extends StatelessWidget {
   final ComponentCategory category;
@@ -230,7 +191,7 @@ class _ComponentList extends StatelessWidget {
       itemBuilder: (context, index) {
         final component = components[index];
         final isSelected = selectedComponent?.id == component.id;
-        final option = isSelected ? (selectedOption ?? component.options.first) : component.options.first;
+        final option = isSelected ? (selectedOption ?? component.options.firstOrNull) : component.options.firstOrNull;
 
         return _ComponentCard(
           component: component,
@@ -260,7 +221,7 @@ class _ComponentList extends StatelessWidget {
 
 class _ComponentCard extends StatelessWidget {
   final Component component;
-  final ComponentOption selectedOption;
+  final ComponentOption? selectedOption;
   final bool isSelected;
   final Color categoryColor;
   final VoidCallback onTap;
@@ -283,13 +244,10 @@ class _ComponentCard extends StatelessWidget {
       onTap: onTap,
       child: BrandCard(
         variant: isSelected ? BrandCardVariant.gradient : BrandCardVariant.defaultCard,
-        gradient: LinearGradient(
-          colors: [
-            categoryColor.withValues(alpha: 0.15),
-            categoryColor.withValues(alpha: 0.03),
-          ],
-        ),
-        // borderColor removed - not a parameter of BrandCard
+        gradient: isSelected
+            ? LinearGradient(colors: [categoryColor.withValues(alpha: 0.12), categoryColor.withValues(alpha: 0.04)])
+            : null,
+        border: isSelected ? Border.all(color: BBColors.accent(context), width: 2) : null,
         padding: const EdgeInsets.all(BBColors.padM),
         child: Row(
           children: [
@@ -303,10 +261,11 @@ class _ComponentCard extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(BBColors.radiusMd),
-                child: component.images.isNotEmpty
+                child: (selectedOption?.image ?? component.images.firstOrNull) != null
                     ? Image.asset(
-                        component.images.first,
+                        selectedOption?.image ?? component.images.first,
                         fit: BoxFit.cover,
+                        cacheWidth: 240,
                         errorBuilder: (_, _, _) => Icon(
                           component.category.icon,
                           size: 32,
@@ -353,15 +312,15 @@ class _ComponentCard extends StatelessWidget {
                   Text(component.brand, style: BBTextResponsive.caption(context)),
                   const SizedBox(height: BBColors.padS),
                   // Selected option
-                  if (isSelected) ...[
+                  if (isSelected && selectedOption != null) ...[
                     Row(
                       children: [
                         Container(
                           width: 16,
                           height: 16,
                           decoration: BoxDecoration(
-                            color: selectedOption.colorHex != null
-                                                            ? Color(int.parse(selectedOption.colorHex!.replaceFirst('#', '0xFF')))
+                            color: selectedOption!.colorHex != null
+                                                            ? Color(int.parse(selectedOption!.colorHex!.replaceFirst('#', '0xFF')))
                                                             : categoryColor,
                                                         shape: BoxShape.circle,
                                                         border: Border.all(
@@ -371,25 +330,28 @@ class _ComponentCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          selectedOption.name,
+                        Flexible(child: Text(
+                          selectedOption!.name,
                           style: BBTextResponsive.bodySmall(context, weight: FontWeight.w500),
-                        ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )),
                       ],
                     ),
                     const SizedBox(height: 4),
                   ],
                   // Price
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text(
-                        '\$${(selectedOption.price ?? 0).toStringAsFixed(2)}',
+                        context.money((selectedOption?.price ?? component.price)),
                         style: BBTextResponsive.titleMedium(context, color: categoryColor, weight: FontWeight.w700),
                       ),
-                      if (selectedOption.originalPrice != null && selectedOption.originalPrice! > (selectedOption.price ?? 0)) ...[
-                        const SizedBox(width: 8),
+                      if ((selectedOption?.originalPrice ?? component.originalPrice ?? 0) > (selectedOption?.price ?? component.price)) ...[
                         Text(
-                          '\$${selectedOption.originalPrice!.toStringAsFixed(2)}',
+                          context.money((selectedOption?.originalPrice ?? component.originalPrice!)),
                           style: BBTextResponsive.bodySmall(context).copyWith(decoration: TextDecoration.lineThrough),
                         ),
                       ],
@@ -514,16 +476,12 @@ class _ComponentOptionSheet extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          // Color swatch
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: option.colorHex != null
-                                  ? Color(int.parse(option.colorHex!.replaceFirst('#', '0xFF')))
-                                  : component.category.color,
-                              borderRadius: BorderRadius.circular(BBColors.radiusMd),
-                            ),
+                          // Variant photo
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(BBColors.radiusMd),
+                            child: option.image != null
+                                ? Image.asset(option.image!, width: 56, height: 56, fit: BoxFit.cover, cacheWidth: 168)
+                                : Container(width: 56, height: 56, color: component.category.color),
                           ),
                           const SizedBox(width: BBColors.padM),
                           // Info
@@ -533,11 +491,14 @@ class _ComponentOptionSheet extends StatelessWidget {
                               children: [
                                 Row(
                                   children: [
-                                    Text(
-                                      option.name,
-                                      style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600),
+                                    Expanded(
+                                      child: Text(
+                                        option.name,
+                                        style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    const Spacer(),
                                     if (isSelected)
                                       Icon(Icons.check_circle_rounded, color: component.category.color, size: 20),
                                   ],
@@ -557,12 +518,12 @@ class _ComponentOptionSheet extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                '\$${(option.price ?? 0).toStringAsFixed(2)}',
+                                context.money((option.price ?? 0)),
                                 style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: component.category.color),
                               ),
                               if (option.originalPrice != null && option.originalPrice! > (option.price ?? 0))
                                 Text(
-                                  '\$${option.originalPrice!.toStringAsFixed(2)}',
+                                  context.money(option.originalPrice!),
                                   style: BBTextResponsive.caption(context).copyWith(decoration: TextDecoration.lineThrough),
                                 ),
                             ],
@@ -616,7 +577,7 @@ class _BuildActionBar extends StatelessWidget {
           children: [
             Expanded(
               child: BrandButton.outline(
-                text: 'Save Build',
+                text: 'Save',
                 icon: Icons.save_rounded,
                 onPressed: () => _saveBuild(context),
               ),
@@ -625,7 +586,7 @@ class _BuildActionBar extends StatelessWidget {
             Expanded(
               flex: 2,
               child: BrandButton(
-                text: isComplete ? 'Add to Cart (\$${totalPrice.toStringAsFixed(2)})' : 'Complete Build First',
+                text: isComplete ? 'Add to Cart (${context.money(totalPrice)})' : 'Complete Build First',
                 icon: Icons.shopping_cart_rounded,
                 onPressed: isComplete ? () => _addToCart(context) : null,
                 isLoading: false,
@@ -637,51 +598,45 @@ class _BuildActionBar extends StatelessWidget {
     );
   }
 
-  void _saveBuild(BuildContext context) {
-    // TODO: Show name input dialog
-    final name = 'My Build ${DateTime.now().toString().substring(0, 16)}';
-    buildProvider.setBuildName(name);
-    buildProvider.saveBuild();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Build saved!', style: BBTextResponsive.bodyMedium(context)),
-        backgroundColor: BBColors.accentGreen,
-        behavior: SnackBarBehavior.floating,
+  Future<void> _saveBuild(BuildContext context) async {
+    final controller = TextEditingController(text: buildProvider.currentBuild?.name ?? '');
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Save build'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(labelText: 'Build name'),
+          onSubmitted: (v) => Navigator.pop(dialogContext, v),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, controller.text), child: const Text('Save')),
+        ],
       ),
     );
+    controller.dispose();
+    if (name == null || name.trim().isEmpty) return;
+    buildProvider.setBuildName(name.trim());
+    await buildProvider.saveBuild();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Saved "${name.trim()}" to your builds'),
+      behavior: SnackBarBehavior.floating,
+    ));
   }
 
-  void _addToCart(BuildContext context) {
-      final cartProvider = context.read<CartProvider>();
-      final build = buildProvider.currentBuild;
-
-      if (build == null || !build.isComplete) return;
-
-      for (final component in build.components) {
-        ComponentOption? selectedOption;
-        if (component.options.isNotEmpty) {
-          selectedOption = component.options.firstWhere(
-            (o) => o.isDefault,
-            orElse: () => component.options.first,
-          );
-        }
-        cartProvider.addItem(CartItem(
-          id: 'cart_${component.id}_${DateTime.now().millisecondsSinceEpoch}',
-          component: component,
-          quantity: 1,
-          option: selectedOption,
-        ));
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Build added to cart!', style: BBTextResponsive.bodyMedium(context)),
-          backgroundColor: BBColors.accentGreen,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-
-      // Navigate to cart tab
-      // Could use a global navigator key or callback
-    }
+  Future<void> _addToCart(BuildContext context) async {
+    final build = buildProvider.currentBuild;
+    if (build == null || !build.isComplete) return;
+    await context.read<CartProvider>().addBuild(build);
+    if (!context.mounted) return;
+    goToTab(context, 2);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('${build.componentCount} parts added to your cart'),
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
 }

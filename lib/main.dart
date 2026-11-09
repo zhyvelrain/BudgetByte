@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'theme/bb_theme.dart';
 import 'theme/bb_colors.dart';
 import 'theme/bb_text.dart';
 import 'providers/theme_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/build_provider.dart';
+import 'providers/shop_provider.dart';
 import 'services/preferences_service.dart';
 import 'services/component_data_service.dart';
+import 'services/auth_service.dart';
+import 'screens/auth/login_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/main/main_screen.dart';
 import 'widgets/connectivity_banner.dart';
@@ -18,6 +24,13 @@ void main() async {
 
   // Initialize services
   await PreferencesService.init();
+
+  // Sample product photos are CC-licensed; credit them in About > View licenses.
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks([
+      'Sample product photos (Wikimedia Commons)',
+    ], await rootBundle.loadString('assets/images/CREDITS.md'));
+  });
 
   // Pre-load component data
   ComponentDataService.components; // triggers initialization
@@ -36,6 +49,8 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   late final ThemeProvider _themeProvider;
   late final CartProvider _cartProvider;
   late final BuildProvider _buildProvider;
+  final AuthService _authService = AuthService()..init();
+  final ShopProvider _shopProvider = ShopProvider();
   late final Connectivity _connectivity;
   bool _showOnboarding = false;
   bool _isOnline = true;
@@ -56,6 +71,7 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
     await _themeProvider.init();
     await _cartProvider.init();
     await _buildProvider.init();
+    await _shopProvider.init();
 
     // Check if onboarding is completed
     final prefs = await PreferencesService.getPreferences();
@@ -67,7 +83,9 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   }
 
   void _setupConnectivityListener() {
-    _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) {
+    _connectivity.onConnectivityChanged.listen((
+      List<ConnectivityResult> results,
+    ) {
       final isOnline = results.any((r) => r != ConnectivityResult.none);
       if (_isOnline != isOnline && mounted) {
         setState(() {
@@ -89,7 +107,9 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
 
   void _onOnboardingComplete() async {
     final prefs = await PreferencesService.getPreferences();
-    await PreferencesService.savePreferences(prefs.copyWith(onboardingCompleted: true));
+    await PreferencesService.savePreferences(
+      prefs.copyWith(onboardingCompleted: true),
+    );
     if (mounted) {
       setState(() {
         _showOnboarding = false;
@@ -104,9 +124,11 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
         ChangeNotifierProvider.value(value: _themeProvider),
         ChangeNotifierProvider.value(value: _cartProvider),
         ChangeNotifierProvider.value(value: _buildProvider),
+        ChangeNotifierProvider.value(value: _authService),
+        ChangeNotifierProvider.value(value: _shopProvider),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, _) {
+      child: Consumer2<ThemeProvider, AuthService>(
+        builder: (context, themeProvider, _, _) {
           return MaterialApp(
             title: 'ByteBudget',
             debugShowCheckedModeBanner: false,
@@ -122,7 +144,9 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   }
 
   Widget _buildAppRoot() {
-    if (!_themeProvider.isInitialized || !_cartProvider.isInitialized || !_buildProvider.isInitialized) {
+    if (!_themeProvider.isInitialized ||
+        !_cartProvider.isInitialized ||
+        !_buildProvider.isInitialized) {
       return _buildSplashScreen();
     }
 
@@ -130,72 +154,73 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
       return OnboardingScreen(onComplete: _onOnboardingComplete);
     }
 
+    if (!_authService.signedIn) {
+      return const LoginScreen();
+    }
+
     return Stack(
       children: [
         const MainScreen(),
-        if (!_isOnline)
-          const ConnectivityBanner(),
+        if (!_isOnline) const ConnectivityBanner(),
       ],
     );
   }
 
   Widget _buildSplashScreen() {
-      return Scaffold(
-        backgroundColor: BBColors.nightBg,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                gradient: BrandAccents.electricGradient,
-                                borderRadius: BorderRadius.circular(BBColors.radiusLg),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: BrandAccents.electricBlueAt(0.4),
-                                    blurRadius: 30,
-                                    spreadRadius: 5,
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.memory_rounded,
-                                size: 50,
-                                color: Colors.white,
-                              ),
-                            ),
-              const SizedBox(height: BBColors.padXL),
-              Text(
-                'ByteBudget',
-                style: BBText.displayLarge(
-                  size: 36,
-                  color: BBColors.white,
-                  weight: FontWeight.w700,
-                ),
+    return Scaffold(
+      backgroundColor: BBColors.nightBg,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                gradient: BrandAccents.electricGradient,
+                borderRadius: BorderRadius.circular(BBColors.radiusLg),
+                boxShadow: [
+                  BoxShadow(
+                    color: BrandAccents.electricBlueAt(0.4),
+                    blurRadius: 30,
+                    spreadRadius: 5,
+                  ),
+                ],
               ),
-              const SizedBox(height: BBColors.padM),
-              Text(
-                'Your PC Build Companion',
-                style: BBText.bodyLarge(
-                  color: BBColors.nightTextSecondary,
-                ),
+              child: const Icon(
+                Icons.memory_rounded,
+                size: 50,
+                color: Colors.white,
               ),
-              const SizedBox(height: BBColors.padXXL),
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(BBColors.accentBlue),
-                ),
+            ),
+            const SizedBox(height: BBColors.padXL),
+            Text(
+              'ByteBudget',
+              style: BBText.displayLarge(
+                size: 36,
+                color: BBColors.white,
+                weight: FontWeight.w700,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: BBColors.padM),
+            Text(
+              'Your PC Build Companion',
+              style: BBText.bodyLarge(color: BBColors.nightTextSecondary),
+            ),
+            const SizedBox(height: BBColors.padXXL),
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(BBColors.accentBlue),
+              ),
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
 
   Route<dynamic>? _generateRoute(RouteSettings settings) {
     // Handle deep links or specific routes if needed

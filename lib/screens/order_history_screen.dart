@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import '../providers/shop_provider.dart';
 import '../../theme/bb_colors.dart';
 import '../../theme/bb_text.dart';
 import '../../widgets/brand_card.dart';
 import '../../widgets/brand_button.dart';
 import '../../models/app_models.dart';
 import '../../services/preferences_service.dart';
+import 'main/main_screen.dart';
 
 class OrderHistoryScreen extends StatelessWidget {
   const OrderHistoryScreen({super.key});
@@ -30,9 +32,7 @@ class OrderHistoryScreen extends StatelessWidget {
               title: 'No Orders Yet',
               subtitle: 'Your purchase history will appear here',
               actionText: 'Start Shopping',
-              onAction: () {
-                // Navigate to home
-              },
+              onAction: () => goToTab(context, 0),
             );
           }
 
@@ -151,10 +151,10 @@ class _OrderCard extends StatelessWidget {
                     color: isDark ? BBColors.nightSurface : BBColors.daySurface,
                     borderRadius: BorderRadius.circular(BBColors.radiusSm),
                   ),
-                  child: item.component.images.isNotEmpty
+                  child: item.image != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(BBColors.radiusSm),
-                          child: Image.asset(item.component.images.first, fit: BoxFit.cover),
+                          child: Image.asset(item.image!, fit: BoxFit.cover),
                         )
                       : Icon(item.component.category.icon, size: 18, color: item.component.category.color),
                 ),
@@ -168,7 +168,7 @@ class _OrderCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text('\$${item.lineTotal.toStringAsFixed(2)}', style: BBTextResponsive.bodySmall(context, weight: FontWeight.w600)),
+                Text(context.money(item.lineTotal), style: BBTextResponsive.bodySmall(context, weight: FontWeight.w600)),
               ],
             ),
           )),
@@ -187,7 +187,7 @@ class _OrderCard extends StatelessWidget {
             children: [
               Text('${order.items.length} items', style: BBTextResponsive.bodyMedium(context)),
               Text(
-                '\$${order.total.toStringAsFixed(2)}',
+                context.money(order.total),
                 style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: BBColors.accentBlue),
               ),
             ],
