@@ -18,7 +18,8 @@ class TermsScreen extends StatefulWidget {
   State<TermsScreen> createState() => _TermsScreenState();
 }
 
-class _TermsScreenState extends State<TermsScreen> with TickerProviderStateMixin {
+class _TermsScreenState extends State<TermsScreen>
+    with TickerProviderStateMixin {
   bool _acceptedTerms = false;
   bool _acceptedPrivacy = false;
   bool _acceptedLimitations = false;
@@ -36,10 +37,13 @@ class _TermsScreenState extends State<TermsScreen> with TickerProviderStateMixin
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
     _animationController.forward();
   }
 
@@ -49,7 +53,8 @@ class _TermsScreenState extends State<TermsScreen> with TickerProviderStateMixin
     super.dispose();
   }
 
-  bool get _canProceed => _acceptedTerms && _acceptedPrivacy && _acceptedLimitations;
+  bool get _canProceed =>
+      _acceptedTerms && _acceptedPrivacy && _acceptedLimitations;
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +78,9 @@ class _TermsScreenState extends State<TermsScreen> with TickerProviderStateMixin
                         padding: const EdgeInsets.all(BBColors.padM),
                         decoration: BoxDecoration(
                           gradient: BrandAccents.electricGradient,
-                          borderRadius: BorderRadius.circular(BBColors.radiusLg),
+                          borderRadius: BorderRadius.circular(
+                            BBColors.radiusLg,
+                          ),
                         ),
                         child: const Icon(
                           Icons.memory_rounded,
@@ -88,11 +95,17 @@ class _TermsScreenState extends State<TermsScreen> with TickerProviderStateMixin
                           children: [
                             Text(
                               'ByteBudget',
-                              style: BBTextResponsive.titleLarge(context, weight: FontWeight.w700),
+                              style: BBTextResponsive.titleLarge(
+                                context,
+                                weight: FontWeight.w700,
+                              ),
                             ),
                             Text(
                               'Terms & Conditions',
-                              style: BBTextResponsive.bodyMedium(context, color: BBColors.textMuted(context)),
+                              style: BBTextResponsive.bodyMedium(
+                                context,
+                                color: BBColors.textMuted(context),
+                              ),
                             ),
                           ],
                         ),
@@ -102,12 +115,18 @@ class _TermsScreenState extends State<TermsScreen> with TickerProviderStateMixin
                 ),
                 // Progress indicator
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: BBColors.padXL),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: BBColors.padXL,
+                  ),
                   height: 4,
                   child: LinearProgressIndicator(
                     value: 0.5,
-                    backgroundColor: isDark ? BBColors.nightDivider : BBColors.dayDivider,
-                    valueColor: AlwaysStoppedAnimation<Color>(BBColors.accentBlue),
+                    backgroundColor: isDark
+                        ? BBColors.nightDivider
+                        : BBColors.dayDivider,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      BBColors.accentBlue,
+                    ),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -115,7 +134,9 @@ class _TermsScreenState extends State<TermsScreen> with TickerProviderStateMixin
                 // Scrollable content
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: BBColors.padXL),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: BBColors.padXL,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -138,7 +159,8 @@ class _TermsScreenState extends State<TermsScreen> with TickerProviderStateMixin
                           color: BBColors.accentGreen,
                           required: true,
                           value: _acceptedPrivacy,
-                          onChanged: (v) => setState(() => _acceptedPrivacy = v),
+                          onChanged: (v) =>
+                              setState(() => _acceptedPrivacy = v),
                           content: _privacyPolicyContent,
                         ),
                         const SizedBox(height: BBColors.padL),
@@ -149,7 +171,8 @@ class _TermsScreenState extends State<TermsScreen> with TickerProviderStateMixin
                           color: BBColors.accentOrange,
                           required: true,
                           value: _acceptedLimitations,
-                          onChanged: (v) => setState(() => _acceptedLimitations = v),
+                          onChanged: (v) =>
+                              setState(() => _acceptedLimitations = v),
                           content: _limitationsContent,
                         ),
                       ],
@@ -177,13 +200,26 @@ class _TermsScreenState extends State<TermsScreen> with TickerProviderStateMixin
                         child: OutlinedButton(
                           onPressed: widget.onDecline,
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: BBColors.padM),
-                            side: BorderSide(color: isDark ? BBColors.nightDivider : BBColors.dayDivider),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusLg)),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: BBColors.padM,
+                            ),
+                            side: BorderSide(
+                              color: isDark
+                                  ? BBColors.nightDivider
+                                  : BBColors.dayDivider,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                BBColors.radiusLg,
+                              ),
+                            ),
                           ),
                           child: Text(
                             'Decline & Exit',
-                            style: BBTextResponsive.labelLarge(context, color: BBColors.textMuted(context)),
+                            style: BBTextResponsive.labelLarge(
+                              context,
+                              color: BBColors.textMuted(context),
+                            ),
                           ),
                         ),
                       ),
@@ -358,7 +394,8 @@ class _AgreementSection extends StatefulWidget {
   State<_AgreementSection> createState() => _AgreementSectionState();
 }
 
-class _AgreementSectionState extends State<_AgreementSection> with SingleTickerProviderStateMixin {
+class _AgreementSectionState extends State<_AgreementSection>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _heightAnimation;
   bool _expanded = false;
@@ -371,7 +408,10 @@ class _AgreementSectionState extends State<_AgreementSection> with SingleTickerP
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _heightAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _heightAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
     if (_expanded) _controller.value = 1.0;
   }
 
@@ -417,7 +457,9 @@ class _AgreementSectionState extends State<_AgreementSection> with SingleTickerP
           // Header
           InkWell(
             onTap: _toggle,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(BBColors.radiusXL)),
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(BBColors.radiusXL),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(BBColors.padM),
               child: Row(
@@ -428,7 +470,11 @@ class _AgreementSectionState extends State<_AgreementSection> with SingleTickerP
                       color: widget.color.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(BBColors.radiusMd),
                     ),
-                    child: Icon(widget.icon, size: 20, color: widget.color),
+                    child: Icon(
+                      widget.icon,
+                      size: 20,
+                      color: BBColors.readable(context, widget.color),
+                    ),
                   ),
                   const SizedBox(width: BBColors.padM),
                   Expanded(
@@ -437,21 +483,37 @@ class _AgreementSectionState extends State<_AgreementSection> with SingleTickerP
                       children: [
                         Row(
                           children: [
-                            Text(
-                              widget.title,
-                              style: BBTextResponsive.titleMedium(context, weight: FontWeight.w600),
+                            Flexible(
+                              child: Text(
+                                widget.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: BBTextResponsive.titleMedium(
+                                  context,
+                                  weight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                             if (widget.required) ...[
                               const SizedBox(width: BBColors.padS),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: widget.color.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(BBColors.radiusFull),
+                                  borderRadius: BorderRadius.circular(
+                                    BBColors.radiusFull,
+                                  ),
                                 ),
                                 child: Text(
                                   'Required',
-                                  style: BBTextResponsive.labelSmall(context, color: widget.color, weight: FontWeight.w600),
+                                  style: BBTextResponsive.labelSmall(
+                                    context,
+                                    color: widget.color,
+                                    weight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ],
@@ -459,7 +521,10 @@ class _AgreementSectionState extends State<_AgreementSection> with SingleTickerP
                         ),
                         Text(
                           _expanded ? 'Tap to collapse' : 'Tap to expand',
-                          style: BBTextResponsive.bodySmall(context, color: BBColors.textMuted(context)),
+                          style: BBTextResponsive.bodySmall(
+                            context,
+                            color: BBColors.textMuted(context),
+                          ),
                         ),
                       ],
                     ),
@@ -477,7 +542,9 @@ class _AgreementSectionState extends State<_AgreementSection> with SingleTickerP
                     value: widget.value,
                     onChanged: (v) => widget.onChanged(v ?? false),
                     activeColor: widget.color,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(BBColors.radiusSm)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(BBColors.radiusSm),
+                    ),
                   ),
                 ],
               ),
@@ -489,10 +556,18 @@ class _AgreementSectionState extends State<_AgreementSection> with SingleTickerP
             alignment: Alignment.topCenter,
             child: ClipRect(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(BBColors.padM, 0, BBColors.padM, BBColors.padM),
+                padding: const EdgeInsets.fromLTRB(
+                  BBColors.padM,
+                  0,
+                  BBColors.padM,
+                  BBColors.padM,
+                ),
                 child: SelectableText(
                   widget.content,
-                  style: BBTextResponsive.bodyMedium(context).copyWith(height: 1.6, color: BBColors.textSecondary(context)),
+                  style: BBTextResponsive.bodyMedium(context).copyWith(
+                    height: 1.6,
+                    color: BBColors.textSecondary(context),
+                  ),
                 ),
               ),
             ),

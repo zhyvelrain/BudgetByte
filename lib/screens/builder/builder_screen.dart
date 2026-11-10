@@ -5,14 +5,22 @@ import '../../theme/bb_colors.dart';
 import '../../theme/bb_text.dart';
 import '../../widgets/brand_card.dart';
 import '../../widgets/brand_button.dart';
+import '../../widgets/peripheral_scene.dart';
 import '../../services/component_data_service.dart';
 import '../../models/app_models.dart';
 import '../../providers/build_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../main/main_screen.dart';
 
-class BuilderScreen extends StatelessWidget {
+class BuilderScreen extends StatefulWidget {
   const BuilderScreen({super.key});
+
+  @override
+  State<BuilderScreen> createState() => _BuilderScreenState();
+}
+
+class _BuilderScreenState extends State<BuilderScreen> {
+  bool _previewOpen = true;
 
   @override
   Widget build(BuildContext context) {
@@ -34,35 +42,61 @@ class BuilderScreen extends StatelessWidget {
         ),
         body: Consumer<BuildProvider>(
           builder: (context, buildProvider, _) {
-            return Column(
-              children: [
-                // Build Summary Card
-                _BuildSummaryCard(buildProvider: buildProvider),
-                // Component Selection
-                Expanded(
-                  child: TabBarView(
-                    children: ComponentCategory.values.map((category) {
-                      final components = ComponentDataService.getByCategory(category);
-                      final selected = buildProvider.getSelectedComponent(category);
-                      return _ComponentList(
-                        category: category,
-                        components: components,
-                        selectedComponent: selected,
-                        selectedOption: selected?.options.where((o) => o.isDefault).firstOrNull ?? selected?.options.firstOrNull,
-                        onSelect: (component, option) {
-                          buildProvider.selectComponent(category, component, option: option);
-                          _goToNextStep(context, buildProvider);
-                        },
-                        onClear: () {
-                          buildProvider.clearComponent(category);
-                        },
-                      );
-                    }).toList(),
-                  ),
-                ),
-                // Action Buttons
-                _BuildActionBar(buildProvider: buildProvider),
-              ],
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                // Keep the live preview when there is room; on very short
+                // windows it collapses so the component list never overflows.
+                final showPreview =
+                    _previewOpen && constraints.maxHeight >= 300;
+                final previewHeight =
+                    (constraints.maxHeight * 0.33).clamp(112.0, 260.0);
+
+                return Column(
+                  children: [
+                    _BuildSummaryCard(
+                      buildProvider: buildProvider,
+                      showPreview: showPreview,
+                      previewHeight: previewHeight,
+                      onTogglePreview: constraints.maxHeight >= 300
+                          ? () => setState(
+                                () => _previewOpen = !_previewOpen,
+                              )
+                          : null,
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        children: ComponentCategory.values.map((category) {
+                          final components =
+                              ComponentDataService.getByCategory(category);
+                          final selected =
+                              buildProvider.getSelectedComponent(category);
+                          return _ComponentList(
+                            category: category,
+                            components: components,
+                            selectedComponent: selected,
+                            selectedOption: selected?.options
+                                    .where((o) => o.isDefault)
+                                    .firstOrNull ??
+                                selected?.options.firstOrNull,
+                            onSelect: (component, option) {
+                              buildProvider.selectComponent(
+                                category,
+                                component,
+                                option: option,
+                              );
+                              _goToNextStep(context, buildProvider);
+                            },
+                            onClear: () {
+                              buildProvider.clearComponent(category);
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    _BuildActionBar(buildProvider: buildProvider),
+                  ],
+                );
+              },
             );
           },
         ),
@@ -86,8 +120,16 @@ class BuilderScreen extends StatelessWidget {
 
 class _BuildSummaryCard extends StatelessWidget {
   final BuildProvider buildProvider;
+  final bool showPreview;
+  final double previewHeight;
+  final VoidCallback? onTogglePreview;
 
-  const _BuildSummaryCard({required this.buildProvider});
+  const _BuildSummaryCard({
+    required this.buildProvider,
+    required this.showPreview,
+    required this.previewHeight,
+    this.onTogglePreview,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -121,18 +163,51 @@ class _BuildSummaryCard extends StatelessWidget {
                     ),
                     Text(
                       complete ? 'All $total parts picked' : '$completed of $total parts · ${total - completed} to go',
-                      style: BBTextResponsive.bodySmall(context, color: complete ? BBColors.accentGreen : null),
+                      style: BBTextResponsive.bodySmall(
+                        context,
+                        color: complete ? BBColors.accentGreen : null,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: BBColors.padM),
-              Text(
-                context.money(build?.totalPrice ?? 0),
-                style: BBTextResponsive.titleLarge(context, weight: FontWeight.w700),
+              const SizedBox(width: BBColors.padS),
+              Flexible(
+                child: Text(
+                  context.money(build?.totalPrice ?? 0),
+                  style: BBTextResponsive.titleLarge(context, weight: FontWeight.w700),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              if (onTogglePreview != null) ...[
+                const SizedBox(width: 4),
+                IconButton(
+                  onPressed: onTogglePreview,
+                  tooltip: showPreview ? 'Hide 3D preview' : 'Show 3D preview',
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    showPreview
+                        ? Icons.view_in_ar_rounded
+                        : Icons.view_in_ar_outlined,
+                    size: 20,
+                    color: showPreview
+                        ? BBColors.readable(context, BBColors.accentBlue)
+                        : BBColors.textMuted(context),
+                  ),
+                ),
+              ],
             ],
           ),
+          if (showPreview) ...[
+            const SizedBox(height: BBColors.padS),
+            PeripheralScene(
+              slots: SceneSlot.fromBuild(build),
+              height: previewHeight,
+              showControls: true,
+              showLegend: previewHeight >= 170,
+            ),
+          ],
           const SizedBox(height: BBColors.padM),
           ClipRRect(
             borderRadius: BorderRadius.circular(BBColors.radiusSm),
@@ -269,13 +344,13 @@ class _ComponentCard extends StatelessWidget {
                         errorBuilder: (_, _, _) => Icon(
                           component.category.icon,
                           size: 32,
-                          color: categoryColor,
+                          color: BBColors.readable(context, categoryColor),
                         ),
                       )
                     : Icon(
                         component.category.icon,
                         size: 32,
-                        color: categoryColor,
+                        color: BBColors.readable(context, categoryColor),
                       ),
               ),
             ),
@@ -366,12 +441,17 @@ class _ComponentCard extends StatelessWidget {
                 icon: Icon(Icons.clear_rounded, color: BBColors.textMuted(context), size: 20),
                 onPressed: onClear,
                 tooltip: 'Remove',
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+                padding: EdgeInsets.zero,
               )
             else
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 16,
-                color: isSelected ? categoryColor : BBColors.textMuted(context),
+                color: isSelected
+                    ? BBColors.readable(context, categoryColor)
+                    : BBColors.textMuted(context),
               ),
           ],
         ),
@@ -500,7 +580,14 @@ class _ComponentOptionSheet extends StatelessWidget {
                                       ),
                                     ),
                                     if (isSelected)
-                                      Icon(Icons.check_circle_rounded, color: component.category.color, size: 20),
+                                      Icon(
+                                        Icons.check_circle_rounded,
+                                        color: BBColors.readable(
+                                          context,
+                                          component.category.color,
+                                        ),
+                                        size: 20,
+                                      ),
                                   ],
                                 ),
                                 if (option.specs != null && option.specs!.isNotEmpty)

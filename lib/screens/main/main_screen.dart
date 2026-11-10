@@ -43,7 +43,15 @@ class _MainScreenState extends State<MainScreen> {
     return ValueListenableBuilder<int>(
       valueListenable: mainTab,
       builder: (context, index, _) => Scaffold(
-        body: IndexedStack(index: index, children: _screens),
+        body: IndexedStack(
+          index: index,
+          children: [
+            for (var i = 0; i < _screens.length; i++)
+              // Keep off-screen tabs alive, but stop their tickers so hidden
+              // 3D previews and loading animations don't burn frames.
+              TickerMode(enabled: i == index, child: _screens[i]),
+          ],
+        ),
         bottomNavigationBar: CustomBottomNavBar(
           currentIndex: index,
           onTap: (i) => mainTab.value = i,

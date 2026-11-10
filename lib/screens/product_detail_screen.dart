@@ -10,29 +10,41 @@ import '../../providers/shop_provider.dart';
 import 'main/main_screen.dart';
 
 /// Adds one unit (default variant unless given) to the cart and confirms with a snackbar.
-void addToCartWithFeedback(BuildContext context, Component component, [ComponentOption? option]) {
-  option ??= component.options.where((o) => o.isDefault).firstOrNull ?? component.options.firstOrNull;
-  context.read<CartProvider>().addItem(CartItem(
-        id: '${component.id}_${option?.id}_${DateTime.now().millisecondsSinceEpoch}',
-        component: component,
-        selectedOption: option?.name,
-        option: option,
-        quantity: 1,
-      ));
+void addToCartWithFeedback(
+  BuildContext context,
+  Component component, [
+  ComponentOption? option,
+]) {
+  option ??=
+      component.options.where((o) => o.isDefault).firstOrNull ??
+      component.options.firstOrNull;
+  context.read<CartProvider>().addItem(
+    CartItem(
+      id: '${component.id}_${option?.id}_${DateTime.now().millisecondsSinceEpoch}',
+      component: component,
+      selectedOption: option?.name,
+      option: option,
+      quantity: 1,
+    ),
+  );
   final navigator = Navigator.of(context);
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(
-      content: Text('${component.name}${option == null ? '' : ' (${option.name})'} added to cart'),
-      behavior: SnackBarBehavior.floating,
-      action: SnackBarAction(
-        label: 'View Cart',
-        onPressed: () {
-          navigator.popUntil((route) => route.isFirst);
-          mainTab.value = 2;
-        },
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          '${component.name}${option == null ? '' : ' (${option.name})'} added to cart',
+        ),
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'View Cart',
+          onPressed: () {
+            navigator.popUntil((route) => route.isFirst);
+            mainTab.value = 2;
+          },
+        ),
       ),
-    ));
+    );
 }
 
 class ProductDetailScreen extends StatefulWidget {
@@ -46,7 +58,8 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late ComponentOption? _option =
-      widget.component.options.where((o) => o.isDefault).firstOrNull ?? widget.component.options.firstOrNull;
+      widget.component.options.where((o) => o.isDefault).firstOrNull ??
+      widget.component.options.firstOrNull;
 
   Component get component => widget.component;
 
@@ -57,7 +70,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final shop = context.watch<ShopProvider>();
     final isFavorite = shop.isFavorite(component.id);
     final price = _option?.price ?? component.price;
-    final originalPrice = _option == null ? component.originalPrice : _option!.originalPrice;
+    final originalPrice = _option == null
+        ? component.originalPrice
+        : _option!.originalPrice;
     final image = _option?.image ?? component.images.firstOrNull;
 
     return Scaffold(
@@ -71,10 +86,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             backgroundColor: Colors.transparent,
             actions: [
               IconButton.filledTonal(
-                tooltip: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+                tooltip: isFavorite
+                    ? 'Remove from favorites'
+                    : 'Add to favorites',
                 onPressed: () => shop.toggleFavorite(component.id),
                 icon: Icon(
-                  isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  isFavorite
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
                   color: isFavorite ? BBColors.danger : null,
                 ),
               ),
@@ -100,8 +119,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
-                              semanticLabel: '${component.name}, ${_option?.name ?? ''}',
-                              errorBuilder: (_, _, _) => _placeholderImage(categoryColor),
+                              semanticLabel:
+                                  '${component.name}, ${_option?.name ?? ''}',
+                              errorBuilder: (_, _, _) =>
+                                  _placeholderImage(categoryColor),
                             )
                           : _placeholderImage(categoryColor),
                     ),
@@ -115,7 +136,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            (isDark ? BBColors.nightBg : BBColors.dayBg).withValues(alpha: 0.8),
+                            (isDark ? BBColors.nightBg : BBColors.dayBg)
+                                .withValues(alpha: 0.8),
                           ],
                         ),
                       ),
@@ -132,14 +154,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       bottom: BBColors.padL,
                       left: BBColors.padL,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: BBColors.accentRed,
-                          borderRadius: BorderRadius.circular(BBColors.radiusLg),
+                          borderRadius: BorderRadius.circular(
+                            BBColors.radiusLg,
+                          ),
                         ),
                         child: Text(
                           component.discountLabel!,
-                          style: BBTextResponsive.labelSmall(context, color: Colors.white, weight: FontWeight.w700),
+                          style: BBTextResponsive.labelSmall(
+                            context,
+                            color: Colors.white,
+                            weight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),
@@ -163,12 +194,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         children: [
                           Text(
                             component.brand,
-                            style: BBTextResponsive.labelLarge(context, color: categoryColor, weight: FontWeight.w600),
+                            style: BBTextResponsive.labelLarge(
+                              context,
+                              color: categoryColor,
+                              weight: FontWeight.w600,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             component.name,
-                            style: BBTextResponsive.headlineLarge(context, weight: FontWeight.w700),
+                            style: BBTextResponsive.headlineLarge(
+                              context,
+                              weight: FontWeight.w700,
+                            ),
                           ),
                         ],
                       ),
@@ -176,15 +214,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     // Rating
                     Row(
                       children: [
-                        Icon(Icons.star_rounded, size: 18, color: BBColors.accentOrange),
+                        Icon(
+                          Icons.star_rounded,
+                          size: 18,
+                          color: BBColors.readable(
+                            context,
+                            BBColors.accentOrange,
+                          ),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           component.rating.toStringAsFixed(1),
-                          style: BBTextResponsive.titleMedium(context, weight: FontWeight.w600),
+                          style: BBTextResponsive.titleMedium(
+                            context,
+                            weight: FontWeight.w600,
+                          ),
                         ),
                         Text(
                           ' (${component.reviewCount})',
-                          style: BBTextResponsive.bodyMedium(context, color: BBColors.textMuted(context)),
+                          style: BBTextResponsive.bodyMedium(
+                            context,
+                            color: BBColors.textMuted(context),
+                          ),
                         ),
                       ],
                     ),
@@ -203,12 +254,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         children: [
                           Text(
                             context.money(price),
-                            style: BBTextResponsive.displayLarge(context, color: categoryColor, weight: FontWeight.w800, size: 32),
+                            style: BBTextResponsive.displayLarge(
+                              context,
+                              color: categoryColor,
+                              weight: FontWeight.w800,
+                              size: 32,
+                            ),
                           ),
                           if (originalPrice != null && originalPrice > price)
                             Text(
                               context.money(originalPrice),
-                              style: BBTextResponsive.titleMedium(context).copyWith(decoration: TextDecoration.lineThrough),
+                              style: BBTextResponsive.titleMedium(context)
+                                  .copyWith(
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
                             ),
                         ],
                       ),
@@ -220,54 +279,96 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 const SizedBox(height: BBColors.padXL),
 
                 // Description
-                Text('Description', style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600)),
+                Text(
+                  'Description',
+                  style: BBTextResponsive.titleLarge(
+                    context,
+                    weight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: BBColors.padM),
-                Text(component.description, style: BBTextResponsive.bodyLarge(context).copyWith(height: 1.6)),
+                Text(
+                  component.description,
+                  style: BBTextResponsive.bodyLarge(
+                    context,
+                  ).copyWith(height: 1.6),
+                ),
                 const SizedBox(height: BBColors.padXL),
 
                 // Specs
                 if (component.specs.isNotEmpty) ...[
-                  Text('Specifications', style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600)),
+                  Text(
+                    'Specifications',
+                    style: BBTextResponsive.titleLarge(
+                      context,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: BBColors.padM),
                   BrandCard(
                     padding: const EdgeInsets.all(BBColors.padL),
                     child: Column(
-                      children: component.specs.entries.map((entry) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(child: Text(entry.key, style: BBTextResponsive.bodyMedium(context))),
-                            const SizedBox(width: BBColors.padM),
-                            Expanded(
-                              child: Text(
-                                entry.value,
-                                textAlign: TextAlign.end,
-                                style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600),
+                      children: component.specs.entries
+                          .map(
+                            (entry) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      entry.key,
+                                      style: BBTextResponsive.bodyMedium(
+                                        context,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: BBColors.padM),
+                                  Expanded(
+                                    child: Text(
+                                      entry.value,
+                                      textAlign: TextAlign.end,
+                                      style: BBTextResponsive.bodyMedium(
+                                        context,
+                                        weight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      )).toList(),
+                          )
+                          .toList(),
                     ),
                   ),
                   const SizedBox(height: BBColors.padXL),
                 ],
 
                 if (component.options.isNotEmpty) ...[
-                  Text('Select Variant', style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600)),
+                  Text(
+                    'Select Variant',
+                    style: BBTextResponsive.titleLarge(
+                      context,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: BBColors.padM),
                   _OptionSelector(
                     component: component,
-                    onOptionSelected: (option) => setState(() => _option = option),
+                    onOptionSelected: (option) =>
+                        setState(() => _option = option),
                   ),
                   const SizedBox(height: BBColors.padXL),
                 ],
 
                 BrandButton(
-                  text: component.isInStock ? 'Add to Cart - ${context.money(price)}' : 'Out of Stock',
+                  text: component.isInStock
+                      ? 'Add to Cart - ${context.money(price)}'
+                      : 'Out of Stock',
                   icon: Icons.shopping_cart_rounded,
-                  onPressed: component.isInStock ? () => addToCartWithFeedback(context, component, _option) : null,
+                  onPressed: component.isInStock
+                      ? () => addToCartWithFeedback(context, component, _option)
+                      : null,
                   fullWidth: true,
                   height: 56,
                 ),
@@ -294,7 +395,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: Icon(
           component.category.icon,
           size: 80,
-          color: categoryColor,
+          color: BBColors.readable(context, categoryColor),
         ),
       ),
     );
@@ -321,7 +422,11 @@ class _CategoryBadge extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             category.label,
-            style: BBTextResponsive.labelSmall(context, color: Colors.white, weight: FontWeight.w600),
+            style: BBTextResponsive.labelSmall(
+              context,
+              color: Colors.white,
+              weight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -346,7 +451,11 @@ class _StockBadge extends StatelessWidget {
         ),
         child: Text(
           'Out of Stock',
-          style: BBTextResponsive.labelSmall(context, color: BBColors.accentRed, weight: FontWeight.w600),
+          style: BBTextResponsive.labelSmall(
+            context,
+            color: BBColors.accentRed,
+            weight: FontWeight.w600,
+          ),
         ),
       );
     } else if (stock <= 5) {
@@ -355,11 +464,17 @@ class _StockBadge extends StatelessWidget {
         decoration: BoxDecoration(
           color: BBColors.accentOrange.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(BBColors.radiusLg),
-          border: Border.all(color: BBColors.accentOrange.withValues(alpha: 0.3)),
+          border: Border.all(
+            color: BBColors.accentOrange.withValues(alpha: 0.3),
+          ),
         ),
         child: Text(
           'Only $stock left',
-          style: BBTextResponsive.labelSmall(context, color: BBColors.accentOrange, weight: FontWeight.w600),
+          style: BBTextResponsive.labelSmall(
+            context,
+            color: BBColors.accentOrange,
+            weight: FontWeight.w600,
+          ),
         ),
       );
     }
@@ -371,7 +486,11 @@ class _StockBadge extends StatelessWidget {
       ),
       child: Text(
         'In Stock',
-        style: BBTextResponsive.labelSmall(context, color: BBColors.accentGreen, weight: FontWeight.w600),
+        style: BBTextResponsive.labelSmall(
+          context,
+          color: BBColors.accentGreen,
+          weight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -417,26 +536,33 @@ class _OptionSelectorState extends State<_OptionSelector> {
                 final option = widget.component.options[index];
                 final isSelected = _selectedOption.id == option.id;
 
+                final swatchColor = option.colorHex != null
+                    ? Color(
+                        int.parse(option.colorHex!.replaceFirst('#', '0xFF')),
+                      )
+                    : widget.component.category.color;
+
                 return GestureDetector(
                   onTap: () => setState(() => _selectedOption = option),
                   child: Container(
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: option.colorHex != null
-                          ? Color(int.parse(option.colorHex!.replaceFirst('#', '0xFF')))
-                          : widget.component.category.color,
+                      color: swatchColor,
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: isSelected
                             ? widget.component.category.color
-                            : (isDark ? BBColors.nightDivider : BBColors.dayDivider),
+                            : (isDark
+                                  ? BBColors.nightDivider
+                                  : BBColors.dayDivider),
                         width: isSelected ? 3 : 1,
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: widget.component.category.color.withValues(alpha: 0.4),
+                                color: widget.component.category.color
+                                    .withValues(alpha: 0.4),
                                 blurRadius: 8,
                                 spreadRadius: 2,
                               ),
@@ -444,7 +570,13 @@ class _OptionSelectorState extends State<_OptionSelector> {
                           : null,
                     ),
                     child: isSelected
-                        ? const Icon(Icons.check, color: Colors.white, size: 24)
+                        ? Icon(
+                            Icons.check,
+                            color: swatchColor.computeLuminance() > 0.55
+                                ? Colors.black
+                                : Colors.white,
+                            size: 24,
+                          )
                         : null,
                   ),
                 );
@@ -469,83 +601,156 @@ class _OptionSelectorState extends State<_OptionSelector> {
                 widget.onOptionSelected(option);
               },
               child: BrandCard(
-                variant: isSelected ? BrandCardVariant.gradient : BrandCardVariant.defaultCard,
+                variant: isSelected
+                    ? BrandCardVariant.gradient
+                    : BrandCardVariant.defaultCard,
                 border: isSelected
-                    ? Border.all(color: widget.component.category.color, width: 2)
+                    ? Border.all(
+                        color: widget.component.category.color,
+                        width: 2,
+                      )
                     : null,
                 padding: const EdgeInsets.all(BBColors.padM),
-                child: Row(
-                  children: [
-                    if (option.image != null) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(BBColors.radiusSm),
-                        child: Image.asset(
-                          option.image!,
-                          width: 48,
-                          height: 48,
-                          fit: BoxFit.cover,
-                          cacheWidth: 144,
-                          errorBuilder: (_, _, _) => const SizedBox(width: 48, height: 48),
-                        ),
-                      ),
-                      const SizedBox(width: BBColors.padM),
-                    ],
-                    // Color indicator
-                    if (option.colorHex != null) ...[
-                      Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: Color(int.parse(option.colorHex!.replaceFirst('#', '0xFF'))),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isDark ? BBColors.nightBorder : BBColors.dayBorder,
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: BBColors.padM),
-                    ],
-                    // Info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            option.name,
-                            style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600),
-                          ),
-                          if (option.specs != null && option.specs!.isNotEmpty)
-                            Text(
-                              option.specs!.entries.map((e) => '${e.key}: ${e.value}').join(' • '),
-                              style: BBTextResponsive.caption(context),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Image + swatch + price + radio leaves almost no room for
+                    // the option name on a phone, so move the price below.
+                    final compact = constraints.maxWidth < 380;
+                    final leading = Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (option.image != null) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              BBColors.radiusSm,
                             ),
+                            child: Image.asset(
+                              option.image!,
+                              width: 48,
+                              height: 48,
+                              fit: BoxFit.cover,
+                              cacheWidth: 144,
+                              errorBuilder: (_, _, _) =>
+                                  const SizedBox(width: 48, height: 48),
+                            ),
+                          ),
+                          const SizedBox(width: BBColors.padM),
                         ],
-                      ),
-                    ),
-                    // Price
-                    Column(
+                        if (option.colorHex != null) ...[
+                          Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: Color(
+                                int.parse(
+                                  option.colorHex!.replaceFirst('#', '0xFF'),
+                                ),
+                              ),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDark
+                                    ? BBColors.nightBorder
+                                    : BBColors.dayBorder,
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: BBColors.padM),
+                        ],
+                      ],
+                    );
+                    final info = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          option.name,
+                          style: BBTextResponsive.bodyMedium(
+                            context,
+                            weight: FontWeight.w600,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (option.specs != null && option.specs!.isNotEmpty)
+                          Text(
+                            option.specs!.entries
+                                .map((e) => '${e.key}: ${e.value}')
+                                .join(' • '),
+                            style: BBTextResponsive.caption(context),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
+                    );
+                    final price = Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
                           context.money(option.price ?? widget.component.price),
-                          style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: widget.component.category.color),
+                          style: BBTextResponsive.titleMedium(
+                            context,
+                            weight: FontWeight.w700,
+                            color: widget.component.category.color,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        if (option.originalPrice != null && option.price != null && option.originalPrice! > option.price!)
+                        if (option.originalPrice != null &&
+                            option.price != null &&
+                            option.originalPrice! > option.price!)
                           Text(
                             context.money(option.originalPrice!),
-                            style: BBTextResponsive.caption(context).copyWith(decoration: TextDecoration.lineThrough),
+                            style: BBTextResponsive.caption(
+                              context,
+                            ).copyWith(decoration: TextDecoration.lineThrough),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                       ],
-                    ),
-                    const SizedBox(width: BBColors.padM),
-                    // Selection indicator
-                    Icon(
-                      isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded,
-                      color: isSelected ? widget.component.category.color : BBColors.textMuted(context),
+                    );
+                    final radio = Icon(
+                      isSelected
+                          ? Icons.radio_button_checked_rounded
+                          : Icons.radio_button_unchecked_rounded,
+                      color: isSelected
+                          ? BBColors.readable(
+                              context,
+                              widget.component.category.color,
+                            )
+                          : BBColors.textMuted(context),
                       size: 24,
-                    ),
-                  ],
+                    );
+
+                    if (compact) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              leading,
+                              Expanded(child: info),
+                              const SizedBox(width: BBColors.padS),
+                              radio,
+                            ],
+                          ),
+                          const SizedBox(height: BBColors.padS),
+                          Align(alignment: Alignment.centerRight, child: price),
+                        ],
+                      );
+                    }
+
+                    return Row(
+                      children: [
+                        leading,
+                        Expanded(child: info),
+                        const SizedBox(width: BBColors.padM),
+                        price,
+                        const SizedBox(width: BBColors.padM),
+                        radio,
+                      ],
+                    );
+                  },
                 ),
               ),
             );

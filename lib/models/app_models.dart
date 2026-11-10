@@ -36,27 +36,29 @@ class Brand {
   });
 
   factory Brand.fromJson(Map<String, dynamic> json) => Brand(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        logoUrl: json['logoUrl'] as String,
-        description: json['description'] as String,
-        categories: (json['categories'] as List)
-            .map((e) => ComponentCategory.values.firstWhere(
-                  (c) => c.name == e,
-                  orElse: () => ComponentCategory.accessory,
-                ))
-            .toList(),
-        isFeatured: json['isFeatured'] as bool? ?? false,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    logoUrl: json['logoUrl'] as String,
+    description: json['description'] as String,
+    categories: (json['categories'] as List)
+        .map(
+          (e) => ComponentCategory.values.firstWhere(
+            (c) => c.name == e,
+            orElse: () => ComponentCategory.accessory,
+          ),
+        )
+        .toList(),
+    isFeatured: json['isFeatured'] as bool? ?? false,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'logoUrl': logoUrl,
-        'description': description,
-        'categories': categories.map((e) => e.name).toList(),
-        'isFeatured': isFeatured,
-      };
+    'id': id,
+    'name': name,
+    'logoUrl': logoUrl,
+    'description': description,
+    'categories': categories.map((e) => e.name).toList(),
+    'isFeatured': isFeatured,
+  };
 }
 
 /// Component Option model (for variants like color, brand)
@@ -90,7 +92,8 @@ class ComponentOption {
     this.image,
   });
 
-  factory ComponentOption.fromJson(Map<String, dynamic> json) => ComponentOption(
+  factory ComponentOption.fromJson(Map<String, dynamic> json) =>
+      ComponentOption(
         id: json['id'] as String,
         name: json['name'] as String,
         type: json['type'] as String,
@@ -108,19 +111,19 @@ class ComponentOption {
       );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'type': type,
-        'value': value,
-        'priceAdjustment': priceAdjustment,
-        'isDefault': isDefault,
-        'colorHex': colorHex,
-        'price': price,
-        'originalPrice': originalPrice,
-        'discountLabel': discountLabel,
-        'specs': specs,
-        'image': image,
-      };
+    'id': id,
+    'name': name,
+    'type': type,
+    'value': value,
+    'priceAdjustment': priceAdjustment,
+    'isDefault': isDefault,
+    'colorHex': colorHex,
+    'price': price,
+    'originalPrice': originalPrice,
+    'discountLabel': discountLabel,
+    'specs': specs,
+    'image': image,
+  };
 }
 
 /// PC Component model
@@ -193,72 +196,72 @@ class Component {
     String? discountLabel,
     double? originalPrice,
     List<ComponentOption>? options,
-  }) =>
-      Component(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        brand: brand ?? this.brand,
-        category: category ?? this.category,
-        price: price ?? this.price,
-        description: description ?? this.description,
-        images: images ?? this.images,
-        specifications: specifications ?? this.specifications,
-        colors: colors ?? this.colors,
-        isInStock: isInStock ?? this.isInStock,
-        stockCount: stockCount ?? this.stockCount,
-        rating: rating ?? this.rating,
-        reviewCount: reviewCount ?? this.reviewCount,
-        isFeatured: isFeatured ?? this.isFeatured,
-        discountLabel: discountLabel ?? this.discountLabel,
-        originalPrice: originalPrice ?? this.originalPrice,
-        options: options ?? this.options,
-      );
+  }) => Component(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    brand: brand ?? this.brand,
+    category: category ?? this.category,
+    price: price ?? this.price,
+    description: description ?? this.description,
+    images: images ?? this.images,
+    specifications: specifications ?? this.specifications,
+    colors: colors ?? this.colors,
+    isInStock: isInStock ?? this.isInStock,
+    stockCount: stockCount ?? this.stockCount,
+    rating: rating ?? this.rating,
+    reviewCount: reviewCount ?? this.reviewCount,
+    isFeatured: isFeatured ?? this.isFeatured,
+    discountLabel: discountLabel ?? this.discountLabel,
+    originalPrice: originalPrice ?? this.originalPrice,
+    options: options ?? this.options,
+  );
 
   factory Component.fromJson(Map<String, dynamic> json) => Component(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        brand: json['brand'] as String,
-        category: ComponentCategory.values.firstWhere(
-          (e) => e.name == json['category'],
-          orElse: () => ComponentCategory.accessory,
-        ),
-        price: (json['price'] as num).toDouble(),
-        description: json['description'] as String,
-        images: List<String>.from(json['images'] as List),
-        specifications: Map<String, String>.from(json['specifications'] as Map),
-        colors: List<String>.from(json['colors'] as List),
-        isInStock: json['isInStock'] as bool,
-        stockCount: json['stockCount'] as int,
-        rating: (json['rating'] as num).toDouble(),
-        reviewCount: json['reviewCount'] as int,
-        isFeatured: json['isFeatured'] as bool? ?? false,
-        discountLabel: json['discountLabel'] as String?,
-        originalPrice: (json['originalPrice'] as num?)?.toDouble(),
-        options: (json['options'] as List?)
-                ?.map((e) => ComponentOption.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [],
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    brand: json['brand'] as String,
+    category: ComponentCategory.values.firstWhere(
+      (e) => e.name == json['category'],
+      orElse: () => ComponentCategory.accessory,
+    ),
+    price: (json['price'] as num).toDouble(),
+    description: json['description'] as String,
+    images: List<String>.from(json['images'] as List),
+    specifications: Map<String, String>.from(json['specifications'] as Map),
+    colors: List<String>.from(json['colors'] as List),
+    isInStock: json['isInStock'] as bool,
+    stockCount: json['stockCount'] as int,
+    rating: (json['rating'] as num).toDouble(),
+    reviewCount: json['reviewCount'] as int,
+    isFeatured: json['isFeatured'] as bool? ?? false,
+    discountLabel: json['discountLabel'] as String?,
+    originalPrice: (json['originalPrice'] as num?)?.toDouble(),
+    options:
+        (json['options'] as List?)
+            ?.map((e) => ComponentOption.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        [],
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'brand': brand,
-        'category': category.name,
-        'price': price,
-        'description': description,
-        'images': images,
-        'specifications': specifications,
-        'colors': colors,
-        'isInStock': isInStock,
-        'stockCount': stockCount,
-        'rating': rating,
-        'reviewCount': reviewCount,
-        'isFeatured': isFeatured,
-        'discountLabel': discountLabel,
-        'originalPrice': originalPrice,
-        'options': options.map((e) => e.toJson()).toList(),
-      };
+    'id': id,
+    'name': name,
+    'brand': brand,
+    'category': category.name,
+    'price': price,
+    'description': description,
+    'images': images,
+    'specifications': specifications,
+    'colors': colors,
+    'isInStock': isInStock,
+    'stockCount': stockCount,
+    'rating': rating,
+    'reviewCount': reviewCount,
+    'isFeatured': isFeatured,
+    'discountLabel': discountLabel,
+    'originalPrice': originalPrice,
+    'options': options.map((e) => e.toJson()).toList(),
+  };
 }
 
 /// Cart Item model
@@ -297,38 +300,39 @@ class CartItem {
     Map<String, String>? selectedOptions,
     String? selectedOption,
     ComponentOption? option,
-  }) =>
-      CartItem(
-        id: id ?? this.id,
-        component: component ?? this.component,
-        quantity: quantity ?? this.quantity,
-        selectedColor: selectedColor ?? this.selectedColor,
-        selectedOptions: selectedOptions ?? this.selectedOptions,
-        selectedOption: selectedOption ?? this.selectedOption,
-        option: option ?? this.option,
-      );
+  }) => CartItem(
+    id: id ?? this.id,
+    component: component ?? this.component,
+    quantity: quantity ?? this.quantity,
+    selectedColor: selectedColor ?? this.selectedColor,
+    selectedOptions: selectedOptions ?? this.selectedOptions,
+    selectedOption: selectedOption ?? this.selectedOption,
+    option: option ?? this.option,
+  );
 
   factory CartItem.fromJson(Map<String, dynamic> json) => CartItem(
-        id: json['id'] as String,
-        component: Component.fromJson(json['component'] as Map<String, dynamic>),
-        quantity: json['quantity'] as int,
-        selectedColor: json['selectedColor'] as String?,
-        selectedOptions: Map<String, String>.from(json['selectedOptions'] as Map? ?? {}),
-        selectedOption: json['selectedOption'] as String?,
-        option: json['option'] != null
-            ? ComponentOption.fromJson(json['option'] as Map<String, dynamic>)
-            : null,
-      );
+    id: json['id'] as String,
+    component: Component.fromJson(json['component'] as Map<String, dynamic>),
+    quantity: json['quantity'] as int,
+    selectedColor: json['selectedColor'] as String?,
+    selectedOptions: Map<String, String>.from(
+      json['selectedOptions'] as Map? ?? {},
+    ),
+    selectedOption: json['selectedOption'] as String?,
+    option: json['option'] != null
+        ? ComponentOption.fromJson(json['option'] as Map<String, dynamic>)
+        : null,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'component': component.toJson(),
-        'quantity': quantity,
-        'selectedColor': selectedColor,
-        'selectedOptions': selectedOptions ?? {},
-        'selectedOption': selectedOption,
-        'option': option?.toJson(),
-      };
+    'id': id,
+    'component': component.toJson(),
+    'quantity': quantity,
+    'selectedColor': selectedColor,
+    'selectedOptions': selectedOptions ?? {},
+    'selectedOption': selectedOption,
+    'option': option?.toJson(),
+  };
 }
 
 /// Build Configuration for PC Builder
@@ -351,10 +355,12 @@ class BuildConfig {
 
   // Alias for compatibility with screens
   BuildConfig get build => this;
-  
+
   /// Builder stores each part with only its chosen variant in `options`.
-  double get totalPrice =>
-      components.fold(0, (sum, c) => sum + (c.options.firstOrNull?.price ?? c.price));
+  double get totalPrice => components.fold(
+    0,
+    (sum, c) => sum + (c.options.firstOrNull?.price ?? c.price),
+  );
 
   int get componentCount {
     int count = 0;
@@ -367,8 +373,7 @@ class BuildConfig {
   List<Component> get components =>
       selectedComponents.values.whereType<Component>().toList();
 
-  bool get isComplete =>
-      selectedComponents.values.every((c) => c != null);
+  bool get isComplete => selectedComponents.values.every((c) => c != null);
 
   BuildConfig copyWith({
     String? id,
@@ -377,15 +382,14 @@ class BuildConfig {
     String? selectedColorTheme,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) =>
-      BuildConfig(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        selectedComponents: selectedComponents ?? this.selectedComponents,
-        selectedColorTheme: selectedColorTheme ?? this.selectedColorTheme,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-      );
+  }) => BuildConfig(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    selectedComponents: selectedComponents ?? this.selectedComponents,
+    selectedColorTheme: selectedColorTheme ?? this.selectedColorTheme,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
 
   factory BuildConfig.fromJson(Map<String, dynamic> json) {
     final componentsMap = <ComponentCategory, Component?>{};
@@ -396,7 +400,9 @@ class BuildConfig {
         orElse: () => ComponentCategory.accessory,
       );
       if (entry.value != null) {
-        componentsMap[category] = Component.fromJson(entry.value as Map<String, dynamic>);
+        componentsMap[category] = Component.fromJson(
+          entry.value as Map<String, dynamic>,
+        );
       } else {
         componentsMap[category] = null;
       }
@@ -471,57 +477,56 @@ class Order {
     String? trackingNumber,
     Address? shippingAddress,
     PaymentMethod? paymentMethod,
-  }) =>
-      Order(
-        id: id ?? this.id,
-        items: items ?? this.items,
-        subtotal: subtotal ?? this.subtotal,
-        tax: tax ?? this.tax,
-        shipping: shipping ?? this.shipping,
-        total: total ?? this.total,
-        createdAt: createdAt ?? this.createdAt,
-        status: status ?? this.status,
-        trackingNumber: trackingNumber ?? this.trackingNumber,
-        shippingAddress: shippingAddress ?? this.shippingAddress,
-        paymentMethod: paymentMethod ?? this.paymentMethod,
-      );
+  }) => Order(
+    id: id ?? this.id,
+    items: items ?? this.items,
+    subtotal: subtotal ?? this.subtotal,
+    tax: tax ?? this.tax,
+    shipping: shipping ?? this.shipping,
+    total: total ?? this.total,
+    createdAt: createdAt ?? this.createdAt,
+    status: status ?? this.status,
+    trackingNumber: trackingNumber ?? this.trackingNumber,
+    shippingAddress: shippingAddress ?? this.shippingAddress,
+    paymentMethod: paymentMethod ?? this.paymentMethod,
+  );
 
   factory Order.fromJson(Map<String, dynamic> json) => Order(
-        id: json['id'] as String,
-        items: (json['items'] as List)
-            .map((e) => CartItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        subtotal: (json['subtotal'] as num).toDouble(),
-        tax: (json['tax'] as num).toDouble(),
-        shipping: (json['shipping'] as num).toDouble(),
-        total: (json['total'] as num).toDouble(),
-        createdAt: DateTime.parse(json['createdAt'] as String),
-        status: OrderStatus.values.firstWhere(
-          (e) => e.name == json['status'],
-          orElse: () => OrderStatus.pending,
-        ),
-        trackingNumber: json['trackingNumber'] as String?,
-        shippingAddress: json['shippingAddress'] != null
-            ? Address.fromJson(json['shippingAddress'] as Map<String, dynamic>)
-            : null,
-        paymentMethod: json['paymentMethod'] != null
-            ? PaymentMethod.fromJson(json['paymentMethod'] as Map<String, dynamic>)
-            : null,
-      );
+    id: json['id'] as String,
+    items: (json['items'] as List)
+        .map((e) => CartItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    subtotal: (json['subtotal'] as num).toDouble(),
+    tax: (json['tax'] as num).toDouble(),
+    shipping: (json['shipping'] as num).toDouble(),
+    total: (json['total'] as num).toDouble(),
+    createdAt: DateTime.parse(json['createdAt'] as String),
+    status: OrderStatus.values.firstWhere(
+      (e) => e.name == json['status'],
+      orElse: () => OrderStatus.pending,
+    ),
+    trackingNumber: json['trackingNumber'] as String?,
+    shippingAddress: json['shippingAddress'] != null
+        ? Address.fromJson(json['shippingAddress'] as Map<String, dynamic>)
+        : null,
+    paymentMethod: json['paymentMethod'] != null
+        ? PaymentMethod.fromJson(json['paymentMethod'] as Map<String, dynamic>)
+        : null,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'items': items.map((e) => e.toJson()).toList(),
-        'subtotal': subtotal,
-        'tax': tax,
-        'shipping': shipping,
-        'total': total,
-        'createdAt': createdAt.toIso8601String(),
-        'status': status.name,
-        'trackingNumber': trackingNumber,
-        'shippingAddress': shippingAddress?.toJson(),
-        'paymentMethod': paymentMethod?.toJson(),
-      };
+    'id': id,
+    'items': items.map((e) => e.toJson()).toList(),
+    'subtotal': subtotal,
+    'tax': tax,
+    'shipping': shipping,
+    'total': total,
+    'createdAt': createdAt.toIso8601String(),
+    'status': status.name,
+    'trackingNumber': trackingNumber,
+    'shippingAddress': shippingAddress?.toJson(),
+    'paymentMethod': paymentMethod?.toJson(),
+  };
 }
 
 /// Shipping Address
@@ -549,33 +554,32 @@ class Address {
     String? city,
     String? zipCode,
     String? country,
-  }) =>
-      Address(
-        name: name ?? this.name,
-        email: email ?? this.email,
-        street: street ?? this.street,
-        city: city ?? this.city,
-        zipCode: zipCode ?? this.zipCode,
-        country: country ?? this.country,
-      );
+  }) => Address(
+    name: name ?? this.name,
+    email: email ?? this.email,
+    street: street ?? this.street,
+    city: city ?? this.city,
+    zipCode: zipCode ?? this.zipCode,
+    country: country ?? this.country,
+  );
 
   factory Address.fromJson(Map<String, dynamic> json) => Address(
-        name: json['name'] as String,
-        email: json['email'] as String,
-        street: json['street'] as String,
-        city: json['city'] as String,
-        zipCode: json['zipCode'] as String,
-        country: json['country'] as String?,
-      );
+    name: json['name'] as String,
+    email: json['email'] as String,
+    street: json['street'] as String,
+    city: json['city'] as String,
+    zipCode: json['zipCode'] as String,
+    country: json['country'] as String?,
+  );
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'email': email,
-        'street': street,
-        'city': city,
-        'zipCode': zipCode,
-        'country': country,
-      };
+    'name': name,
+    'email': email,
+    'street': street,
+    'city': city,
+    'zipCode': zipCode,
+    'country': country,
+  };
 }
 
 /// Payment Method
@@ -584,17 +588,9 @@ class PaymentMethod {
   final String last4;
   final String? brand;
 
-  PaymentMethod({
-    required this.type,
-    required this.last4,
-    this.brand,
-  });
+  PaymentMethod({required this.type, required this.last4, this.brand});
 
-  PaymentMethod copyWith({
-    String? type,
-    String? last4,
-    String? brand,
-  }) =>
+  PaymentMethod copyWith({String? type, String? last4, String? brand}) =>
       PaymentMethod(
         type: type ?? this.type,
         last4: last4 ?? this.last4,
@@ -602,16 +598,16 @@ class PaymentMethod {
       );
 
   factory PaymentMethod.fromJson(Map<String, dynamic> json) => PaymentMethod(
-        type: json['type'] as String,
-        last4: json['last4'] as String,
-        brand: json['brand'] as String?,
-      );
+    type: json['type'] as String,
+    last4: json['last4'] as String,
+    brand: json['brand'] as String?,
+  );
 
   Map<String, dynamic> toJson() => {
-        'type': type,
-        'last4': last4,
-        'brand': brand,
-      };
+    'type': type,
+    'last4': last4,
+    'brand': brand,
+  };
 }
 
 enum OrderStatus {
@@ -637,14 +633,14 @@ class UserPreferences {
   final String? userId;
 
   UserPreferences({
-      this.themeMode = 'system',
-      this.onboardingCompleted = false,
-      this.termsAccepted = false,
-      this.preferredCurrency = 'PHP',
-      this.notificationsEnabled = true,
-      this.preferredLanguage = 'en',
-      this.userId,
-    });
+    this.themeMode = 'system',
+    this.onboardingCompleted = false,
+    this.termsAccepted = false,
+    this.preferredCurrency = 'USD',
+    this.notificationsEnabled = true,
+    this.preferredLanguage = 'en',
+    this.userId,
+  });
 
   UserPreferences copyWith({
     String? themeMode,
@@ -654,36 +650,36 @@ class UserPreferences {
     bool? notificationsEnabled,
     String? preferredLanguage,
     String? userId,
-  }) =>
+  }) => UserPreferences(
+    themeMode: themeMode ?? this.themeMode,
+    onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+    termsAccepted: termsAccepted ?? this.termsAccepted,
+    preferredCurrency: preferredCurrency ?? this.preferredCurrency,
+    notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+    preferredLanguage: preferredLanguage ?? this.preferredLanguage,
+    userId: userId ?? this.userId,
+  );
+
+  factory UserPreferences.fromJson(Map<String, dynamic> json) =>
       UserPreferences(
-        themeMode: themeMode ?? this.themeMode,
-        onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
-        termsAccepted: termsAccepted ?? this.termsAccepted,
-        preferredCurrency: preferredCurrency ?? this.preferredCurrency,
-        notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
-        preferredLanguage: preferredLanguage ?? this.preferredLanguage,
-        userId: userId ?? this.userId,
+        themeMode: json['themeMode'] as String? ?? 'system',
+        onboardingCompleted: json['onboardingCompleted'] as bool? ?? false,
+        termsAccepted: json['termsAccepted'] as bool? ?? false,
+        preferredCurrency: json['preferredCurrency'] as String? ?? 'USD',
+        notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
+        preferredLanguage: json['preferredLanguage'] as String? ?? 'en',
+        userId: json['userId'] as String?,
       );
 
-  factory UserPreferences.fromJson(Map<String, dynamic> json) => UserPreferences(
-          themeMode: json['themeMode'] as String? ?? 'system',
-          onboardingCompleted: json['onboardingCompleted'] as bool? ?? false,
-          termsAccepted: json['termsAccepted'] as bool? ?? false,
-          preferredCurrency: json['preferredCurrency'] as String? ?? 'PHP',
-          notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
-          preferredLanguage: json['preferredLanguage'] as String? ?? 'en',
-          userId: json['userId'] as String?,
-        );
-
   Map<String, dynamic> toJson() => {
-        'themeMode': themeMode,
-        'onboardingCompleted': onboardingCompleted,
-        'termsAccepted': termsAccepted,
-        'preferredCurrency': preferredCurrency,
-        'notificationsEnabled': notificationsEnabled,
-        'preferredLanguage': preferredLanguage,
-        'userId': userId,
-      };
+    'themeMode': themeMode,
+    'onboardingCompleted': onboardingCompleted,
+    'termsAccepted': termsAccepted,
+    'preferredCurrency': preferredCurrency,
+    'notificationsEnabled': notificationsEnabled,
+    'preferredLanguage': preferredLanguage,
+    'userId': userId,
+  };
 }
 
 /// Onboarding slide data

@@ -504,7 +504,7 @@ class _CategoriesSection extends StatelessWidget {
                 'View All',
                 style: BBTextResponsive.labelMedium(
                   context,
-                  color: BBColors.accentBlue,
+                  color: BBColors.readable(context, BBColors.accentBlue),
                 ),
               ),
             ),
@@ -603,7 +603,11 @@ class _CategoryChip extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(BBColors.radiusMd),
                   ),
-                  child: Icon(category.icon, size: 22, color: category.color),
+                  child: Icon(
+                    category.icon,
+                    size: 22,
+                    color: BBColors.readable(context, category.color),
+                  ),
                 ),
                 const SizedBox(height: BBColors.padS),
                 Text(
@@ -658,7 +662,11 @@ class _CategoryCard extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(BBColors.radiusMd),
             ),
-            child: Icon(category.icon, size: 26, color: category.color),
+            child: Icon(
+              category.icon,
+              size: 26,
+              color: BBColors.readable(context, category.color),
+            ),
           ),
           const SizedBox(height: BBColors.padM),
           Text(
@@ -726,7 +734,7 @@ class _SectionHeader extends StatelessWidget {
                 actionText,
                 style: BBTextResponsive.labelMedium(
                   context,
-                  color: BBColors.accentBlue,
+                  color: BBColors.readable(context, BBColors.accentBlue),
                   weight: FontWeight.w600,
                 ),
               ),
@@ -763,7 +771,11 @@ class _FeatureRow extends StatelessWidget {
               color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(BBColors.radiusMd),
             ),
-            child: Icon(icon, size: 22, color: color),
+            child: Icon(
+              icon,
+              size: 22,
+              color: BBColors.readable(context, color),
+            ),
           ),
           const SizedBox(width: BBColors.padL),
           Expanded(

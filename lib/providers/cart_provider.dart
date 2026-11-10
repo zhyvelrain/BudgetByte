@@ -7,6 +7,12 @@ import '../models/app_models.dart';
 /// synchronously, then persisted, so back-to-back adds (e.g. a whole build) can't
 /// overwrite each other.
 class CartProvider extends ChangeNotifier {
+  // Store prices in USD; keep the tax/shipping rules in one place so the cart,
+  // checkout review and receipts can never disagree.
+  static const taxRate = 0.12; // 12% VAT
+  static const freeShippingThreshold = 100.0;
+  static const shippingFee = 15.0;
+
   List<CartItem> _items = [];
   bool _isInitialized = false;
 
@@ -14,9 +20,11 @@ class CartProvider extends ChangeNotifier {
   bool get isInitialized => _isInitialized;
   int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
   double get subtotal => _items.fold(0, (sum, item) => sum + item.subtotal);
-  double get tax => subtotal * 0.12; // 12% VAT (Philippines)
-  double get shipping => subtotal > 5000 ? 0 : 150; // Free shipping over ₱5,000
+  double get tax => subtotal * taxRate;
+  double get shipping => subtotal >= freeShippingThreshold ? 0 : shippingFee;
   double get total => subtotal + tax + shipping;
+  double get amountToFreeShipping =>
+      (freeShippingThreshold - subtotal).clamp(0, freeShippingThreshold);
 
   Future<void> init() async {
     if (_isInitialized) return;

@@ -92,14 +92,20 @@ class _EmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            gradient: isDark ? BBColors.cardGradientDark : BBColors.cardGradientLight,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(icon, size: 56, color: BBColors.accentBlue),
-                        ),
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                gradient: isDark
+                    ? BBColors.cardGradientDark
+                    : BBColors.cardGradientLight,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 56,
+                color: BBColors.readable(context, BBColors.accentBlue),
+              ),
+            ),
             const SizedBox(height: BBColors.padXL),
             Text(
               title,
@@ -383,7 +389,7 @@ class _ComponentChip extends StatelessWidget {
           Icon(
             component.category.icon,
             size: 14,
-            color: component.category.color,
+            color: BBColors.readable(context, component.category.color),
           ),
           const SizedBox(width: 6),
           Flexible(

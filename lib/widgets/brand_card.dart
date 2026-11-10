@@ -341,41 +341,58 @@ class ProductCard extends StatelessWidget {
                 ),
                 const SizedBox(height: BBColors.padS),
                 // Price
-                Row(
-                  children: [
-                    Flexible(child: Text(
-                      context.money(price),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: BBTextResponsive.price(
-                        context,
-                        size: 18,
-                        weight: FontWeight.w700,
-                      ),
-                    )),
-                    if (hasDiscount) ...[
-                      const SizedBox(width: BBColors.padS),
-                      Expanded(
-                        child: Text(
-                          context.money(originalPrice!),
-                          style: BBTextResponsive.bodySmall(
-                            context,
-                            color: BBColors.textMuted(context),
-                          ).copyWith(decoration: TextDecoration.lineThrough),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Narrow grid cells can't fit price + old price + cart button
+                    // on one line without truncating the price itself.
+                    final compact = constraints.maxWidth < 150;
+                    return Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            context.money(price),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: BBTextResponsive.price(
+                              context,
+                              size: compact ? 16 : 18,
+                              weight: FontWeight.w700,
+                            ),
+                          ),
                         ),
-                      ),
-                    ] else
-                      const Spacer(),
-                    if (onAddToCart != null)
-                      IconButton.filledTonal(
-                        onPressed: onAddToCart,
-                        tooltip: 'Add to cart',
-                        icon: const Icon(Icons.add_shopping_cart_rounded, size: 18),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                  ],
+                        if (hasDiscount && !compact) ...[
+                          const SizedBox(width: BBColors.padS),
+                          Expanded(
+                            child: Text(
+                              context.money(originalPrice!),
+                              style: BBTextResponsive.bodySmall(
+                                context,
+                                color: BBColors.textMuted(context),
+                              ).copyWith(decoration: TextDecoration.lineThrough),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ] else
+                          const Spacer(),
+                        if (onAddToCart != null)
+                          IconButton.filledTonal(
+                            onPressed: onAddToCart,
+                            tooltip: 'Add to cart',
+                            icon: const Icon(
+                              Icons.add_shopping_cart_rounded,
+                              size: 18,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 36,
+                              height: 36,
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),

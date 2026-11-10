@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../providers/shop_provider.dart';
 import 'package:provider/provider.dart';
 import '../../theme/bb_colors.dart';
 import '../../theme/bb_text.dart';
 import '../../widgets/brand_card.dart';
 import '../../widgets/brand_button.dart';
+import '../../widgets/peripheral_scene.dart';
 import '../../models/app_models.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/preferences_service.dart';
@@ -18,14 +20,23 @@ class CartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cart', style: BBTextResponsive.headlineMedium(context, weight: FontWeight.w600)),
+        title: Text(
+          'Cart',
+          style: BBTextResponsive.headlineMedium(
+            context,
+            weight: FontWeight.w600,
+          ),
+        ),
         actions: [
           Consumer<CartProvider>(
             builder: (context, cart, _) {
               if (cart.items.isNotEmpty) {
                 return TextButton.icon(
                   icon: const Icon(Icons.delete_sweep_rounded, size: 18),
-                  label: Text('Clear', style: BBTextResponsive.labelMedium(context)),
+                  label: Text(
+                    'Clear',
+                    style: BBTextResponsive.labelMedium(context),
+                  ),
                   onPressed: () => _showClearDialog(context),
                 );
               }
@@ -40,29 +51,61 @@ class CartScreen extends StatelessWidget {
             return _EmptyCartState();
           }
 
-          return Column(
-            children: [
-              // Items List
-              Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.all(BBColors.padL),
-                  itemCount: cart.items.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: BBColors.padM),
-                  itemBuilder: (context, index) {
-                    final item = cart.items[index];
-                    return _CartItemCard(
-                      item: item,
-                      onQuantityChanged: (qty) => cart.updateQuantity(item.id, qty),
-                      onRemove: () => cart.removeItem(item.id),
-                    );
-                  },
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final receiptMaxHeight = (constraints.maxHeight * 0.46).clamp(
+                190.0,
+                380.0,
+              );
+
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 900),
+                  child: Column(
+                    children: [
+                      // Items List
+                      Expanded(
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(
+                            BBColors.padL,
+                            BBColors.padL,
+                            BBColors.padL,
+                            BBColors.padS,
+                          ),
+                          itemCount: cart.items.length,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: BBColors.padM),
+                          itemBuilder: (context, index) {
+                            final item = cart.items[index];
+                            return _CartItemCard(
+                              item: item,
+                              onQuantityChanged: (qty) =>
+                                  cart.updateQuantity(item.id, qty),
+                              onRemove: () => cart.removeItem(item.id),
+                            );
+                          },
+                        ),
+                      ),
+                      // Receipt Summary. Capped and scrollable so short windows
+                      // (or landscape phones) never push the checkout button off
+                      // screen.
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: receiptMaxHeight,
+                        ),
+                        child: ListView(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          children: [_ReceiptSummary(cart: cart)],
+                        ),
+                      ),
+                      // Action Buttons
+                      _CartActionBar(cart: cart),
+                    ],
+                  ),
                 ),
-              ),
-              // Receipt Summary
-              _ReceiptSummary(cart: cart),
-              // Action Buttons
-              _CartActionBar(cart: cart),
-            ],
+              );
+            },
           );
         },
       ),
@@ -74,7 +117,10 @@ class CartScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Clear Cart', style: BBTextResponsive.titleLarge(context)),
-        content: Text('Are you sure you want to remove all items?', style: BBTextResponsive.bodyMedium(context)),
+        content: Text(
+          'Are you sure you want to remove all items?',
+          style: BBTextResponsive.bodyMedium(context),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -82,7 +128,7 @@ class CartScreen extends StatelessWidget {
           ),
           BrandButton.outline(
             text: 'Clear All',
-            foregroundColor: BBColors.accentRed,
+            foregroundColor: BBColors.readable(context, BBColors.accentRed),
             onPressed: () {
               context.read<CartProvider>().clearAll();
               Navigator.pop(context);
@@ -109,24 +155,32 @@ class _EmptyCartState extends StatelessWidget {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                gradient: isDark ? BBColors.cardGradientDark : BBColors.cardGradientLight,
+                gradient: isDark
+                    ? BBColors.cardGradientDark
+                    : BBColors.cardGradientLight,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.shopping_cart_outlined,
                 size: 56,
-                color: BBColors.accentBlue,
+                color: BBColors.readable(context, BBColors.accentBlue),
               ),
             ),
             const SizedBox(height: BBColors.padXL),
             Text(
               'Your cart is empty',
-              style: BBTextResponsive.headlineMedium(context, weight: FontWeight.w600),
+              style: BBTextResponsive.headlineMedium(
+                context,
+                weight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: BBColors.padS),
             Text(
               'Add components from the shop or build your custom PC',
-              style: BBTextResponsive.bodyLarge(context, color: BBColors.textMuted(context)),
+              style: BBTextResponsive.bodyLarge(
+                context,
+                color: BBColors.textMuted(context),
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: BBColors.padXL),
@@ -170,17 +224,28 @@ class _CartItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final categoryColor = item.component.category.color;
+    final categoryColor = BBColors.readable(
+      context,
+      item.component.category.color,
+    );
+    final hasSale =
+        item.option != null &&
+        item.option!.originalPrice != null &&
+        item.option!.price != null &&
+        item.option!.originalPrice! > item.option!.price!;
 
     return BrandCard(
       padding: const EdgeInsets.all(BBColors.padM),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image
-          Container(
-            width: 80,
-            height: 80,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Below this width the quantity + price row no longer fits beside
+          // the image, so it moves under the product details.
+          final compact = constraints.maxWidth < 360;
+          final imageSize = compact ? 64.0 : 80.0;
+
+          final image = Container(
+            width: imageSize,
+            height: imageSize,
             decoration: BoxDecoration(
               color: isDark ? BBColors.nightSurface : BBColors.daySurface,
               borderRadius: BorderRadius.circular(BBColors.radiusMd),
@@ -193,138 +258,232 @@ class _CartItemCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => Icon(
                         item.component.category.icon,
-                        size: 36,
+                        size: compact ? 28 : 36,
                         color: categoryColor,
                       ),
                     )
                   : Icon(
                       item.component.category.icon,
-                      size: 36,
+                      size: compact ? 28 : 36,
                       color: categoryColor,
                     ),
             ),
-          ),
-          const SizedBox(width: BBColors.padM),
-          // Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.component.name,
-                        style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (item.option != null && 
-                        item.option!.originalPrice != null && 
-                        item.option!.price != null &&
-                        item.option!.originalPrice! > item.option!.price!)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: BBColors.accentRed.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(BBColors.radiusSm),
-                        ),
-                        child: Text(
-                          item.option!.discountLabel ?? 'Sale',
-                          style: BBTextResponsive.labelSmall(context, color: BBColors.accentRed, weight: FontWeight.w600),
-                        ),
-                      ),
-                  ],
+          );
+
+          final details = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.component.name,
+                style: BBTextResponsive.bodyMedium(
+                  context,
+                  weight: FontWeight.w600,
                 ),
-                Text(item.component.brand, style: BBTextResponsive.caption(context)),
-                const SizedBox(height: 4),
-                // Selected option
-                Row(
-                  children: [
-                    if (item.option?.colorHex != null) ...[
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: Color(int.parse(item.option!.colorHex!.replaceFirst('#', '0xFF'))),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isDark ? BBColors.nightBorder : BBColors.dayBorder,
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                    ],
-                    Flexible(
-                      child: Text(
-                        item.option?.name ?? item.selectedOptionValue ?? 'Default',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: BBTextResponsive.bodySmall(context, weight: FontWeight.w500),
-                      ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      item.component.brand,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: BBTextResponsive.caption(context),
                     ),
-                  ],
-                ),
-                const SizedBox(height: BBColors.padS),
-                // Quantity & Price
-                Row(
-                  children: [
-                    // Quantity selector
-                    Container(
-                      decoration: BoxDecoration(
-                        color: isDark ? BBColors.nightSurface : BBColors.daySurface,
-                        borderRadius: BorderRadius.circular(BBColors.radiusMd),
-                        border: Border.all(
-                          color: isDark ? BBColors.nightDivider : BBColors.dayDivider,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.remove_rounded, size: 18, color: BBColors.textMuted(context)),
-                            onPressed: item.quantity > 1 ? () => onQuantityChanged(item.quantity - 1) : null,
-                            padding: const EdgeInsets.all(8),
-                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                          ),
-                          Text(
-                            '${item.quantity}',
-                            style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.add_rounded, size: 18, color: BBColors.accentBlue),
-                            onPressed: () => onQuantityChanged(item.quantity + 1),
-                            padding: const EdgeInsets.all(8),
-                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                          ),
-                        ],
-                      ),
-                    ),
+                  ),
+                  if (hasSale) ...[
                     const SizedBox(width: BBColors.padS),
-                    // Line total
-                    Expanded(
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: BBColors.accentRed.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(BBColors.radiusSm),
+                      ),
                       child: Text(
-                        context.money(item.lineTotal),
-                        textAlign: TextAlign.end,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: categoryColor),
+                        item.option!.discountLabel ?? 'Sale',
+                        style: BBTextResponsive.labelSmall(
+                          context,
+                          color: BBColors.readable(context, BBColors.accentRed),
+                          weight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  if (item.option?.colorHex != null) ...[
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Color(
+                          int.parse(
+                            item.option!.colorHex!.replaceFirst('#', '0xFF'),
+                          ),
+                        ),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDark
+                              ? BBColors.nightBorder
+                              : BBColors.dayBorder,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                  Flexible(
+                    child: Text(
+                      item.option?.name ??
+                          item.selectedOptionValue ??
+                          'Default',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: BBTextResponsive.bodySmall(
+                        context,
+                        weight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+
+          final quantity = Container(
+            decoration: BoxDecoration(
+              color: isDark ? BBColors.nightSurface : BBColors.daySurface,
+              borderRadius: BorderRadius.circular(BBColors.radiusMd),
+              border: Border.all(
+                color: isDark ? BBColors.nightDivider : BBColors.dayDivider,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.remove_rounded,
+                    size: 18,
+                    color: BBColors.textMuted(context),
+                  ),
+                  onPressed: item.quantity > 1
+                      ? () => onQuantityChanged(item.quantity - 1)
+                      : null,
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                  tooltip: 'Decrease quantity',
+                ),
+                Text(
+                  '${item.quantity}',
+                  style: BBTextResponsive.bodyMedium(
+                    context,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.add_rounded,
+                    size: 18,
+                    color: BBColors.readable(context, BBColors.accentBlue),
+                  ),
+                  onPressed: () => onQuantityChanged(item.quantity + 1),
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                  tooltip: 'Increase quantity',
                 ),
               ],
             ),
-          ),
-          // Remove button
-          IconButton(
-            icon: Icon(Icons.delete_outline_rounded, color: BBColors.accentRed, size: 22),
+          );
+
+          final price = Text(
+            context.money(item.lineTotal),
+            textAlign: TextAlign.end,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: BBTextResponsive.titleMedium(
+              context,
+              weight: FontWeight.w700,
+              color: categoryColor,
+            ),
+          );
+
+          final remove = IconButton(
+            icon: Icon(
+              Icons.delete_outline_rounded,
+              color: BBColors.readable(context, BBColors.accentRed),
+              size: 22,
+            ),
             onPressed: onRemove,
             tooltip: 'Remove',
-          ),
-        ],
+            visualDensity: VisualDensity.compact,
+            constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+            padding: EdgeInsets.zero,
+          );
+
+          if (compact) {
+            return Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    image,
+                    const SizedBox(width: BBColors.padM),
+                    Expanded(child: details),
+                    remove,
+                  ],
+                ),
+                const SizedBox(height: BBColors.padS),
+                Row(
+                  children: [
+                    quantity,
+                    const SizedBox(width: BBColors.padS),
+                    Expanded(child: price),
+                  ],
+                ),
+              ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              image,
+              const SizedBox(width: BBColors.padM),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    details,
+                    const SizedBox(height: BBColors.padS),
+                    Row(
+                      children: [
+                        quantity,
+                        const SizedBox(width: BBColors.padS),
+                        Expanded(child: price),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              remove,
+            ],
+          );
+        },
       ),
     );
   }
@@ -360,19 +519,28 @@ class _ReceiptSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Order Summary', style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600)),
+          Text(
+            'Order Summary',
+            style: BBTextResponsive.titleLarge(
+              context,
+              weight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: BBColors.padM),
           _ReceiptRow(
-            label: 'Subtotal (${cart.itemCount} items)',
+            label:
+                'Subtotal (${cart.itemCount} ${cart.itemCount == 1 ? 'item' : 'items'})',
             value: context.money(cart.subtotal),
           ),
           _ReceiptRow(
             label: 'Shipping',
             value: cart.shipping == 0 ? 'Free' : context.money(cart.shipping),
-            valueColor: cart.shipping == 0 ? BBColors.accentGreen : null,
+            valueColor: cart.shipping == 0
+                ? BBColors.readable(context, BBColors.accentGreen)
+                : null,
           ),
           _ReceiptRow(
-            label: 'Tax (10%)',
+            label: 'Tax (${(CartProvider.taxRate * 100).round()}%)',
             value: context.money(cart.tax),
           ),
           const Divider(height: BBColors.padL),
@@ -381,23 +549,36 @@ class _ReceiptSummary extends StatelessWidget {
             value: context.money(cart.total),
             isTotal: true,
           ),
-          if (cart.subtotal < 5000 && cart.items.isNotEmpty) ...[
+          if (cart.amountToFreeShipping > 0 && cart.items.isNotEmpty) ...[
             const SizedBox(height: BBColors.padM),
             Container(
               padding: const EdgeInsets.all(BBColors.padM),
               decoration: BoxDecoration(
                 color: BBColors.accentOrange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(BBColors.radiusMd),
-                border: Border.all(color: BBColors.accentOrange.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: BBColors.accentOrange.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.local_shipping_rounded, size: 18, color: BBColors.accentOrange),
+                  Icon(
+                    Icons.local_shipping_rounded,
+                    size: 18,
+                    color: BBColors.readable(context, BBColors.accentOrange),
+                  ),
                   const SizedBox(width: BBColors.padS),
                   Expanded(
                     child: Text(
-                      'Add ${context.money((100 - cart.subtotal))} more for free shipping!',
-                      style: BBTextResponsive.bodySmall(context, color: BBColors.accentOrange, weight: FontWeight.w500),
+                      'Add ${context.money(cart.amountToFreeShipping)} more for free shipping!',
+                      style: BBTextResponsive.bodySmall(
+                        context,
+                        color: BBColors.readable(
+                          context,
+                          BBColors.accentOrange,
+                        ),
+                        weight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -433,16 +614,32 @@ class _ReceiptRow extends StatelessWidget {
             child: Text(
               label,
               style: isTotal
-                  ? BBTextResponsive.titleMedium(context, weight: FontWeight.w600)
+                  ? BBTextResponsive.titleMedium(
+                      context,
+                      weight: FontWeight.w600,
+                    )
                   : BBTextResponsive.bodyMedium(context),
             ),
           ),
           const SizedBox(width: BBColors.padS),
-          Text(
-            value,
-            style: isTotal
-                ? BBTextResponsive.displaySmall(context, weight: FontWeight.w700, color: valueColor ?? BBColors.accentBlue)
-                : BBTextResponsive.bodyMedium(context, weight: FontWeight.w600, color: valueColor),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: isTotal
+                  ? BBTextResponsive.displaySmall(
+                      context,
+                      weight: FontWeight.w700,
+                      color: valueColor ?? BBColors.accentBlue,
+                    )
+                  : BBTextResponsive.bodyMedium(
+                      context,
+                      weight: FontWeight.w600,
+                      color: valueColor,
+                    ),
+            ),
           ),
         ],
       ),
@@ -458,14 +655,16 @@ class _CartActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(BBColors.padL, BBColors.padM, BBColors.padL, BBColors.padL),
+      padding: const EdgeInsets.fromLTRB(
+        BBColors.padL,
+        BBColors.padM,
+        BBColors.padL,
+        BBColors.padL,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
-          top: BorderSide(
-            color: Theme.of(context).dividerColor,
-            width: 1,
-          ),
+          top: BorderSide(color: Theme.of(context).dividerColor, width: 1),
         ),
       ),
       child: SafeArea(
@@ -473,7 +672,9 @@ class _CartActionBar extends StatelessWidget {
         child: BrandButton.primary(
           text: 'Checkout (${context.money(cart.total)})',
           icon: Icons.credit_card_rounded,
-          onPressed: cart.items.isNotEmpty ? () => _showCheckoutDialog(context) : null,
+          onPressed: cart.items.isNotEmpty
+              ? () => _showCheckoutDialog(context)
+              : null,
           fullWidth: true,
         ),
       ),
@@ -512,6 +713,12 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
   bool _saveInfo = true;
   bool _processing = false;
 
+  late final String _initialName;
+  late final String _initialEmail;
+  late final String _initialAddress;
+  late final String _initialCity;
+  late final String _initialZip;
+
   @override
   void initState() {
     super.initState();
@@ -523,6 +730,25 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
     _addressController.text = saved?.street ?? '';
     _cityController.text = saved?.city ?? '';
     _zipController.text = saved?.zipCode ?? '';
+    _initialName = _nameController.text;
+    _initialEmail = _emailController.text;
+    _initialAddress = _addressController.text;
+    _initialCity = _cityController.text;
+    _initialZip = _zipController.text;
+  }
+
+  /// Only ask before closing when the shopper would actually lose something.
+  /// Prefilled values don't count — they are already saved on the device.
+  bool get _hasEnteredData {
+    if (_step > 0) return true;
+    return _nameController.text.trim() != _initialName.trim() ||
+        _emailController.text.trim() != _initialEmail.trim() ||
+        _addressController.text.trim() != _initialAddress.trim() ||
+        _cityController.text.trim() != _initialCity.trim() ||
+        _zipController.text.trim() != _initialZip.trim() ||
+        _cardController.text.isNotEmpty ||
+        _expiryController.text.isNotEmpty ||
+        _cvvController.text.isNotEmpty;
   }
 
   @override
@@ -541,94 +767,266 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final media = MediaQuery.of(context);
+    // Dialog adds the keyboard inset itself; cap the card to what is actually
+    // left so the footer never gets pushed off screen.
+    final availableHeight =
+        media.size.height - media.viewInsets.bottom - (BBColors.padL * 2);
+    final maxHeight = availableHeight.clamp(200.0, 640.0);
 
-    return Dialog(
-      insetPadding: const EdgeInsets.all(BBColors.padL),
-      backgroundColor: Colors.transparent,
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
-        decoration: BoxDecoration(
-          color: isDark ? BBColors.nightBg : BBColors.dayBg,
-          borderRadius: BorderRadius.circular(BBColors.radiusXl),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Step indicator
-            Container(
-              padding: const EdgeInsets.all(BBColors.padL),
-              decoration: BoxDecoration(
-                color: isDark ? BBColors.nightSurface : BBColors.daySurface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(BBColors.radiusXl)),
-              ),
-              child: Row(
-                children: [
-                  _StepIndicator(label: 'Shipping', step: 0, currentStep: _step),
-                  _StepConnector(step: 0, currentStep: _step),
-                  _StepIndicator(label: 'Payment', step: 1, currentStep: _step),
-                  _StepConnector(step: 1, currentStep: _step),
-                  _StepIndicator(label: 'Review', step: 2, currentStep: _step),
-                ],
-              ),
+    return PopScope(
+      // Let the system back gesture close a pristine checkout immediately, but
+      // route it through the discard confirmation once anything was entered.
+      canPop: !_hasEnteredData,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _requestCancel();
+      },
+      child: Dialog(
+        insetPadding: const EdgeInsets.all(BBColors.padL),
+        backgroundColor: Colors.transparent,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 520, maxHeight: maxHeight),
+          child: Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: isDark ? BBColors.nightBg : BBColors.dayBg,
+              borderRadius: BorderRadius.circular(BBColors.radiusXl),
             ),
-            // Content
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(BBColors.padXL),
-                child: Form(
-                  key: _formKey,
-                  child: _step == 0 ? _buildShippingStep() : _step == 1 ? _buildPaymentStep() : _buildReviewStep(),
-                ),
-              ),
-            ),
-            // Actions
-            Container(
-              padding: const EdgeInsets.all(BBColors.padL),
-              decoration: BoxDecoration(
-                color: isDark ? BBColors.nightSurface : BBColors.daySurface,
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(BBColors.radiusXl)),
-              ),
-              child: Row(
-                children: [
-                  if (_step > 0)
-                    Expanded(
-                      child: BrandButton.outline(
-                        text: 'Back',
-                        onPressed: _processing ? null : () => setState(() => _step--),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Step indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: BBColors.padL,
+                    vertical: BBColors.padM,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark ? BBColors.nightSurface : BBColors.daySurface,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: isDark
+                            ? BBColors.nightDivider
+                            : BBColors.dayDivider,
                       ),
                     ),
-                  if (_step > 0) const SizedBox(width: BBColors.padM),
-                  Expanded(
-                    flex: _step > 0 ? 1 : 2,
-                    child: BrandButton(
-                      text: _step == 2 ? 'Place Order' : 'Continue',
-                      icon: _step == 2 ? Icons.check_rounded : Icons.arrow_forward_rounded,
-                      onPressed: _processing ? null : _handleNext,
-                      isLoading: _processing,
-                      fullWidth: true,
+                  ),
+                  child: Row(
+                    children: [
+                      _StepIndicator(
+                        label: 'Shipping',
+                        step: 0,
+                        currentStep: _step,
+                      ),
+                      _StepConnector(step: 0, currentStep: _step),
+                      _StepIndicator(
+                        label: 'Payment',
+                        step: 1,
+                        currentStep: _step,
+                      ),
+                      _StepConnector(step: 1, currentStep: _step),
+                      _StepIndicator(
+                        label: 'Review',
+                        step: 2,
+                        currentStep: _step,
+                      ),
+                    ],
+                  ),
+                ),
+                // Content
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(
+                      BBColors.padL,
+                      BBColors.padM,
+                      BBColors.padL,
+                      BBColors.padL,
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: _step == 0
+                          ? _buildShippingStep()
+                          : _step == 1
+                          ? _buildPaymentStep()
+                          : _buildReviewStep(),
                     ),
                   ),
-                ],
-              ),
+                ),
+                // Actions: the primary action is always visible, with Back and
+                // Cancel on their own row so three buttons never crowd a phone.
+                Container(
+                  padding: const EdgeInsets.all(BBColors.padL),
+                  decoration: BoxDecoration(
+                    color: isDark ? BBColors.nightSurface : BBColors.daySurface,
+                    border: Border(
+                      top: BorderSide(
+                        color: isDark
+                            ? BBColors.nightDivider
+                            : BBColors.dayDivider,
+                      ),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      BrandButton(
+                        text: _step == 2 ? 'Place Order' : 'Continue',
+                        icon: _step == 2
+                            ? Icons.check_rounded
+                            : Icons.arrow_forward_rounded,
+                        onPressed: _processing ? null : _handleNext,
+                        isLoading: _processing,
+                        fullWidth: true,
+                      ),
+                      const SizedBox(height: BBColors.padS),
+                      Row(
+                        children: [
+                          if (_step > 0) ...[
+                            Expanded(
+                              child: BrandButton.outline(
+                                text: 'Back',
+                                icon: Icons.arrow_back_rounded,
+                                onPressed: _processing
+                                    ? null
+                                    : () => setState(() => _step--),
+                              ),
+                            ),
+                            const SizedBox(width: BBColors.padS),
+                          ],
+                          Expanded(
+                            child: TextButton.icon(
+                              onPressed: _processing ? null : _requestCancel,
+                              icon: const Icon(Icons.close_rounded, size: 18),
+                              label: const Text('Cancel'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: BBColors.textSecondary(
+                                  context,
+                                ),
+                                minimumSize: const Size(0, 44),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
+  Future<void> _requestCancel() async {
+    if (_processing) return;
+    if (!_hasEnteredData) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Discard checkout?',
+          style: BBTextResponsive.titleLarge(dialogContext),
+        ),
+        content: Text(
+          'Your shipping and payment details will be lost. Items in your cart are kept.',
+          style: BBTextResponsive.bodyMedium(dialogContext),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Keep editing'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(
+              foregroundColor: BBColors.readable(
+                dialogContext,
+                BBColors.accentRed,
+              ),
+            ),
+            child: const Text('Discard'),
+          ),
+        ],
+      ),
+    );
+    if (discard == true && mounted) Navigator.of(context).pop();
+  }
+
   Widget _buildShippingStep() {
+    final cityField = TextFormField(
+      controller: _cityController,
+      decoration: const InputDecoration(
+        labelText: 'City',
+        prefixIcon: Icon(Icons.location_city_rounded),
+      ),
+      autofillHints: const [AutofillHints.addressCity],
+      validator: (v) => (v?.trim().length ?? 0) < 2 ? 'Enter your city.' : null,
+    );
+    final zipField = TextFormField(
+      controller: _zipController,
+      decoration: const InputDecoration(
+        labelText: 'ZIP Code',
+        prefixIcon: Icon(Icons.pin_rounded),
+      ),
+      keyboardType: TextInputType.number,
+      autofillHints: const [AutofillHints.postalCode],
+      validator: (v) => RegExp(r'^\d{4,10}$').hasMatch(v?.trim() ?? '')
+          ? null
+          : 'Use 4–10 digits.',
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Shipping Information', style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600)),
+        Text(
+          'Shipping Information',
+          style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600),
+        ),
         const SizedBox(height: BBColors.padS),
-        Text('Where should we send your order?', style: BBTextResponsive.bodyMedium(context)),
+        Text(
+          'Where should we send your order?',
+          style: BBTextResponsive.bodyMedium(context),
+        ),
+        const SizedBox(height: BBColors.padM),
+        Container(
+          padding: const EdgeInsets.all(BBColors.padM),
+          decoration: BoxDecoration(
+            color: BBColors.accentGreen.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(BBColors.radiusMd),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.local_shipping_rounded,
+                size: 18,
+                color: BBColors.readable(context, BBColors.accentGreen),
+              ),
+              const SizedBox(width: BBColors.padS),
+              Expanded(
+                child: Text(
+                  'Ships in 1–2 business days · Arrives in 3–5 days',
+                  style: BBTextResponsive.bodySmall(
+                    context,
+                    color: BBColors.readable(context, BBColors.accentGreen),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: BBColors.padL),
         TextFormField(
           controller: _nameController,
-          decoration: const InputDecoration(labelText: 'Full Name', prefixIcon: Icon(Icons.person_rounded)),
+          decoration: const InputDecoration(
+            labelText: 'Full Name',
+            prefixIcon: Icon(Icons.person_rounded),
+          ),
           textCapitalization: TextCapitalization.words,
           autofillHints: const [AutofillHints.name],
           validator: AuthService.validateName,
@@ -636,7 +1034,10 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
         const SizedBox(height: BBColors.padM),
         TextFormField(
           controller: _emailController,
-          decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_rounded)),
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            prefixIcon: Icon(Icons.email_rounded),
+          ),
           keyboardType: TextInputType.emailAddress,
           autofillHints: const [AutofillHints.email],
           validator: AuthService.validateEmail,
@@ -650,30 +1051,30 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
             prefixIcon: Icon(Icons.home_rounded),
           ),
           autofillHints: const [AutofillHints.fullStreetAddress],
-          validator: (v) => (v?.trim().length ?? 0) < 5 ? 'Enter your street address.' : null,
+          validator: (v) =>
+              (v?.trim().length ?? 0) < 5 ? 'Enter your street address.' : null,
         ),
         const SizedBox(height: BBColors.padM),
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _cityController,
-                decoration: const InputDecoration(labelText: 'City', prefixIcon: Icon(Icons.location_city_rounded)),
-                autofillHints: const [AutofillHints.addressCity],
-                validator: (v) => (v?.trim().length ?? 0) < 2 ? 'Enter your city.' : null,
-              ),
-            ),
-            const SizedBox(width: BBColors.padM),
-            Expanded(
-              child: TextFormField(
-                controller: _zipController,
-                decoration: const InputDecoration(labelText: 'ZIP Code', prefixIcon: Icon(Icons.pin_rounded)),
-                keyboardType: TextInputType.number,
-                autofillHints: const [AutofillHints.postalCode],
-                validator: (v) => RegExp(r'^\d{4,10}$').hasMatch(v?.trim() ?? '') ? null : 'Use 4–10 digits.',
-              ),
-            ),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            // Two side-by-side fields get cramped on narrow phones.
+            if (constraints.maxWidth < 340) {
+              return Column(
+                children: [
+                  cityField,
+                  const SizedBox(height: BBColors.padM),
+                  zipField,
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: cityField),
+                const SizedBox(width: BBColors.padM),
+                Expanded(child: zipField),
+              ],
+            );
+          },
         ),
         const SizedBox(height: BBColors.padM),
         Material(
@@ -684,7 +1085,10 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
             activeColor: BBColors.accentBlue,
             contentPadding: EdgeInsets.zero,
             controlAffinity: ListTileControlAffinity.leading,
-            title: Text('Save address for future orders', style: BBTextResponsive.bodyMedium(context)),
+            title: Text(
+              'Save address for future orders',
+              style: BBTextResponsive.bodyMedium(context),
+            ),
           ),
         ),
       ],
@@ -695,19 +1099,33 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Payment Method', style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600)),
+        Text(
+          'Payment Method',
+          style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600),
+        ),
         const SizedBox(height: BBColors.padS),
-        Text('Your payment is secured with encryption', style: BBTextResponsive.bodyMedium(context)),
+        Text(
+          'Demo checkout — no real payment will be processed.',
+          style: BBTextResponsive.bodyMedium(context),
+        ),
         const SizedBox(height: BBColors.padL),
         TextFormField(
           controller: _cardController,
           decoration: const InputDecoration(
             labelText: 'Card Number',
             prefixIcon: Icon(Icons.credit_card_rounded),
-            hintText: '1234 5678 9012 3456',
+            hintText: '16-digit card number',
           ),
           keyboardType: TextInputType.number,
-          validator: (v) => v?.isEmpty == true ? 'Required' : (v!.replaceAll(' ', '').length == 16 ? null : 'Invalid card'),
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(16),
+          ],
+          validator: (v) {
+            final digits = (v ?? '').replaceAll(RegExp(r'\D'), '');
+            if (digits.isEmpty) return 'Required';
+            return digits.length == 16 ? null : 'Enter all 16 digits';
+          },
         ),
         const SizedBox(height: BBColors.padM),
         Row(
@@ -720,7 +1138,17 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
                   hintText: '12/28',
                 ),
                 keyboardType: TextInputType.datetime,
-                validator: (v) => v?.isEmpty == true ? 'Required' : null,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
+                  LengthLimitingTextInputFormatter(5),
+                ],
+                validator: (v) {
+                  final text = v?.trim() ?? '';
+                  if (text.isEmpty) return 'Required';
+                  return RegExp(r'^(0[1-9]|1[0-2])/\d{2}$').hasMatch(text)
+                      ? null
+                      : 'Use MM/YY';
+                },
               ),
             ),
             const SizedBox(width: BBColors.padM),
@@ -733,7 +1161,34 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
                 ),
                 keyboardType: TextInputType.number,
                 obscureText: true,
-                validator: (v) => v?.isEmpty == true ? 'Required' : (v!.length == 3 ? null : 'Invalid CVV'),
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(4),
+                ],
+                validator: (v) {
+                  final text = v?.trim() ?? '';
+                  if (text.isEmpty) return 'Required';
+                  return RegExp(r'^\d{3,4}$').hasMatch(text)
+                      ? null
+                      : 'Invalid CVV';
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: BBColors.padM),
+        Row(
+          children: [
+            Icon(
+              Icons.lock_rounded,
+              size: 14,
+              color: BBColors.readable(context, BBColors.accentGreen),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                'Your details stay on this device and are never sent to a server.',
+                style: BBTextResponsive.caption(context),
               ),
             ),
           ],
@@ -746,49 +1201,119 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Review Order', style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600)),
-        const SizedBox(height: BBColors.padL),
+        Text(
+          'Review Order',
+          style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600),
+        ),
+        const SizedBox(height: BBColors.padS),
+        Text(
+          'Check your finished setup and delivery details before paying.',
+          style: BBTextResponsive.bodyMedium(context),
+        ),
+        const SizedBox(height: BBColors.padM),
+        PeripheralScene(
+          slots: SceneSlot.fromCart(widget.cart.items),
+          height: 150,
+          showControls: false,
+          autoRotate: false,
+        ),
+        const SizedBox(height: BBColors.padM),
         // Shipping info
         BrandCard(
           padding: const EdgeInsets.all(BBColors.padM),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Shipping To', style: BBTextResponsive.labelMedium(context, color: BBColors.accentBlue, weight: FontWeight.w600)),
+              Text(
+                'Shipping To',
+                style: BBTextResponsive.labelMedium(
+                  context,
+                  color: BBColors.accentBlue,
+                  weight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(height: BBColors.padS),
-              Text(_nameController.text, style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600)),
-              Text(_emailController.text, style: BBTextResponsive.bodySmall(context)),
-              Text('${_addressController.text}, ${_cityController.text} ${_zipController.text}', style: BBTextResponsive.bodySmall(context)),
+              Text(
+                _nameController.text,
+                style: BBTextResponsive.bodyMedium(
+                  context,
+                  weight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                _emailController.text,
+                style: BBTextResponsive.bodySmall(context),
+              ),
+              Text(
+                '${_addressController.text}, ${_cityController.text} ${_zipController.text}',
+                style: BBTextResponsive.bodySmall(context),
+              ),
             ],
           ),
         ),
         const SizedBox(height: BBColors.padM),
+        Text(
+          '${widget.cart.itemCount} ${widget.cart.itemCount == 1 ? 'item' : 'items'}',
+          style: BBTextResponsive.labelMedium(context, weight: FontWeight.w600),
+        ),
+        const SizedBox(height: BBColors.padS),
         // Items
-        ...widget.cart.items.map((item) => Padding(
-          padding: const EdgeInsets.only(bottom: BBColors.padS),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${item.component.name} (${item.option?.name ?? item.selectedOptionValue ?? 'Default'}) x${item.quantity}',
-                  style: BBTextResponsive.bodySmall(context),
+        ...widget.cart.items.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: BBColors.padS),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    '${item.component.name} (${item.option?.name ?? item.selectedOptionValue ?? 'Default'}) x${item.quantity}',
+                    style: BBTextResponsive.bodySmall(context),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              Text(context.money(item.lineTotal), style: BBTextResponsive.bodySmall(context, weight: FontWeight.w600)),
-            ],
+                const SizedBox(width: BBColors.padS),
+                Text(
+                  context.money(item.lineTotal),
+                  style: BBTextResponsive.bodySmall(
+                    context,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
-        )),
+        ),
         const Divider(),
-        _ReceiptRow(label: 'Subtotal', value: context.money(widget.cart.subtotal)),
-        _ReceiptRow(label: 'Shipping', value: widget.cart.shipping == 0 ? 'Free' : context.money(widget.cart.shipping)),
-        _ReceiptRow(label: 'Tax (10%)', value: context.money(widget.cart.tax)),
+        _ReceiptRow(
+          label: 'Subtotal',
+          value: context.money(widget.cart.subtotal),
+        ),
+        _ReceiptRow(
+          label: 'Shipping',
+          value: widget.cart.shipping == 0
+              ? 'Free'
+              : context.money(widget.cart.shipping),
+          valueColor: widget.cart.shipping == 0
+              ? BBColors.readable(context, BBColors.accentGreen)
+              : null,
+        ),
+        _ReceiptRow(
+          label: 'Tax (${(CartProvider.taxRate * 100).round()}%)',
+          value: context.money(widget.cart.tax),
+        ),
         const Divider(height: BBColors.padL),
-        _ReceiptRow(label: 'Total', value: context.money(widget.cart.total), isTotal: true),
+        _ReceiptRow(
+          label: 'Total',
+          value: context.money(widget.cart.total),
+          isTotal: true,
+        ),
       ],
     );
   }
 
   void _handleNext() {
+    if (_processing) return;
     if (!_formKey.currentState!.validate()) return;
 
     if (_step == 2) {
@@ -798,13 +1323,15 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
     }
   }
 
-  void _placeOrder() async {
+  Future<void> _placeOrder() async {
+    if (_processing) return;
     setState(() => _processing = true);
 
     final navigator = Navigator.of(context);
     final rootContext = navigator.context;
     // Simulate payment processing
     await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
 
     final address = Address(
       name: _nameController.text.trim(),
@@ -813,6 +1340,10 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
       city: _cityController.text.trim(),
       zipCode: _zipController.text.trim(),
     );
+    final digits = _cardController.text.replaceAll(RegExp(r'\D'), '');
+    final last4 = digits.length >= 4
+        ? digits.substring(digits.length - 4)
+        : digits;
     final order = Order(
       id: 'BB-${DateTime.now().millisecondsSinceEpoch}',
       items: List.from(widget.cart.items),
@@ -823,10 +1354,7 @@ class _CheckoutDialogState extends State<_CheckoutDialog> {
       status: OrderStatus.confirmed,
       createdAt: DateTime.now(),
       shippingAddress: address,
-      paymentMethod: PaymentMethod(
-        type: 'card',
-        last4: _cardController.text.replaceAll(' ', '').substring(12),
-      ),
+      paymentMethod: PaymentMethod(type: 'card', last4: last4),
     );
 
     await PreferencesService.addOrder(order);
@@ -852,12 +1380,17 @@ class _StepIndicator extends StatelessWidget {
   final int step;
   final int currentStep;
 
-  const _StepIndicator({required this.label, required this.step, required this.currentStep});
+  const _StepIndicator({
+    required this.label,
+    required this.step,
+    required this.currentStep,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isActive = step <= currentStep;
     final isCurrent = step == currentStep;
+    final activeLabel = BBColors.readable(context, BBColors.accentBlue);
 
     return Expanded(
       child: Column(
@@ -866,22 +1399,41 @@ class _StepIndicator extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: isActive ? BBColors.accentBlue : Theme.of(context).dividerColor,
+              color: isActive
+                  ? BBColors.accentBlue
+                  : Theme.of(context).dividerColor,
               shape: BoxShape.circle,
             ),
             child: isActive && step < currentStep
-                ? const Icon(Icons.check, size: 16, color: Colors.white)
+                ? const Icon(
+                    Icons.check,
+                    size: 16,
+                    color: BBColors.dayTextPrimary,
+                  )
                 : Center(
                     child: Text(
                       '${step + 1}',
-                      style: BBTextResponsive.labelSmall(context, color: isActive ? Colors.white : BBColors.textMuted(context), weight: FontWeight.w600),
+                      style: BBTextResponsive.labelSmall(
+                        context,
+                        color: isActive
+                            ? BBColors.dayTextPrimary
+                            : BBColors.textMuted(context),
+                        weight: FontWeight.w600,
+                      ),
                     ),
                   ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: BBTextResponsive.caption(context, color: isActive ? BBColors.accentBlue : BBColors.textMuted(context), weight: isCurrent ? FontWeight.w600 : FontWeight.normal),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: BBTextResponsive.caption(
+              context,
+              color: isActive ? activeLabel : BBColors.textMuted(context),
+              weight: isCurrent ? FontWeight.w600 : FontWeight.normal,
+            ),
           ),
         ],
       ),
@@ -901,7 +1453,9 @@ class _StepConnector extends StatelessWidget {
       child: Container(
         height: 2,
         margin: const EdgeInsets.only(bottom: 28),
-        color: step < currentStep ? BBColors.accentBlue : Theme.of(context).dividerColor,
+        color: step < currentStep
+            ? BBColors.accentBlue
+            : Theme.of(context).dividerColor,
       ),
     );
   }
@@ -921,59 +1475,89 @@ class _PurchaseSuccessDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final maxHeight = (MediaQuery.sizeOf(context).height - 48).clamp(
+      240.0,
+      640.0,
+    );
 
     return Dialog(
+      insetPadding: const EdgeInsets.all(BBColors.padL),
       backgroundColor: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.all(BBColors.padXXL),
-        decoration: BoxDecoration(
-          color: isDark ? BBColors.nightBg : BBColors.dayBg,
-          borderRadius: BorderRadius.circular(BBColors.radiusXl),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Success animation container
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: BBColors.accentGreen.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.check_rounded, size: 56, color: BBColors.accentGreen),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 460, maxHeight: maxHeight),
+        child: Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: isDark ? BBColors.nightBg : BBColors.dayBg,
+            borderRadius: BorderRadius.circular(BBColors.radiusXl),
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(BBColors.padXL),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Success animation container
+                Container(
+                  width: 92,
+                  height: 92,
+                  decoration: BoxDecoration(
+                    color: BBColors.accentGreen.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check_rounded,
+                    size: 52,
+                    color: BBColors.readable(context, BBColors.accentGreen),
+                  ),
+                ),
+                const SizedBox(height: BBColors.padL),
+                Text(
+                  'Order Confirmed!',
+                  style: BBTextResponsive.headlineLarge(
+                    context,
+                    weight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: BBColors.padS),
+                Text(
+                  'Your order has been placed successfully',
+                  style: BBTextResponsive.bodyLarge(
+                    context,
+                    color: BBColors.textMuted(context),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: BBColors.padL),
+                BrandCard(
+                  variant: BrandCardVariant.defaultCard,
+                  padding: const EdgeInsets.all(BBColors.padL),
+                  child: Column(
+                    children: [
+                      _ReceiptRow(label: 'Order ID', value: orderId),
+                      const SizedBox(height: BBColors.padS),
+                      _ReceiptRow(
+                        label: 'Total Paid',
+                        value: context.money(total),
+                        isTotal: true,
+                        valueColor: BBColors.readable(
+                          context,
+                          BBColors.accentGreen,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: BBColors.padL),
+                BrandButton(
+                  text: 'Continue Shopping',
+                  icon: Icons.store_rounded,
+                  onPressed: onContinue,
+                  fullWidth: true,
+                ),
+              ],
             ),
-            const SizedBox(height: BBColors.padXL),
-            Text(
-              'Order Confirmed!',
-              style: BBTextResponsive.headlineLarge(context, weight: FontWeight.w700),
-            ),
-            const SizedBox(height: BBColors.padS),
-            Text(
-              'Your order has been placed successfully',
-              style: BBTextResponsive.bodyLarge(context, color: BBColors.textMuted(context)),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: BBColors.padL),
-            BrandCard(
-              variant: BrandCardVariant.defaultCard,
-              padding: const EdgeInsets.all(BBColors.padL),
-              child: Column(
-                children: [
-                  _ReceiptRow(label: 'Order ID', value: orderId),
-                  const SizedBox(height: BBColors.padS),
-                  _ReceiptRow(label: 'Total Paid', value: context.money(total), isTotal: true, valueColor: BBColors.accentGreen),
-                ],
-              ),
-            ),
-            const SizedBox(height: BBColors.padXL),
-            BrandButton(
-              text: 'Continue Shopping',
-              icon: Icons.store_rounded,
-              onPressed: onContinue,
-              fullWidth: true,
-            ),
-          ],
+          ),
         ),
       ),
     );

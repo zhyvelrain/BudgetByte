@@ -128,6 +128,78 @@ void main() {
     expect(find.text('2 products'), findsOneWidget);
   });
 
+  testWidgets('checkout: back and cancel keep the cart intact', (tester) async {
+    tester.view.physicalSize = const Size(390, 844) * 3;
+    tester.view.devicePixelRatio = 3;
+    final cart = CartProvider();
+    final shop = ShopProvider();
+    final p = ComponentDataService.components.first;
+    await tester.runAsync(() async {
+      await cart.init();
+      await shop.init();
+      await cart.addItem(
+        CartItem(id: 'x', component: p, quantity: 1, option: p.options.first),
+      );
+    });
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: cart),
+          ChangeNotifierProvider.value(value: shop),
+          ChangeNotifierProvider.value(value: AuthService()..init()),
+        ],
+        child: MaterialApp(theme: BBTheme.light(), home: const CartScreen()),
+      ),
+    );
+
+    // Step 1: cancel immediately, no data entered, so no discard prompt.
+    await tester.tap(find.textContaining('Checkout'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Shipping Information'), findsNothing);
+    expect(cart.items, hasLength(1));
+
+    // Step 2: fill shipping, continue, then go Back and cancel with data.
+    await tester.tap(find.textContaining('Checkout'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Full Name'),
+      'Juan Dela Cruz',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'juan@example.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Street address'),
+      '12 Rizal St, Brgy. Uno',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'City'),
+      'Makati',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'ZIP Code'),
+      '1200',
+    );
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('Payment Method'), findsOneWidget);
+
+    await tester.tap(find.text('Back'));
+    await tester.pumpAndSettle();
+    expect(find.text('Shipping Information'), findsOneWidget);
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Discard checkout?'), findsOneWidget);
+    await tester.tap(find.text('Discard'));
+    await tester.pumpAndSettle();
+    expect(find.text('Shipping Information'), findsNothing);
+    expect(cart.items, hasLength(1));
+  });
+
   testWidgets('checkout asks for a shipping address before payment', (
     tester,
   ) async {

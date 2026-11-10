@@ -113,7 +113,7 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = currentIndex == index;
-    final activeColor = BBColors.accentBlue;
+    final activeColor = BBColors.readable(context, BBColors.accentBlue);
     final inactiveColor = isDark ? BBColors.nightTextMuted : BBColors.dayTextMuted;
 
     return Expanded(

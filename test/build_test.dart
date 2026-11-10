@@ -132,7 +132,17 @@ void main() {
           ChangeNotifierProvider.value(value: cart),
           ChangeNotifierProvider.value(value: shop),
         ],
-        child: MaterialApp(theme: BBTheme.light(), home: const BuilderScreen()),
+        child: MaterialApp(
+          theme: BBTheme.light(),
+          home: Builder(
+            builder: (context) => MediaQuery(
+              // The live 3D preview auto-rotates forever; disable that motion so
+              // pumpAndSettle can reach a quiet frame.
+              data: MediaQuery.of(context).copyWith(disableAnimations: true),
+              child: const BuilderScreen(),
+            ),
+          ),
+        ),
       ),
     );
     final tabs = DefaultTabController.of(

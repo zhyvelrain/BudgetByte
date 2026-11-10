@@ -21,11 +21,21 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile', style: BBTextResponsive.headlineMedium(context, weight: FontWeight.w600)),
+        title: Text(
+          'Profile',
+          style: BBTextResponsive.headlineMedium(
+            context,
+            weight: FontWeight.w600,
+          ),
+        ),
         actions: [
           Consumer<ThemeProvider>(
             builder: (context, themeProvider, _) => IconButton(
-              icon: Icon(themeProvider.isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
+              icon: Icon(
+                themeProvider.isDarkMode
+                    ? Icons.light_mode_rounded
+                    : Icons.dark_mode_rounded,
+              ),
               onPressed: () => themeProvider.toggleTheme(),
               tooltip: themeProvider.isDarkMode ? 'Light Mode' : 'Dark Mode',
             ),
@@ -83,7 +93,9 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Consumer<ThemeProvider>(
                 builder: (context, themeProvider, _) => _MenuItem(
-                  icon: themeProvider.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                  icon: themeProvider.isDarkMode
+                      ? Icons.dark_mode_rounded
+                      : Icons.light_mode_rounded,
                   title: themeProvider.isDarkMode ? 'Dark Mode' : 'Light Mode',
                   subtitle: 'Toggle theme preference',
                   trailing: Switch(
@@ -96,7 +108,8 @@ class ProfileScreen extends StatelessWidget {
               _MenuItem(
                 icon: Icons.attach_money_rounded,
                 title: 'Currency',
-                subtitle: ShopProvider.currencies[context.watch<ShopProvider>().currency]!,
+                subtitle: ShopProvider
+                    .currencies[context.watch<ShopProvider>().currency]!,
                 onTap: () => showCurrencyPicker(context),
               ),
             ],
@@ -120,7 +133,7 @@ class ProfileScreen extends StatelessWidget {
           BrandButton.outline(
             text: 'Sign Out',
             icon: Icons.logout_rounded,
-            foregroundColor: BBColors.accentRed,
+            foregroundColor: BBColors.readable(context, BBColors.accentRed),
             onPressed: () => _showSignOutDialog(context),
             fullWidth: true,
           ),
@@ -141,7 +154,11 @@ class ProfileScreen extends StatelessWidget {
           gradient: BrandAccents.electricGradient,
           borderRadius: BorderRadius.circular(BBColors.radiusLg),
         ),
-        child: const Icon(Icons.computer_rounded, size: 32, color: Colors.white),
+        child: const Icon(
+          Icons.computer_rounded,
+          size: 32,
+          color: Colors.white,
+        ),
       ),
       children: [
         Text(
@@ -162,7 +179,10 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Sign Out', style: BBTextResponsive.titleLarge(context)),
-        content: Text('Are you sure you want to sign out?', style: BBTextResponsive.bodyMedium(context)),
+        content: Text(
+          'Are you sure you want to sign out?',
+          style: BBTextResponsive.bodyMedium(context),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -170,7 +190,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           BrandButton.outline(
             text: 'Sign Out',
-            foregroundColor: BBColors.accentRed,
+            foregroundColor: BBColors.readable(context, BBColors.accentRed),
             onPressed: () {
               final auth = context.read<AuthService>();
               Navigator.pop(context);
@@ -208,7 +228,11 @@ class _ProfileHeader extends StatelessWidget {
               gradient: BrandAccents.electricGradient,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.person_rounded, size: 40, color: Colors.white),
+            child: const Icon(
+              Icons.person_rounded,
+              size: 40,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(width: BBColors.padL),
           // Info
@@ -220,25 +244,38 @@ class _ProfileHeader extends StatelessWidget {
                   user?.name ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: BBTextResponsive.titleLarge(context, weight: FontWeight.w700),
+                  style: BBTextResponsive.titleLarge(
+                    context,
+                    weight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   user?.email ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: BBTextResponsive.bodyMedium(context, color: BBColors.textMuted(context)),
+                  style: BBTextResponsive.bodyMedium(
+                    context,
+                    color: BBColors.textMuted(context),
+                  ),
                 ),
                 const SizedBox(height: BBColors.padS),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: BBColors.accentBlue.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(BBColors.radiusSm),
                   ),
                   child: Text(
                     'Member since ${user?.createdAt.year ?? DateTime.now().year}',
-                    style: BBTextResponsive.labelSmall(context, color: BBColors.accentBlue, weight: FontWeight.w600),
+                    style: BBTextResponsive.labelSmall(
+                      context,
+                      color: BBColors.accentBlue,
+                      weight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -264,16 +301,45 @@ class _StatsRow extends StatelessWidget {
               builder: (context, favoritesSnapshot) {
                 if (ordersSnapshot.connectionState == ConnectionState.waiting ||
                     buildsSnapshot.connectionState == ConnectionState.waiting ||
-                    favoritesSnapshot.connectionState == ConnectionState.waiting) {
+                    favoritesSnapshot.connectionState ==
+                        ConnectionState.waiting) {
                   return Row(
                     children: [
-                      Expanded(child: _StatCard(icon: Icons.shopping_bag_rounded, label: 'Orders', value: '...', color: BBColors.accentBlue)),
+                      Expanded(
+                        child: _StatCard(
+                          icon: Icons.shopping_bag_rounded,
+                          label: 'Orders',
+                          value: '...',
+                          color: BBColors.accentBlue,
+                        ),
+                      ),
                       const SizedBox(width: BBColors.padM),
-                      Expanded(child: _StatCard(icon: Icons.build_rounded, label: 'Builds', value: '...', color: BBColors.catMouse)),
+                      Expanded(
+                        child: _StatCard(
+                          icon: Icons.build_rounded,
+                          label: 'Builds',
+                          value: '...',
+                          color: BBColors.catMouse,
+                        ),
+                      ),
                       const SizedBox(width: BBColors.padM),
-                      Expanded(child: _StatCard(icon: Icons.attach_money_rounded, label: 'Spent', value: '...', color: BBColors.accentGreen)),
+                      Expanded(
+                        child: _StatCard(
+                          icon: Icons.attach_money_rounded,
+                          label: 'Spent',
+                          value: '...',
+                          color: BBColors.accentGreen,
+                        ),
+                      ),
                       const SizedBox(width: BBColors.padM),
-                      Expanded(child: _StatCard(icon: Icons.favorite_rounded, label: 'Saved', value: '...', color: BBColors.accentRed)),
+                      Expanded(
+                        child: _StatCard(
+                          icon: Icons.favorite_rounded,
+                          label: 'Saved',
+                          value: '...',
+                          color: BBColors.accentRed,
+                        ),
+                      ),
                     ],
                   );
                 }
@@ -281,17 +347,48 @@ class _StatsRow extends StatelessWidget {
                 final orders = ordersSnapshot.data ?? [];
                 final builds = buildsSnapshot.data ?? [];
                 final favorites = favoritesSnapshot.data ?? <String>{};
-                final totalSpent = orders.fold<double>(0, (sum, o) => sum + o.total);
+                final totalSpent = orders.fold<double>(
+                  0,
+                  (sum, o) => sum + o.total,
+                );
 
                 return Row(
                   children: [
-                    Expanded(child: _StatCard(icon: Icons.shopping_bag_rounded, label: 'Orders', value: '${orders.length}', color: BBColors.accentBlue)),
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.shopping_bag_rounded,
+                        label: 'Orders',
+                        value: '${orders.length}',
+                        color: BBColors.accentBlue,
+                      ),
+                    ),
                     const SizedBox(width: BBColors.padM),
-                    Expanded(child: _StatCard(icon: Icons.build_rounded, label: 'Builds', value: '${builds.length}', color: BBColors.catMouse)),
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.build_rounded,
+                        label: 'Builds',
+                        value: '${builds.length}',
+                        color: BBColors.catMouse,
+                      ),
+                    ),
                     const SizedBox(width: BBColors.padM),
-                    Expanded(child: _StatCard(icon: Icons.attach_money_rounded, label: 'Spent', value: context.money(totalSpent), color: BBColors.accentGreen)),
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.attach_money_rounded,
+                        label: 'Spent',
+                        value: context.money(totalSpent),
+                        color: BBColors.accentGreen,
+                      ),
+                    ),
                     const SizedBox(width: BBColors.padM),
-                    Expanded(child: _StatCard(icon: Icons.favorite_rounded, label: 'Saved', value: '${favorites.length}', color: BBColors.accentRed)),
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.favorite_rounded,
+                        label: 'Saved',
+                        value: '${favorites.length}',
+                        color: BBColors.accentRed,
+                      ),
+                    ),
                   ],
                 );
               },
@@ -329,11 +426,31 @@ class _StatCard extends StatelessWidget {
               color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(BBColors.radiusMd),
             ),
-            child: Icon(icon, size: 20, color: color),
+            child: Icon(
+              icon,
+              size: 20,
+              color: BBColors.readable(context, color),
+            ),
           ),
           const SizedBox(height: BBColors.padS),
-          Text(value, style: BBTextResponsive.titleMedium(context, weight: FontWeight.w700, color: color)),
-          Text(label, style: BBTextResponsive.caption(context)),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              maxLines: 1,
+              style: BBTextResponsive.titleMedium(
+                context,
+                weight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: BBTextResponsive.caption(context),
+          ),
         ],
       ),
     );
@@ -352,14 +469,22 @@ class _MenuSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: BBColors.padS, bottom: BBColors.padS),
-          child: Text(title, style: BBTextResponsive.labelLarge(context, weight: FontWeight.w600, color: BBColors.accentBlue)),
+          padding: const EdgeInsets.only(
+            left: BBColors.padS,
+            bottom: BBColors.padS,
+          ),
+          child: Text(
+            title,
+            style: BBTextResponsive.labelLarge(
+              context,
+              weight: FontWeight.w600,
+              color: BBColors.accentBlue,
+            ),
+          ),
         ),
         BrandCard(
           padding: EdgeInsets.zero,
-          child: Column(
-            children: children.map((child) => child).toList(),
-          ),
+          child: Column(children: children.map((child) => child).toList()),
         ),
       ],
     );
@@ -406,7 +531,13 @@ class _MenuItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: BBTextResponsive.bodyMedium(context, weight: FontWeight.w600)),
+                  Text(
+                    title,
+                    style: BBTextResponsive.bodyMedium(
+                      context,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
                   Text(subtitle, style: BBTextResponsive.caption(context)),
                 ],
               ),
@@ -423,18 +554,30 @@ class _MenuItem extends StatelessWidget {
     );
   }
 }
+
 /// Lets the user switch the display currency (USD or PHP).
 void showCurrencyPicker(BuildContext context) {
   final shop = context.read<ShopProvider>();
   showDialog(
     context: context,
     builder: (dialogContext) => SimpleDialog(
-      title: Text('Currency', style: BBTextResponsive.titleLarge(dialogContext)),
+      title: Text(
+        'Currency',
+        style: BBTextResponsive.titleLarge(dialogContext),
+      ),
       children: [
         for (final entry in ShopProvider.currencies.entries)
           ListTile(
             title: Text(entry.value),
-            trailing: shop.currency == entry.key ? const Icon(Icons.check_rounded, color: BBColors.accentBlue) : null,
+            trailing: shop.currency == entry.key
+                ? Icon(
+                    Icons.check_rounded,
+                    color: BBColors.readable(
+                      dialogContext,
+                      BBColors.accentBlue,
+                    ),
+                  )
+                : null,
             selected: shop.currency == entry.key,
             onTap: () {
               shop.setCurrency(entry.key);
@@ -453,10 +596,20 @@ class WishlistScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final favorites = context.watch<ShopProvider>().favorites;
-    final products = ComponentDataService.components.where((c) => favorites.contains(c.id)).toList();
+    final products = ComponentDataService.components
+        .where((c) => favorites.contains(c.id))
+        .toList();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Wishlist', style: BBTextResponsive.headlineMedium(context, weight: FontWeight.w600))),
+      appBar: AppBar(
+        title: Text(
+          'Wishlist',
+          style: BBTextResponsive.headlineMedium(
+            context,
+            weight: FontWeight.w600,
+          ),
+        ),
+      ),
       body: products.isEmpty
           ? Center(
               child: Padding(
@@ -464,14 +617,27 @@ class WishlistScreen extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.favorite_border_rounded, size: 56, color: BBColors.textMuted(context)),
+                    Icon(
+                      Icons.favorite_border_rounded,
+                      size: 56,
+                      color: BBColors.textMuted(context),
+                    ),
                     const SizedBox(height: BBColors.padL),
-                    Text('No favorites yet', style: BBTextResponsive.titleLarge(context, weight: FontWeight.w600)),
+                    Text(
+                      'No favorites yet',
+                      style: BBTextResponsive.titleLarge(
+                        context,
+                        weight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: BBColors.padS),
                     Text(
                       'Tap the heart on any product to save it here.',
                       textAlign: TextAlign.center,
-                      style: BBTextResponsive.bodyMedium(context, color: BBColors.textMuted(context)),
+                      style: BBTextResponsive.bodyMedium(
+                        context,
+                        color: BBColors.textMuted(context),
+                      ),
                     ),
                   ],
                 ),
@@ -486,7 +652,8 @@ class WishlistScreen extends StatelessWidget {
                 mainAxisSpacing: BBColors.padM,
               ),
               itemCount: products.length,
-              itemBuilder: (context, i) => ShopProductCard(product: products[i]),
+              itemBuilder: (context, i) =>
+                  ShopProductCard(product: products[i]),
             ),
     );
   }
