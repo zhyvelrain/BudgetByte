@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/app_models.dart';
 
 /// ByteBudget palette: warm paper + graphite neutrals, one burnt-orange accent.
 /// Token names are historical (e.g. `accentBlue` is the primary accent).
@@ -224,6 +225,31 @@ class BBColors {
 
   // Get accent color with opacity
   static Color electricBlueAt(double opacity) => accentBlue.withValues(alpha: opacity);
+
+  // ── Gradients ───────────────────────────────────────────────────────
+  static const LinearGradient cardGradientLight = LinearGradient(
+    colors: [daySurface, daySurfaceAlt],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient cardGradientDark = LinearGradient(
+    colors: [nightSurfaceAlt, nightSurface],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient heroGradientLight = LinearGradient(
+    colors: [dayBg, daySurfaceAlt],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  static const LinearGradient heroGradientDark = LinearGradient(
+    colors: [nightBg, nightSurface],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
 }
 
 // ── Brand Gradients ──────────────────────────────────────────────────
@@ -260,4 +286,6 @@ class BrandAccents {
     end: Alignment.bottomRight,
   );
 
+  /// One accent for every category (categories are told apart by icon).
+  static Gradient categoryGradient(ComponentCategory category) => electricGradient;
 }
