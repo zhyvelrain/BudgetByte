@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'theme/bb_theme.dart';
 import 'theme/bb_colors.dart';
 import 'theme/bb_text.dart';
@@ -13,49 +15,22 @@ import 'services/preferences_service.dart';
 import 'services/component_data_service.dart';
 import 'services/auth_service.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/onboarding/terms_screen.dart';
+import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/main/main_screen.dart';
-import 'screens/home/home_screen.dart';
-import 'screens/builder/builder_screen.dart';
-import 'screens/cart/cart_screen.dart';
-import 'screens/profile/profile_screen.dart';
-import 'screens/saved_builds_screen.dart';
-import 'screens/orders/orders_screen.dart';
 import 'widgets/connectivity_banner.dart';
-
-/// Custom page route for smooth transitions
-class _SmoothPageRoute<T> extends PageRouteBuilder<T> {
-  final Widget child;
-  final Duration duration;
-
-  _SmoothPageRoute({
-    required this.child,
-    this.duration = const Duration(milliseconds: 350),
-    super.settings,
-  }) : super(
-          pageBuilder: (context, animation, secondaryAnimation) => child,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0.0, 0.08),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
-                child: child,
-              ),
-            );
-          },
-          transitionDuration: duration,
-          reverseTransitionDuration: duration,
-        );
-}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize services
   await PreferencesService.init();
+
+  // Sample product photos are CC-licensed; credit them in About > View licenses.
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks([
+      'Sample product photos (Wikimedia Commons)',
+    ], await rootBundle.loadString('assets/images/CREDITS.md'));
+  });
 
   // Pre-load component data
   ComponentDataService.components; // triggers initialization
@@ -77,7 +52,7 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   final AuthService _authService = AuthService()..init();
   final ShopProvider _shopProvider = ShopProvider();
   late final Connectivity _connectivity;
-  bool _showTerms = false;
+  bool _showOnboarding = false;
   bool _isOnline = true;
 
   @override
@@ -98,9 +73,9 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
     await _buildProvider.init();
     await _shopProvider.init();
 
-    // Check if terms accepted and onboarding completed
+    // Check if onboarding is completed
     final prefs = await PreferencesService.getPreferences();
-    _showTerms = !prefs.termsAccepted;
+    _showOnboarding = !prefs.onboardingCompleted;
 
     if (mounted) {
       setState(() {});
@@ -108,42 +83,41 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   }
 
   void _setupConnectivityListener() {
-      _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) {
-        final isOnline = results.any((r) => r != ConnectivityResult.none);
-        if (_isOnline != isOnline && mounted) {
-          setState(() {
-            _isOnline = isOnline;
-          });
-        }
-      });
-
-      // Check initial connectivity
-      _connectivity.checkConnectivity().then((List<ConnectivityResult> results) {
-        final isOnline = results.any((r) => r != ConnectivityResult.none);
-        if (mounted) {
-          setState(() {
-            _isOnline = isOnline;
-          });
-        }
-      });
-    }
-
-    void _onTermsAccept() async {
-      final prefs = await PreferencesService.getPreferences();
-      await PreferencesService.savePreferences(prefs.copyWith(termsAccepted: true));
-      if (mounted) {
+    _connectivity.onConnectivityChanged.listen((
+      List<ConnectivityResult> results,
+    ) {
+      final isOnline = results.any((r) => r != ConnectivityResult.none);
+      if (_isOnline != isOnline && mounted) {
         setState(() {
-          _showTerms = false;
+          _isOnline = isOnline;
         });
       }
-    }
+    });
 
-    void _onTermsDecline() {
-      // Exit the app
-      SystemNavigator.pop();
-    }
+    // Check initial connectivity
+    _connectivity.checkConnectivity().then((List<ConnectivityResult> results) {
+      final isOnline = results.any((r) => r != ConnectivityResult.none);
+      if (mounted) {
+        setState(() {
+          _isOnline = isOnline;
+        });
+      }
+    });
+  }
 
-    @override
+  void _onOnboardingComplete() async {
+    final prefs = await PreferencesService.getPreferences();
+    await PreferencesService.savePreferences(
+      prefs.copyWith(onboardingCompleted: true),
+    );
+    if (mounted) {
+      setState(() {
+        _showOnboarding = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
@@ -170,13 +144,15 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
   }
 
   Widget _buildAppRoot() {
-        if (!_themeProvider.isInitialized || !_cartProvider.isInitialized || !_buildProvider.isInitialized) {
-          return _buildSplashScreen();
-        }
+    if (!_themeProvider.isInitialized ||
+        !_cartProvider.isInitialized ||
+        !_buildProvider.isInitialized) {
+      return _buildSplashScreen();
+    }
 
-        if (_showTerms) {
-          return TermsScreen(onAccept: _onTermsAccept, onDecline: _onTermsDecline);
-        }
+    if (_showOnboarding) {
+      return OnboardingScreen(onComplete: _onOnboardingComplete);
+    }
 
     if (!_authService.signedIn) {
       return const LoginScreen();
@@ -185,87 +161,69 @@ class _ByteBudgetAppState extends State<ByteBudgetApp> {
     return Stack(
       children: [
         const MainScreen(),
-        if (!_isOnline)
-          const ConnectivityBanner(),
+        if (!_isOnline) const ConnectivityBanner(),
       ],
     );
   }
 
   Widget _buildSplashScreen() {
-      return Scaffold(
-        backgroundColor: BBColors.nightBg,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                gradient: BrandAccents.electricGradient,
-                                borderRadius: BorderRadius.circular(BBColors.radiusLg),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: BrandAccents.electricBlueAt(0.4),
-                                    blurRadius: 30,
-                                    spreadRadius: 5,
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.memory_rounded,
-                                size: 50,
-                                color: Colors.white,
-                              ),
-                            ),
-              const SizedBox(height: BBColors.padXL),
-              Text(
-                'ByteBudget',
-                style: BBText.displayLarge(
-                  size: 36,
-                  color: BBColors.white,
-                  weight: FontWeight.w700,
-                ),
+    return Scaffold(
+      backgroundColor: BBColors.nightBg,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                gradient: BrandAccents.electricGradient,
+                borderRadius: BorderRadius.circular(BBColors.radiusLg),
+                boxShadow: [
+                  BoxShadow(
+                    color: BrandAccents.electricBlueAt(0.4),
+                    blurRadius: 30,
+                    spreadRadius: 5,
+                  ),
+                ],
               ),
-              const SizedBox(height: BBColors.padM),
-              Text(
-                'Your PC Build Companion',
-                style: BBText.bodyLarge(
-                  color: BBColors.nightTextSecondary,
-                ),
+              child: const Icon(
+                Icons.memory_rounded,
+                size: 50,
+                color: Colors.white,
               ),
-              const SizedBox(height: BBColors.padXXL),
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(BBColors.accentBlue),
-                ),
+            ),
+            const SizedBox(height: BBColors.padXL),
+            Text(
+              'ByteBudget',
+              style: BBText.displayLarge(
+                size: 36,
+                color: BBColors.white,
+                weight: FontWeight.w700,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: BBColors.padM),
+            Text(
+              'Your PC Build Companion',
+              style: BBText.bodyLarge(color: BBColors.nightTextSecondary),
+            ),
+            const SizedBox(height: BBColors.padXXL),
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(BBColors.accentBlue),
+              ),
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
 
   Route<dynamic>? _generateRoute(RouteSettings settings) {
-      // Handle deep links or specific routes with smooth transitions
-      switch (settings.name) {
-        case '/builder':
-          return _SmoothPageRoute(child: const BuilderScreen(), settings: settings);
-        case '/cart':
-          return _SmoothPageRoute(child: const CartScreen(), settings: settings);
-        case '/profile':
-          return _SmoothPageRoute(child: const ProfileScreen(), settings: settings);
-        case '/home':
-          return _SmoothPageRoute(child: const HomeScreen(), settings: settings);
-        case '/saved-builds':
-          return _SmoothPageRoute(child: const SavedBuildsScreen(), settings: settings);
-        case '/orders':
-          return _SmoothPageRoute(child: const OrdersScreen(), settings: settings);
-        default:
-          return null;
-      }
-    }
+    // Handle deep links or specific routes if needed
+    return null;
   }
+}

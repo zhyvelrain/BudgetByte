@@ -1,7 +1,6 @@
 import '../models/app_models.dart';
 
 /// Sample data service with PC peripheral components - 10 curated items
-/// Prices are in Philippine Peso (₱)
 class ComponentDataService {
   static List<Component> _components = [];
   static bool _initialized = false;
@@ -15,15 +14,15 @@ class ComponentDataService {
     _components = [
       // Keyboards (2)
       Component(
-              id: 'kb_001',
-              name: 'Apex Pro TKL',
-              brand: 'SteelSeries',
-              category: ComponentCategory.keyboard,
-              price: 11199.00,
-              originalPrice: 12879.00,
-              description:
-                                'The world\'s fastest mechanical gaming keyboard with OmniPoint 2.0 adjustable switches. Per-key RGB illumination and OLED smart display.',
-                      images: ['assets/images/kb_001.png'],
+        id: 'kb_001',
+        name: 'Apex Pro TKL',
+        brand: 'SteelSeries',
+        category: ComponentCategory.keyboard,
+        price: 199.99,
+        originalPrice: 229.99,
+        description:
+            'The world\'s fastest mechanical gaming keyboard with OmniPoint 2.0 adjustable switches. Per-key RGB illumination and OLED smart display.',
+        images: ['assets/images/kb_001_0.jpg', 'assets/images/kb_001_1.jpg', 'assets/images/kb_001_2.jpg'],
         specifications: {
           'Switch Type': 'OmniPoint 2.0 Adjustable Mechanical',
           'Actuation Point': '0.2mm - 3.8mm Adjustable',
@@ -40,35 +39,16 @@ class ComponentDataService {
         reviewCount: 2341,
         isFeatured: true,
         discountLabel: '13% OFF',
-        options: [
-          ComponentOption(
-            id: 'kb_001_black',
-            name: 'Black',
-            type: 'color',
-            value: '#000000',
-            colorHex: '#000000',
-            price: 11199.00,
-            isDefault: true,
-          ),
-          ComponentOption(
-            id: 'kb_001_white',
-            name: 'White',
-            type: 'color',
-            value: '#FFFFFF',
-            colorHex: '#FFFFFF',
-            price: 11199.00,
-          ),
-        ],
       ),
       Component(
-              id: 'kb_002',
-              name: 'G915 TKL Lightspeed',
-              brand: 'Logitech G',
-              category: ComponentCategory.keyboard,
-              price: 12879.00,
-              description:
-                  'Low-profile GL mechanical switches with Lightspeed wireless. 40-hour battery life and premium aluminum alloy design.',
-              images: ['assets/images/kb_002.png'],
+        id: 'kb_002',
+        name: 'G915 TKL Lightspeed',
+        brand: 'Logitech G',
+        category: ComponentCategory.keyboard,
+        price: 229.99,
+        description:
+            'Low-profile GL mechanical switches with Lightspeed wireless. 40-hour battery life and premium aluminum alloy design.',
+        images: ['assets/images/kb_002_0.jpg', 'assets/images/kb_002_1.jpg', 'assets/images/kb_002_2.jpg'],
         specifications: {
           'Switch Type': 'GL Linear / Tactile / Clicky (Low Profile)',
           'Polling Rate': '1000Hz (Lightspeed)',
@@ -83,37 +63,18 @@ class ComponentDataService {
         rating: 4.7,
         reviewCount: 2156,
         isFeatured: true,
-        options: [
-          ComponentOption(
-            id: 'kb_002_black',
-            name: 'Black',
-            type: 'color',
-            value: '#000000',
-            colorHex: '#000000',
-            price: 12879.00,
-            isDefault: true,
-          ),
-          ComponentOption(
-            id: 'kb_002_white',
-            name: 'White',
-            type: 'color',
-            value: '#FFFFFF',
-            colorHex: '#FFFFFF',
-            price: 12879.00,
-          ),
-        ],
       ),
 
       // Mice (2)
       Component(
-              id: 'ms_001',
-              name: 'DeathAdder V3 Pro',
-              brand: 'Razer',
-              category: ComponentCategory.mouse,
-              price: 8959.00,
-              description:
-                  'Ultra-lightweight 63g ergonomic esports mouse with Focus Pro 30K optical sensor. Gen-3 optical switches.',
-              images: ['assets/images/mouse_001.png'],
+        id: 'ms_001',
+        name: 'DeathAdder V3 Pro',
+        brand: 'Razer',
+        category: ComponentCategory.mouse,
+        price: 159.99,
+        description:
+            'Ultra-lightweight 63g ergonomic esports mouse with Focus Pro 30K optical sensor. Gen-3 optical switches.',
+        images: ['assets/images/ms_001_0.jpg', 'assets/images/ms_001_1.jpg', 'assets/images/ms_001_0.jpg'],
         specifications: {
           'Sensor': 'Focus Pro 30K Optical',
           'DPI': '30,000',
@@ -129,36 +90,17 @@ class ComponentDataService {
         rating: 4.8,
         reviewCount: 3245,
         isFeatured: true,
-        options: [
-          ComponentOption(
-            id: 'ms_001_black',
-            name: 'Black',
-            type: 'color',
-            value: '#000000',
-            colorHex: '#000000',
-            price: 8959.00,
-            isDefault: true,
-          ),
-          ComponentOption(
-            id: 'ms_001_white',
-            name: 'White',
-            type: 'color',
-            value: '#FFFFFF',
-            colorHex: '#FFFFFF',
-            price: 8959.00,
-          ),
-        ],
       ),
       Component(
-              id: 'ms_002',
-              name: 'GPX Superlight 2',
-              brand: 'Logitech G',
-              category: ComponentCategory.mouse,
-              price: 8959.00,
-              originalPrice: 10079.00,
-              description:
-                  'Sub-60g wireless gaming mouse with Hero 2 sensor. 95-hour battery and hybrid optical-mechanical switches.',
-              images: ['assets/images/mouse_002.png'],
+        id: 'ms_002',
+        name: 'GPX Superlight 2',
+        brand: 'Logitech G',
+        category: ComponentCategory.mouse,
+        price: 159.99,
+        originalPrice: 179.99,
+        description:
+            'Sub-60g wireless gaming mouse with Hero 2 sensor. 95-hour battery and hybrid optical-mechanical switches.',
+        images: ['assets/images/ms_002_0.jpg', 'assets/images/ms_002_1.jpg', 'assets/images/ms_002_2.jpg'],
         specifications: {
           'Sensor': 'Hero 2 44K',
           'DPI': '44,000',
@@ -173,33 +115,6 @@ class ComponentDataService {
         rating: 4.9,
         reviewCount: 4123,
         discountLabel: '11% OFF',
-        options: [
-          ComponentOption(
-            id: 'ms_002_black',
-            name: 'Black',
-            type: 'color',
-            value: '#000000',
-            colorHex: '#000000',
-            price: 8959.00,
-            isDefault: true,
-          ),
-          ComponentOption(
-            id: 'ms_002_white',
-            name: 'White',
-            type: 'color',
-            value: '#FFFFFF',
-            colorHex: '#FFFFFF',
-            price: 8959.00,
-          ),
-          ComponentOption(
-            id: 'ms_002_pink',
-            name: 'Pink',
-            type: 'color',
-            value: '#FFC0CB',
-            colorHex: '#FFC0CB',
-            price: 8959.00,
-          ),
-        ],
       ),
 
       // Monitors (2)
@@ -208,10 +123,10 @@ class ComponentDataService {
         name: 'ROG Swift PG27AQDM',
         brand: 'ASUS',
         category: ComponentCategory.monitor,
-        price: 55999.00,
+        price: 999.99,
         description:
             '26.5" 1440p OLED 240Hz gaming monitor with 0.03ms response time. G-SYNC compatible and true 10-bit color.',
-        images: ['assets/images/mon_001.png'],
+        images: ['assets/images/mon_001_0.jpg', 'assets/images/mon_001_1.jpg', 'assets/images/mon_001_2.jpg'],
         specifications: {
           'Panel': '26.5" OLED',
           'Resolution': '2560 x 1440 (QHD)',
@@ -228,28 +143,17 @@ class ComponentDataService {
         rating: 4.8,
         reviewCount: 567,
         isFeatured: true,
-        options: [
-          ComponentOption(
-            id: 'mon_001_black',
-            name: 'Black',
-            type: 'color',
-            value: '#000000',
-            colorHex: '#000000',
-            price: 55999.00,
-            isDefault: true,
-          ),
-        ],
       ),
       Component(
         id: 'mon_002',
         name: '27GP95R-B',
         brand: 'LG',
         category: ComponentCategory.monitor,
-        price: 30799.00,
-        originalPrice: 36399.00,
+        price: 549.99,
+        originalPrice: 649.99,
         description:
             '27" 4K 144Hz Nano IPS with HDMI 2.1. DisplayHDR 600 and 98% DCI-P3 for content creation and gaming.',
-        images: ['assets/images/mon_002.png'],
+        images: ['assets/images/mon_002_0.jpg', 'assets/images/mon_002_1.jpg', 'assets/images/mon_002_0.jpg'],
         specifications: {
           'Panel': '27" Nano IPS',
           'Resolution': '3840 x 2160 (4K UHD)',
@@ -266,17 +170,6 @@ class ComponentDataService {
         rating: 4.7,
         reviewCount: 892,
         discountLabel: '15% OFF',
-        options: [
-          ComponentOption(
-            id: 'mon_002_blackred',
-            name: 'Black/Red',
-            type: 'color',
-            value: '#000000',
-            colorHex: '#000000',
-            price: 30799.00,
-            isDefault: true,
-          ),
-        ],
       ),
 
       // Audio (2)
@@ -285,10 +178,10 @@ class ComponentDataService {
         name: 'Arctis Nova Pro Wireless',
         brand: 'SteelSeries',
         category: ComponentCategory.audio,
-        price: 19599.00,
+        price: 349.99,
         description:
             'Premium wireless gaming headset with Active Noise Cancellation. Infinity Power System with hot-swappable batteries.',
-        images: ['assets/images/aud_001.png'],
+        images: ['assets/images/aud_001_0.jpg', 'assets/images/aud_001_1.jpg', 'assets/images/aud_001_2.jpg'],
         specifications: {
           'Driver': '40mm Neodymium',
           'Frequency Response': '10Hz - 40kHz',
@@ -304,35 +197,16 @@ class ComponentDataService {
         rating: 4.8,
         reviewCount: 1876,
         isFeatured: true,
-        options: [
-          ComponentOption(
-            id: 'aud_001_black',
-            name: 'Black',
-            type: 'color',
-            value: '#000000',
-            colorHex: '#000000',
-            price: 19599.00,
-            isDefault: true,
-          ),
-          ComponentOption(
-            id: 'aud_001_white',
-            name: 'White',
-            type: 'color',
-            value: '#FFFFFF',
-            colorHex: '#FFFFFF',
-            price: 19599.00,
-          ),
-        ],
       ),
       Component(
         id: 'aud_002',
         name: 'BlackShark V2 Pro 2023',
         brand: 'Razer',
         category: ComponentCategory.audio,
-        price: 11199.00,
+        price: 199.99,
         description:
             'Ultra-lightweight 282g esports headset with Titanium 50mm drivers. HyperSpeed wireless and 70-hour battery.',
-        images: ['assets/images/aud_002.png'],
+        images: ['assets/images/aud_002_0.jpg', 'assets/images/aud_001_1.jpg', 'assets/images/aud_002_2.jpg'],
         specifications: {
           'Driver': 'Titanium 50mm TriForce',
           'Frequency Response': '12Hz - 28kHz',
@@ -347,25 +221,6 @@ class ComponentDataService {
         stockCount: 41,
         rating: 4.7,
         reviewCount: 2134,
-        options: [
-          ComponentOption(
-            id: 'aud_002_black',
-            name: 'Black',
-            type: 'color',
-            value: '#000000',
-            colorHex: '#000000',
-            price: 11199.00,
-            isDefault: true,
-          ),
-          ComponentOption(
-            id: 'aud_002_white',
-            name: 'White',
-            type: 'color',
-            value: '#FFFFFF',
-            colorHex: '#FFFFFF',
-            price: 11199.00,
-          ),
-        ],
       ),
 
       // Camera (1)
@@ -374,10 +229,10 @@ class ComponentDataService {
         name: 'Facecam Pro',
         brand: 'Elgato',
         category: ComponentCategory.camera,
-        price: 16799.00,
+        price: 299.99,
         description:
             '4K60/1080p120 studio-grade webcam with Sony STARVIS sensor. Fixed focus f/2.0 lens and uncompressed video.',
-        images: ['assets/images/cam_001.png'],
+        images: ['assets/images/cam_001_0.jpg', 'assets/images/cam_001_1.jpg', 'assets/images/cam_001_2.jpg'],
         specifications: {
           'Sensor': 'Sony STARVIS 1/1.8" CMOS',
           'Max Resolution': '4K @ 60fps / 1080p @ 120fps',
@@ -393,17 +248,6 @@ class ComponentDataService {
         rating: 4.7,
         reviewCount: 654,
         isFeatured: true,
-        options: [
-          ComponentOption(
-            id: 'cam_001_black',
-            name: 'Black',
-            type: 'color',
-            value: '#000000',
-            colorHex: '#000000',
-            price: 16799.00,
-            isDefault: true,
-          ),
-        ],
       ),
 
       // Accessory (1)
@@ -412,10 +256,10 @@ class ComponentDataService {
         name: 'QcK Heavy XL',
         brand: 'SteelSeries',
         category: ComponentCategory.accessory,
-        price: 1679.00,
+        price: 29.99,
         description:
             'Extra-thick 6mm micro-woven cloth mousepad. Non-slip rubber base and optimized for low/high DPI tracking.',
-        images: ['assets/images/cam_002.png'],
+        images: ['assets/images/acc_001_0.jpg', 'assets/images/acc_001_1.jpg', 'assets/images/acc_001_2.jpg'],
         specifications: {
           'Dimensions': '900 x 400 x 6mm',
           'Surface': 'Micro-woven Cloth',
@@ -428,17 +272,6 @@ class ComponentDataService {
         stockCount: 123,
         rating: 4.7,
         reviewCount: 3456,
-        options: [
-          ComponentOption(
-            id: 'acc_001_black',
-            name: 'Black',
-            type: 'color',
-            value: '#000000',
-            colorHex: '#000000',
-            price: 1679.00,
-            isDefault: true,
-          ),
-        ],
       ),
     ];
     _components = [for (final c in _components) c.copyWith(options: _placeholderVariants(c))];
@@ -461,6 +294,7 @@ class ComponentDataService {
           // Colorways share the base price; editions cost a little more.
           price: _swatches.containsKey(names[i]) ? c.price : c.price + 20.0 * i,
           originalPrice: _swatches.containsKey(names[i]) ? c.originalPrice : null,
+          image: c.images.isEmpty ? null : c.images[i % c.images.length],
         ),
     ];
   }

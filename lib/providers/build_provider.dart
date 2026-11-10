@@ -56,7 +56,8 @@ class BuildProvider extends ChangeNotifier {
   void selectComponent(ComponentCategory category, Component? component, {ComponentOption? option}) {
     if (_currentBuild == null) return;
     final newComponents = Map<ComponentCategory, Component?>.from(_currentBuild!.selectedComponents);
-    newComponents[category] = component;
+    // Keep only the chosen variant so price, cart and history all agree on it.
+    newComponents[category] = option == null ? component : component?.copyWith(options: [option]);
     _currentBuild = _currentBuild!.copyWith(
       selectedComponents: newComponents,
       updatedAt: DateTime.now(),
@@ -92,11 +93,32 @@ class BuildProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveCurrentBuild() async {
-    if (_currentBuild == null) return;
-    await PreferencesService.addBuild(_currentBuild!);
-    _savedBuilds = await PreferencesService.getBuilds();
+  /// Saves the current build, updating it in place if it was saved before.
+  Future<void> saveCurrentBuild() => _upsert(_currentBuild!.copyWith(updatedAt: DateTime.now()));
+
+  Future<void> renameBuild(String buildId, String name) async {
+    final build = _savedBuilds.where((b) => b.id == buildId).firstOrNull;
+    if (build == null || name.trim().isEmpty) return;
+    await _upsert(build.copyWith(name: name.trim(), updatedAt: DateTime.now()));
+    if (_currentBuild?.id == buildId) _currentBuild = _currentBuild!.copyWith(name: name.trim());
+  }
+
+  Future<void> duplicateBuild(String buildId) async {
+    final build = _savedBuilds.where((b) => b.id == buildId).firstOrNull;
+    if (build == null) return;
+    final now = DateTime.now();
+    await _upsert(build.copyWith(
+      id: 'build_${now.microsecondsSinceEpoch}',
+      name: '${build.name} (Copy)',
+      createdAt: now,
+      updatedAt: now,
+    ));
+  }
+
+  Future<void> _upsert(BuildConfig build) async {
+    _savedBuilds = [build, ..._savedBuilds.where((b) => b.id != build.id)];
     notifyListeners();
+    await PreferencesService.saveBuilds(_savedBuilds);
   }
 
   // Alias for compatibility
@@ -109,18 +131,10 @@ class BuildProvider extends ChangeNotifier {
   }
 
   Future<void> deleteBuild(String buildId) async {
-    await PreferencesService.deleteBuild(buildId);
-    _savedBuilds = await PreferencesService.getBuilds();
-    if (_currentBuild?.id == buildId) {
-      _currentBuild = _createEmptyBuild();
-    }
+    _savedBuilds = _savedBuilds.where((b) => b.id != buildId).toList();
+    if (_currentBuild?.id == buildId) _currentBuild = _createEmptyBuild();
     notifyListeners();
-  }
-
-  Future<void> addBuildToCart() async {
-    if (_currentBuild == null || !_currentBuild!.isComplete) return;
-    // This will be handled by the UI with cart provider
-    notifyListeners();
+    await PreferencesService.saveBuilds(_savedBuilds);
   }
 
   List<Component> getAvailableComponentsForCategory(ComponentCategory category) {

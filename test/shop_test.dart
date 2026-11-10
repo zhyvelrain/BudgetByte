@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,6 +29,13 @@ void main() {
     for (final c in all) {
       expect(c.options.length, inInclusiveRange(1, 3), reason: c.name);
       expect(c.options.where((o) => o.isDefault), hasLength(1), reason: c.name);
+      for (final o in c.options) {
+        expect(
+          File(o.image!).existsSync(),
+          isTrue,
+          reason: '${c.name} ${o.name}: ${o.image}',
+        );
+      }
     }
   });
 

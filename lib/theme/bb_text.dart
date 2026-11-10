@@ -225,7 +225,7 @@ class BBTextResponsive {
       {double size = 32, Color? color, FontWeight? weight}) =>
       BBText.displayLarge(
         size: size,
-        color: color ?? BBColors.textPrimary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textPrimary(context),
         weight: weight,
       );
 
@@ -233,7 +233,7 @@ class BBTextResponsive {
       {double size = 24, Color? color, FontWeight? weight}) =>
       BBText.displayMedium(
         size: size,
-        color: color ?? BBColors.textPrimary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textPrimary(context),
         weight: weight,
       );
 
@@ -241,7 +241,7 @@ class BBTextResponsive {
       {double size = 20, Color? color, FontWeight? weight}) =>
       BBText.displaySmall(
         size: size,
-        color: color ?? BBColors.textPrimary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textPrimary(context),
         weight: weight,
       );
 
@@ -249,7 +249,7 @@ class BBTextResponsive {
       {double size = 18, Color? color, FontWeight? weight}) =>
       BBText.headlineLarge(
         size: size,
-        color: color ?? BBColors.textPrimary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textPrimary(context),
         weight: weight,
       );
 
@@ -257,7 +257,7 @@ class BBTextResponsive {
       {double size = 16, Color? color, FontWeight? weight}) =>
       BBText.headlineMedium(
         size: size,
-        color: color ?? BBColors.textPrimary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textPrimary(context),
         weight: weight,
       );
 
@@ -265,7 +265,7 @@ class BBTextResponsive {
       {double size = 14, Color? color, FontWeight? weight}) =>
       BBText.headlineSmall(
         size: size,
-        color: color ?? BBColors.textPrimary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textPrimary(context),
         weight: weight,
       );
 
@@ -273,7 +273,7 @@ class BBTextResponsive {
       {double size = 22, Color? color, FontWeight? weight}) =>
       BBText.displaySmall(
         size: size,
-        color: color ?? BBColors.textPrimary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textPrimary(context),
         weight: weight,
       );
 
@@ -281,7 +281,7 @@ class BBTextResponsive {
       {double size = 16, Color? color, FontWeight? weight}) =>
       BBText.headlineMedium(
         size: size,
-        color: color ?? BBColors.textPrimary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textPrimary(context),
         weight: weight,
       );
 
@@ -289,7 +289,7 @@ class BBTextResponsive {
       {double size = 14, Color? color, FontWeight? weight}) =>
       BBText.headlineSmall(
         size: size,
-        color: color ?? BBColors.textPrimary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textPrimary(context),
         weight: weight,
       );
 
@@ -297,7 +297,7 @@ class BBTextResponsive {
       {double size = 16, Color? color, FontWeight? weight}) =>
       BBText.bodyLarge(
         size: size,
-        color: color ?? BBColors.textBody(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textBody(context),
         weight: weight,
       );
 
@@ -305,7 +305,7 @@ class BBTextResponsive {
       {double size = 14, Color? color, FontWeight? weight}) =>
       BBText.bodyMedium(
         size: size,
-        color: color ?? BBColors.textBody(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textBody(context),
         weight: weight,
       );
 
@@ -313,7 +313,7 @@ class BBTextResponsive {
       {double size = 12, Color? color, FontWeight? weight}) =>
       BBText.bodySmall(
         size: size,
-        color: color ?? BBColors.textMuted(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textMuted(context),
         weight: weight,
       );
 
@@ -325,7 +325,7 @@ class BBTextResponsive {
       {double size = 14, Color? color, FontWeight? weight}) =>
       BBText.labelLarge(
         size: size,
-        color: color ?? BBColors.textPrimary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textPrimary(context),
         weight: weight,
       );
 
@@ -333,7 +333,7 @@ class BBTextResponsive {
       {double size = 12, Color? color, FontWeight? weight}) =>
       BBText.labelMedium(
         size: size,
-        color: color ?? BBColors.textSecondary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textSecondary(context),
         weight: weight,
       );
 
@@ -341,7 +341,7 @@ class BBTextResponsive {
       {double size = 11, Color? color, FontWeight? weight}) =>
       BBText.labelSmall(
         size: size,
-        color: color ?? BBColors.textMuted(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textMuted(context),
         weight: weight,
       );
 
@@ -349,7 +349,7 @@ class BBTextResponsive {
       {double size = 11, Color? color, FontWeight? weight}) =>
       BBText.caption(
         size: size,
-        color: color ?? BBColors.textMuted(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textMuted(context),
         weight: weight,
       );
 
@@ -357,7 +357,7 @@ class BBTextResponsive {
       {double size = 20, Color? color, FontWeight? weight}) =>
       BBText.price(
         size: size,
-        color: color ?? BBColors.textPrimary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textPrimary(context),
         weight: weight,
       );
 
@@ -365,7 +365,7 @@ class BBTextResponsive {
       {double size = 13, Color? color, FontWeight? weight}) =>
       BBText.mono(
         size: size,
-        color: color ?? BBColors.textSecondary(context),
+        color: color != null ? BBColors.readable(context, color) : BBColors.textSecondary(context),
         weight: weight,
       );
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../services/preferences_service.dart';
 import '../models/app_models.dart';
 
-/// Cart provider for managing cart state
+/// Cart state. The in-memory list is the source of truth: every change is applied
+/// synchronously, then persisted, so back-to-back adds (e.g. a whole build) can't
+/// overwrite each other.
 class CartProvider extends ChangeNotifier {
   List<CartItem> _items = [];
   bool _isInitialized = false;
@@ -22,65 +25,65 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addItem(CartItem item) async {
-    await PreferencesService.addToCart(item);
-    _items = await PreferencesService.getCart();
-    notifyListeners();
+  /// Same product + same variant merges into one line.
+  Future<void> addItem(CartItem item) {
+    final i = _items.indexWhere(
+      (x) =>
+          x.component.id == item.component.id &&
+          x.option?.id == item.option?.id &&
+          x.selectedColor == item.selectedColor,
+    );
+    _items = [..._items];
+    if (i >= 0) {
+      _items[i] = _items[i].copyWith(
+        quantity: _items[i].quantity + item.quantity,
+      );
+    } else {
+      _items.add(item);
+    }
+    return _save();
   }
 
-  Future<void> removeItem(String cartItemId) async {
-    await PreferencesService.removeFromCart(cartItemId);
-    _items = await PreferencesService.getCart();
-    notifyListeners();
+  /// Adds every selected part of a build, each with the variant chosen in the builder.
+  Future<void> addBuild(BuildConfig build) {
+    final stamp = DateTime.now().microsecondsSinceEpoch;
+    for (final c in build.components) {
+      addItem(
+        CartItem(
+          id: 'cart_${c.id}_$stamp',
+          component: c,
+          quantity: 1,
+          option: c.options.firstOrNull,
+        ),
+      );
+    }
+    return _save();
   }
 
-  Future<void> updateQuantity(String cartItemId, int quantity) async {
-    await PreferencesService.updateCartQuantity(cartItemId, quantity);
-    _items = await PreferencesService.getCart();
-    notifyListeners();
+  Future<void> removeItem(String cartItemId) {
+    _items = _items.where((x) => x.id != cartItemId).toList();
+    return _save();
   }
 
-  Future<void> clear() async {
-    await PreferencesService.clearCart();
+  Future<void> updateQuantity(String cartItemId, int quantity) {
+    if (quantity <= 0) return removeItem(cartItemId);
+    _items = [
+      for (final x in _items)
+        x.id == cartItemId ? x.copyWith(quantity: quantity) : x,
+    ];
+    return _save();
+  }
+
+  Future<void> clear() {
     _items = [];
-    notifyListeners();
+    return _save();
   }
 
   // Alias for compatibility
-  Future<void> clearAll() async => clear();
+  Future<void> clearAll() => clear();
 
-  bool isInCart(Component component, {String? selectedColor}) {
-    return _items.any((item) =>
-        item.component.id == component.id &&
-        item.selectedColor == selectedColor);
-  }
-
-  // Add items from a build configuration
-  Future<void> addBuild(BuildConfig build) async {
-    for (final component in build.components) {
-      final item = CartItem(
-        id: 'cart_${DateTime.now().millisecondsSinceEpoch}_${component.id}',
-        component: component,
-        quantity: 1,
-        selectedColor: build.selectedColorTheme,
-      );
-      await PreferencesService.addToCart(item);
-    }
-    _items = await PreferencesService.getCart();
+  Future<void> _save() {
     notifyListeners();
-  }
-
-  int getQuantityForComponent(Component component, {String? selectedColor}) {
-    final item = _items.firstWhere(
-      (item) =>
-          item.component.id == component.id &&
-          item.selectedColor == selectedColor,
-      orElse: () => CartItem(
-        id: '',
-        component: component,
-        quantity: 0,
-      ),
-    );
-    return item.quantity;
+    return PreferencesService.saveCart(_items);
   }
 }

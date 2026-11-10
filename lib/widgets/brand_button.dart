@@ -109,8 +109,15 @@ class BrandButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final effectiveGradient = gradient ?? BrandAccents.electricGradient;
-    final effectiveBgColor = backgroundColor ?? (isDark ? BBColors.nightSurface : BBColors.daySurface);
-    final effectiveFgColor = foregroundColor ?? Colors.white;
+    final disabled = onPressed == null && !isLoading;
+    final effectiveFgColor = disabled
+        ? BBColors.textMuted(context)
+        : switch (variant) {
+            // Ink on the accent fill (4.7:1); white would fail.
+            BrandButtonVariant.primary => foregroundColor ?? BBColors.dayTextPrimary,
+            BrandButtonVariant.secondary => foregroundColor ?? BBColors.textPrimary(context),
+            _ => BBColors.readable(context, foregroundColor ?? BBColors.accentBlue),
+          };
     final effectiveBorderSide = borderSide ?? BorderSide(
           color: isDark ? BBColors.nightDivider : BBColors.dayDivider,
           width: 1.5,
@@ -164,7 +171,7 @@ class BrandButton extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(borderRadius),
                     ),
-                    padding: padding ?? const EdgeInsets.symmetric(horizontal: BBColors.padXL, vertical: BBColors.padM),
+                    padding: padding ?? const EdgeInsets.symmetric(horizontal: BBColors.padM, vertical: BBColors.padM),
                     backgroundColor: Colors.transparent,
                   ).copyWith(
                     backgroundColor: WidgetStateProperty.resolveWith((states) {
@@ -197,7 +204,7 @@ class BrandButton extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(borderRadius),
               ),
-              padding: padding ?? const EdgeInsets.symmetric(horizontal: BBColors.padXL, vertical: BBColors.padM),
+              padding: padding ?? const EdgeInsets.symmetric(horizontal: BBColors.padM, vertical: BBColors.padM),
             ).copyWith(
               foregroundColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.disabled)) {
@@ -219,49 +226,35 @@ class BrandButton extends StatelessWidget {
           ),
         );
       case BrandButtonVariant.secondary:
-              return SizedBox(
-                width: fullWidth ? double.infinity : width,
-                height: height,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: isDark ? BBColors.cardGradientDark : BBColors.cardGradientLight,
-                    borderRadius: BorderRadius.circular(borderRadius),
-                    border: Border.all(
-                      color: isDark ? BBColors.nightBorderStrong : BBColors.dayBorderStrong,
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark 
-                            ? BBColors.accentBlue.withValues(alpha: 0.1)
-                            : BBColors.accentBlue.withValues(alpha: 0.08),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(borderRadius),
-                    child: InkWell(
-                      onTap: onPressed,
-                      borderRadius: BorderRadius.circular(borderRadius),
-                      splashColor: BBColors.accentBlue.withValues(alpha: 0.15),
-                      highlightColor: BBColors.accentBlue.withValues(alpha: 0.05),
-                      child: Container(
-                        padding: padding ?? const EdgeInsets.symmetric(horizontal: BBColors.padXL, vertical: BBColors.padM),
-                        alignment: Alignment.center,
-                        child: DefaultTextStyle.merge(
-                          style: TextStyle(
-                            color: isDark ? BBColors.nightTextPrimary : BBColors.dayTextPrimary,
-                          ),
-                          child: buttonChild,
-                        ),
-                      ),
-                    ),
-                  ),
+        return SizedBox(
+          width: fullWidth ? double.infinity : width,
+          height: height,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: isDark ? BBColors.nightSurfaceAlt : BBColors.daySurfaceAlt,
+              borderRadius: BorderRadius.circular(borderRadius),
+              border: Border.all(
+                color: isDark ? BBColors.nightDivider : BBColors.dayDivider,
+                width: 1,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadius),
+              child: InkWell(
+                onTap: onPressed,
+                borderRadius: BorderRadius.circular(borderRadius),
+                splashColor: BBColors.accentBlue.withValues(alpha: 0.1),
+                highlightColor: BBColors.accentBlue.withValues(alpha: 0.05),
+                child: Container(
+                  padding: padding ?? const EdgeInsets.symmetric(horizontal: BBColors.padM, vertical: BBColors.padM),
+                  alignment: Alignment.center,
+                  child: buttonChild,
                 ),
-              );
+              ),
+            ),
+          ),
+        );
       case BrandButtonVariant.primary:
               final primaryGradient = gradient ?? BrandAccents.electricGradient;
               return SizedBox(
@@ -269,10 +262,10 @@ class BrandButton extends StatelessWidget {
                 height: height,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    gradient: primaryGradient,
-                    color: gradient == null ? effectiveBgColor : null,
+                    gradient: disabled ? null : primaryGradient,
+                    color: disabled ? (isDark ? BBColors.nightSurfaceHigh : BBColors.daySurfaceHigh) : null,
                     borderRadius: BorderRadius.circular(borderRadius),
-                    boxShadow: primaryGradient.colors.isNotEmpty
+                    boxShadow: !disabled && primaryGradient.colors.isNotEmpty
                         ? [
                             BoxShadow(
                               color: primaryGradient.colors.first.withValues(alpha: 0.4),
@@ -291,7 +284,7 @@ class BrandButton extends StatelessWidget {
                       splashColor: effectiveFgColor.withValues(alpha: 0.15),
                       highlightColor: effectiveFgColor.withValues(alpha: 0.05),
                       child: Container(
-                        padding: padding ?? const EdgeInsets.symmetric(horizontal: BBColors.padXL, vertical: BBColors.padM),
+                        padding: padding ?? const EdgeInsets.symmetric(horizontal: BBColors.padM, vertical: BBColors.padM),
                         alignment: Alignment.center,
                         child: buttonChild,
                 ),

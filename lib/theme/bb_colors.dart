@@ -1,167 +1,95 @@
 import 'package:flutter/material.dart';
-import '../models/app_models.dart';
 
-/// ByteBudget color palette - Professional Blue & Cream with Gradients
-/// Light cream background with soft blue accents, Dark mode with deep blue
+/// ByteBudget palette: warm paper + graphite neutrals, one burnt-orange accent.
+/// Token names are historical (e.g. `accentBlue` is the primary accent).
 class BBColors {
   BBColors._();
 
-  // ── Light Mode (Primary - Cream Base with Subtle Blue) ────────────────────────────────
-  static const dayBg = Color(0xFFF8FAFC);           // Very light blue-gray (slate 50)
-  static const daySurface = Color(0xFFFFFFFF);      // Pure white cards
-  static const daySurfaceAlt = Color(0xFFF1F5F9);   // Slate 100 for alt surfaces
-  static const daySurfaceHigh = Color(0xFFE2E8F0);  // Slate 200 for highlights
+  // ── Light mode: warm paper ───────────────────────────────────────────
+  static const dayBg = Color(0xFFF6F4EF);
+  static const daySurface = Color(0xFFFFFFFF);
+  static const daySurfaceAlt = Color(0xFFEFECE5);
+  static const daySurfaceHigh = Color(0xFFE7E3DB);
   static const daySurfaceElevated = Color(0xFFFFFFFF);
-  static const dayDivider = Color(0xFFE2E8F0);      // Slate 200
-  static const dayBorder = Color(0xFFE2E8F0);
-  static const dayBorderStrong = Color(0xFFCBD5E1); // Slate 300
-  static const dayTextPrimary = Color(0xFF0F172A);  // Slate 900 - high contrast
-  static const dayTextSecondary = Color(0xFF334155); // Slate 700
-  static const dayTextMuted = Color(0xFF64748B);    // Slate 500
-  static const dayTextBody = Color(0xFF1E293B);     // Slate 800
-  static const dayMuted = Color(0xFF94A3B8);        // Slate 400
-  static const dayMutedStrong = Color(0xFFCBD5E1);  // Slate 300
-  static const dayOnBg = Color(0xFF0F172A);
-  static const dayOnSurface = Color(0xFF1E293B);
-  static const dayOnSurfaceVariant = Color(0xFF475569); // Slate 600
+  static const dayDivider = Color(0xFFE0DBD1);
+  static const dayBorder = Color(0xFFE0DBD1);
+  static const dayBorderStrong = Color(0xFFCFC8BB);
+  static const dayTextPrimary = Color(0xFF1B1A17);
+  static const dayTextSecondary = Color(0xFF4D4A44);
+  static const dayTextMuted = Color(0xFF66625A); // 5.3:1 on dayBg
+  static const dayTextBody = Color(0xFF2E2C28);
+  static const dayMuted = Color(0xFF66625A);
+  static const dayMutedStrong = Color(0xFF8C877D);
+  static const dayOnBg = Color(0xFF1B1A17);
+  static const dayOnSurface = Color(0xFF2E2C28);
+  static const dayOnSurfaceVariant = Color(0xFF5A564F);
   static const dayScrim = Color(0xCC000000);
 
-  // ── Dark Mode (Deep Slate/Blue Base) ──────────────────────────
-  static const nightBg = Color(0xFF020617);         // Slate 950
-  static const nightSurface = Color(0xFF0F172A);    // Slate 900
-  static const nightSurfaceAlt = Color(0xFF1E293B); // Slate 800
-  static const nightSurfaceHigh = Color(0xFF334155); // Slate 700
-  static const nightSurfaceElevated = Color(0xFF1E293B);
-  static const nightDivider = Color(0xFF334155);    // Slate 700
-  static const nightBorder = Color(0xFF334155);
-  static const nightBorderStrong = Color(0xFF475569); // Slate 600
-  static const nightTextPrimary = Color(0xFFF8FAFC);  // Slate 50
-  static const nightTextSecondary = Color(0xFFE2E8F0); // Slate 200
-  static const nightTextMuted = Color(0xFF94A3B8);    // Slate 400
-  static const nightTextBody = Color(0xFFCBD5E1);     // Slate 300
-  static const nightMuted = Color(0xFF64748B);        // Slate 500
-  static const nightMutedStrong = Color(0xFF94A3B8);  // Slate 400
-  static const nightOnBg = Color(0xFFF8FAFC);
-  static const nightOnSurface = Color(0xFFE2E8F0);
-  static const nightOnSurfaceVariant = Color(0xFF94A3B8);
+  // ── Dark mode: graphite ─────────────────────────────────────────────
+  static const nightBg = Color(0xFF121110);
+  static const nightSurface = Color(0xFF1C1A18);
+  static const nightSurfaceAlt = Color(0xFF25231F);
+  static const nightSurfaceHigh = Color(0xFF2E2B27);
+  static const nightSurfaceElevated = Color(0xFF34312C);
+  static const nightDivider = Color(0xFF3B3832);
+  static const nightBorder = Color(0xFF3B3832);
+  static const nightBorderStrong = Color(0xFF4C4842);
+  static const nightTextPrimary = Color(0xFFF3F0EA);
+  static const nightTextSecondary = Color(0xFFC9C3B8);
+  static const nightTextMuted = Color(0xFFA9A398); // 6.6:1 on nightSurfaceAlt
+  static const nightTextBody = Color(0xFFDEDAD2);
+  static const nightMuted = Color(0xFF969085);
+  static const nightMutedStrong = Color(0xFF6E6961);
+  static const nightOnBg = Color(0xFFF3F0EA);
+  static const nightOnSurface = Color(0xFFE6E2DA);
+  static const nightOnSurfaceVariant = Color(0xFFB8B2A7);
   static const nightScrim = Color(0xCC000000);
 
-  // ── Brand Accent - Professional Blue (works on both light/dark) ──────────────────────
-  static const accentBlue = Color(0xFF2563EB);      // Blue 600 - primary
-  static const accentBlueDim = Color(0xFF1D4ED8);   // Blue 700
-  static const accentBlueSoft = Color(0xFFDBEAFE);  // Blue 50 - light mode backgrounds
-  static const accentBlueWash = Color(0xFFBFDBFE);  // Blue 200
-  static const accentBlueDeep = Color(0xFF1E40AF);  // Blue 800
-  static const accentBlueContainer = Color(0xFF1E3A8A); // Blue 900
-  static const accentBlueDark = Color(0xFF172554);  // Blue 950
-  static const accentBlueLight = Color(0xFF60A5FA); // Blue 400 - dark mode text
+  // ── Primary accent: burnt orange ────────────────────────────────────
+  static const accentBlue = Color(0xFFE4572E); // vermilion: fills (ink text 4.7:1) and icons (≥3:1 both modes)
+  static const accentBlueDim = Color(0xFFC2410C); // light-mode accent text; white text on it 5.2:1
+  static const accentBlueSoft = Color(0xFFFBE9E1);
+  static const accentBlueWash = Color(0xFFF6D5C6);
+  static const accentBlueDeep = Color(0xFF7C2D12);
+  static const accentBlueContainer = Color(0xFF5A2410);
+  static const accentBlueDark = Color(0xFF9A3412);
+  static const accentBlueLight = Color(0xFFF28A63); // dark-mode accent text and fills (ink text)
 
-  // Accent soft for selected tile
-    static const nightAccentSoft = Color(0xFF1E3A8A); // Blue 900 with opacity
-    static const dayAccentSoft = Color(0xFFDBEAFE);   // Blue 50
+  // Accent soft for selected tile (no context needed)
+  static const nightAccentSoft = accentBlueWash;
+  static const dayAccentSoft = accentBlueSoft;
 
-    // ── Accent Variants ───────────────────────────────────────────────
-    static const accentTeal = Color(0xFF0D9488);      // Teal 600
-    static const accentTealSoft = Color(0xFFCCFBF1);  // Teal 50
-    static const accentWarm = Color(0xFFD97706);      // Amber 600
-    static const accentWarmSoft = Color(0xFFFFF8E1);  // Amber 50
-    static const accentGreen = Color(0xFF16A34A);     // Green 600
-    static const accentGreenSoft = Color(0xFFF0FDF4); // Green 50
-    static const accentRed = Color(0xFFDC2626);       // Red 600
-    static const accentRedSoft = Color(0xFFFEF2F2);   // Red 50
+  // ── Accent variants ─────────────────────────────────────────────────
+  static const accentTeal = Color(0xFFEF7349); // gradient end: same hue, a step lighter
+  static const accentTealSoft = Color(0xFFFBE9E1);
+  static const accentWarm = Color(0xFFD97706); // ratings / low-stock amber
+  static const accentWarmSoft = Color(0xFFFDF0DC);
+  static const accentGreen = Color(0xFF22883D); // white text 4.5:1, dark-mode icon 3.1:1
+  static const accentGreenSoft = Color(0xFFE3F4E8);
+  static const accentRed = Color(0xFFD2453E); // white text 4.5:1, dark-mode icon 3.1:1
+  static const accentRedSoft = Color(0xFFFBE6E6);
 
-    // ── Missing Accent Colors (referenced in codebase) ──────────────────
-    static const accentOrange = Color(0xFFF97316);      // Orange 500
-    static const accentOrangeSoft = Color(0xFFFFF7ED);  // Orange 50
-    static const accentPurple = Color(0xFF9333EA);      // Purple 600
-    static const accentPurpleSoft = Color(0xFFFAF5FF);  // Purple 50
+  // Legacy aliases for backwards compatibility
+  static const accentPurple = accentBlue;
+  static const accentPurpleSoft = accentBlueSoft;
+  static const accentOrange = accentWarm;
+  static const accentOrangeSoft = accentWarmSoft;
+  static const electricBlue = accentBlue;
 
-    // Category accent colors (solid colors for category chips/indicators)
-    static const catKeyboard = Color(0xFF2563EB);   // Blue 600
-    static const catMouse = Color(0xFF0D9488);      // Teal 600
-    static const catMonitor = Color(0xFF7C3AED);    // Violet 600
-    static const catAudio = Color(0xFFD97706);      // Amber 600
-    static const catCamera = Color(0xFFDC2626);     // Red 600
-    static const catAccessory = Color(0xFF0891B2);  // Cyan 600
+  // ── Category colors: one accent, categories are told apart by icon ───
+  static const catKeyboard = accentBlue;
+  static const catMouse = accentBlue;
+  static const catMonitor = accentBlue;
+  static const catAudio = accentBlue;
+  static const catCamera = accentBlue;
+  static const catAccessory = accentBlue;
 
-    // ── Gradient Definitions (Professional) ────────────────────────────
-  // Primary brand gradient - blue to indigo
-  static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF2563EB), Color(0xFF4F46E5)], // Blue 600 -> Indigo 600
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-  
-  // Surface gradient for cards (light mode)
-  static const LinearGradient cardGradientLight = LinearGradient(
-    colors: [Color(0xFFFFFFFF), Color(0xFFF8FAFC)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-  
-  // Surface gradient for cards (dark mode)
-  static const LinearGradient cardGradientDark = LinearGradient(
-    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-  
-  // Hero/background gradient
-  static const LinearGradient heroGradientLight = LinearGradient(
-    colors: [Color(0xFFF8FAFC), Color(0xFFE0E7FF)], // Slate 50 -> Indigo 100
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
-  
-  static const LinearGradient heroGradientDark = LinearGradient(
-    colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)], // Slate 900 -> Indigo 950
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
-
-  // Category gradients (for category cards)
-  static const LinearGradient catKeyboardGradient = LinearGradient(
-    colors: [Color(0xFF2563EB), Color(0xFF3B82F6)], // Blue 600 -> 500
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-  
-  static const LinearGradient catMouseGradient = LinearGradient(
-    colors: [Color(0xFF0D9488), Color(0xFF14B8A6)], // Teal 600 -> 500
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-  
-  static const LinearGradient catMonitorGradient = LinearGradient(
-    colors: [Color(0xFF7C3AED), Color(0xFF8B5CF6)], // Violet 600 -> 500
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-  
-  static const LinearGradient catAudioGradient = LinearGradient(
-    colors: [Color(0xFFD97706), Color(0xFFF59E0B)], // Amber 600 -> 500
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-  
-  static const LinearGradient catCameraGradient = LinearGradient(
-    colors: [Color(0xFFDC2626), Color(0xFFEF4444)], // Red 600 -> 500
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-  
-  static const LinearGradient catAccessoryGradient = LinearGradient(
-    colors: [Color(0xFF0891B2), Color(0xFF06B6D4)], // Cyan 600 -> 500
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  // ── Status Colors ─────────────────────────────────────────────────
-  static const success = Color(0xFF16A34A);     // Green 600
-  static const warning = Color(0xFFD97706);     // Amber 600
-  static const danger = Color(0xFFDC2626);      // Red 600
-  static const info = Color(0xFF2563EB);        // Blue 600
-  static const error = Color(0xFFDC2626);       // Red 600
+  // ── Status colors ───────────────────────────────────────────────────
+  static const success = accentGreen;
+  static const warning = accentWarm;
+  static const danger = accentRed;
+  static const info = accentBlue;
+  static const error = accentRed;
 
   // ── Neutral ───────────────────────────────────────────────────────
   static const white = Color(0xFFFFFFFF);
@@ -270,6 +198,30 @@ class BBColors {
   static Color bg(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? nightBg : dayBg;
 
+  /// The primary accent tuned for the current mode (lighter in dark mode).
+  static Color accent(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? accentBlueLight : accentBlueDim;
+
+  /// Returns [color] shifted in lightness until it reads at 4.5:1 against the
+  /// current mode's darkest-on-light / lightest-on-dark surface. Neutrals (white
+  /// badge text, greys) are returned unchanged; they are already tokenized.
+  static Color readable(BuildContext context, Color color) {
+    final hsl = HSLColor.fromColor(color);
+    if (hsl.saturation < 0.15 || color.a < 1) return color;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final bgLum = (dark ? nightSurfaceHigh : daySurfaceAlt).computeLuminance();
+    double ratio(Color c) {
+      final l = c.computeLuminance();
+      return dark ? (l + 0.05) / (bgLum + 0.05) : (bgLum + 0.05) / (l + 0.05);
+    }
+
+    var h = hsl;
+    for (var i = 0; i < 25 && ratio(h.toColor()) < 4.5; i++) {
+      h = h.withLightness((h.lightness + (dark ? 0.03 : -0.03)).clamp(0.0, 1.0));
+    }
+    return h.toColor();
+  }
+
   // Get accent color with opacity
   static Color electricBlueAt(double opacity) => accentBlue.withValues(alpha: opacity);
 }
@@ -278,40 +230,34 @@ class BBColors {
 class BrandAccents {
   static const Color electricBlue = BBColors.accentBlue;
   static Color electricBlueAt(double opacity) => electricBlue.withValues(alpha: opacity);
-  
-  // Primary brand gradient - blue to indigo
-  static const electricGradient = BBColors.primaryGradient;
+  static const electricGradient = LinearGradient(
+    colors: [BBColors.accentBlue, BBColors.accentTeal],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
-  // Surface gradients
-  static const lightSurfaceGradient = BBColors.cardGradientLight;
-  static const darkSurfaceGradient = BBColors.cardGradientDark;
+  static const lightSurfaceGradient = LinearGradient(
+    colors: [BBColors.daySurface, BBColors.daySurfaceAlt],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
 
-  // Hero gradients
-  static const heroGradientLight = BBColors.heroGradientLight;
-  static const heroGradientDark = BBColors.heroGradientDark;
+  static const darkSurfaceGradient = LinearGradient(
+    colors: [BBColors.nightSurface, BBColors.nightSurfaceAlt],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
 
-  // Category gradients
-    static const catKeyboardGradient = BBColors.catKeyboardGradient;
-    static const catMouseGradient = BBColors.catMouseGradient;
-    static const catMonitorGradient = BBColors.catMonitorGradient;
-    static const catAudioGradient = BBColors.catAudioGradient;
-    static const catCameraGradient = BBColors.catCameraGradient;
-    static const catAccessoryGradient = BBColors.catAccessoryGradient;
+  static const cardGradient = LinearGradient(
+    colors: [BBColors.white, BBColors.daySurfaceAlt],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
-    static Gradient categoryGradient(ComponentCategory category) {
-      switch (category) {
-        case ComponentCategory.keyboard:
-          return catKeyboardGradient;
-        case ComponentCategory.mouse:
-          return catMouseGradient;
-        case ComponentCategory.monitor:
-          return catMonitorGradient;
-        case ComponentCategory.audio:
-          return catAudioGradient;
-        case ComponentCategory.camera:
-          return catCameraGradient;
-        case ComponentCategory.accessory:
-          return catAccessoryGradient;
-      }
-    }
-  }
+  static const blueCreamGradient = LinearGradient(
+    colors: [BBColors.accentBlueSoft, BBColors.daySurface],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+}

@@ -58,6 +58,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final isFavorite = shop.isFavorite(component.id);
     final price = _option?.price ?? component.price;
     final originalPrice = _option == null ? component.originalPrice : _option!.originalPrice;
+    final image = _option?.image ?? component.images.firstOrNull;
 
     return Scaffold(
       body: CustomScrollView(
@@ -89,13 +90,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 children: [
                   // Main Image
                   Positioned.fill(
-                    child: component.images.isNotEmpty
-                        ? Image.asset(
-                            component.images.first,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => _placeholderImage(categoryColor),
-                          )
-                        : _placeholderImage(categoryColor),
+                    child: AnimatedSwitcher(
+                      duration: BBColors.animNormal,
+                      switchInCurve: Curves.easeOutCubic,
+                      child: image != null
+                          ? Image.asset(
+                              image,
+                              key: ValueKey(image),
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              semanticLabel: '${component.name}, ${_option?.name ?? ''}',
+                              errorBuilder: (_, _, _) => _placeholderImage(categoryColor),
+                            )
+                          : _placeholderImage(categoryColor),
+                    ),
                   ),
                   // Gradient overlay
                   Positioned.fill(
@@ -120,8 +129,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                   if (component.discountLabel != null)
                     Positioned(
-                      top: BBColors.padL + MediaQuery.of(context).padding.top,
-                      right: BBColors.padL,
+                      bottom: BBColors.padL,
+                      left: BBColors.padL,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
@@ -184,40 +193,30 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 const SizedBox(height: BBColors.padL),
 
                 // Price
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Flexible(
-                                      flex: 1,
-                                      child: ConstrainedBox(
-                                        constraints: const BoxConstraints(minWidth: 0),
-                                        child: Text(
-                                          context.money(price),
-                                          style: BBTextResponsive.displayLarge(context, color: categoryColor, weight: FontWeight.w800, size: 28),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ),
-                                    if (originalPrice != null && originalPrice > price) ...[
-                                      const SizedBox(width: BBColors.padS),
-                                      Flexible(
-                                        child: ConstrainedBox(
-                                          constraints: const BoxConstraints(minWidth: 0),
-                                          child: Text(
-                                            context.money(originalPrice),
-                                            style: BBTextResponsive.titleMedium(context).copyWith(decoration: TextDecoration.lineThrough),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                    const Spacer(flex: 1),
-                                    const SizedBox(width: BBColors.padM),
-                                    _StockBadge(stock: component.stockCount),
-                                  ],
-                                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Wrap(
+                        spacing: BBColors.padM,
+                        crossAxisAlignment: WrapCrossAlignment.end,
+                        children: [
+                          Text(
+                            context.money(price),
+                            style: BBTextResponsive.displayLarge(context, color: categoryColor, weight: FontWeight.w800, size: 32),
+                          ),
+                          if (originalPrice != null && originalPrice > price)
+                            Text(
+                              context.money(originalPrice),
+                              style: BBTextResponsive.titleMedium(context).copyWith(decoration: TextDecoration.lineThrough),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: BBColors.padM),
+                    _StockBadge(stock: component.stockCount),
+                  ],
+                ),
                 const SizedBox(height: BBColors.padXL),
 
                 // Description
@@ -477,6 +476,20 @@ class _OptionSelectorState extends State<_OptionSelector> {
                 padding: const EdgeInsets.all(BBColors.padM),
                 child: Row(
                   children: [
+                    if (option.image != null) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(BBColors.radiusSm),
+                        child: Image.asset(
+                          option.image!,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          cacheWidth: 144,
+                          errorBuilder: (_, _, _) => const SizedBox(width: 48, height: 48),
+                        ),
+                      ),
+                      const SizedBox(width: BBColors.padM),
+                    ],
                     // Color indicator
                     if (option.colorHex != null) ...[
                       Container(
