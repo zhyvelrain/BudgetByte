@@ -89,6 +89,7 @@ class PeripheralScene extends StatefulWidget {
     this.showControls = true,
     this.autoRotate = true,
     this.showLegend = false,
+    this.themeColor,
   });
 
   final List<SceneSlot> slots;
@@ -96,6 +97,7 @@ class PeripheralScene extends StatefulWidget {
   final bool showControls;
   final bool autoRotate;
   final bool showLegend;
+  final Color? themeColor;
 
   @override
   State<PeripheralScene> createState() => _PeripheralSceneState();
@@ -223,7 +225,7 @@ class _PeripheralSceneState extends State<PeripheralScene>
     final radius = BorderRadius.circular(BBColors.radiusLg);
 
     final scene = _flat
-        ? _FlatScene(slots: widget.slots)
+        ? _FlatScene(slots: widget.slots, themeColor: widget.themeColor)
         : AnimatedBuilder(
             animation: _spin,
             builder: (context, _) {
@@ -235,6 +237,7 @@ class _PeripheralSceneState extends State<PeripheralScene>
                   pitch: _pitch,
                   distance: _distance,
                   isDark: isDark,
+                  themeColor: widget.themeColor,
                 ),
                 size: Size.infinite,
               );
@@ -536,9 +539,10 @@ class _SlotDot extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _FlatScene extends StatelessWidget {
-  const _FlatScene({required this.slots});
+  const _FlatScene({required this.slots, this.themeColor});
 
   final List<SceneSlot> slots;
+  final Color? themeColor;
 
   @override
   Widget build(BuildContext context) {
@@ -555,21 +559,23 @@ class _FlatScene extends StatelessWidget {
         mainAxisSpacing: 6,
         crossAxisSpacing: 6,
         childAspectRatio: 2.2,
-        children: [for (final slot in slots) _FlatTile(slot: slot)],
+        children: [for (final slot in slots) _FlatTile(slot: slot, themeColor: themeColor)],
       ),
     );
   }
 }
 
 class _FlatTile extends StatelessWidget {
-  const _FlatTile({required this.slot});
+  const _FlatTile({required this.slot, this.themeColor});
 
   final SceneSlot slot;
+  final Color? themeColor;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final image = slot.option?.image ?? slot.component?.images.firstOrNull;
+    final tintColor = themeColor ?? slot.tint;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -594,14 +600,14 @@ class _FlatTile extends StatelessWidget {
                       errorBuilder: (_, _, _) => Icon(
                         slot.category.icon,
                         size: 16,
-                        color: BBColors.readable(context, slot.tint),
+                        color: BBColors.readable(context, tintColor),
                       ),
                     )
                   : Icon(
                       slot.category.icon,
                       size: 16,
                       color: slot.isFilled
-                          ? BBColors.readable(context, slot.tint)
+                          ? BBColors.readable(context, tintColor)
                           : BBColors.textMuted(context),
                     ),
             ),
@@ -727,6 +733,7 @@ class _ScenePainter extends CustomPainter {
     required this.pitch,
     required this.distance,
     required this.isDark,
+    this.themeColor,
   });
 
   final List<SceneSlot> slots;
@@ -734,6 +741,7 @@ class _ScenePainter extends CustomPainter {
   final double pitch;
   final double distance;
   final bool isDark;
+  final Color? themeColor;
 
   static final _light = const _Vec3(-0.45, 0.82, 0.55).normalized;
 
@@ -929,11 +937,18 @@ class _ScenePainter extends CustomPainter {
     );
 
     final byCategory = {for (final s in slots) s.category: s};
+    
+    // Determine color for peripherals - use themeColor if set, otherwise individual slot tints
+    Color getPeripheralColor(ComponentCategory category) {
+      if (themeColor != null) return themeColor!;
+      final slot = byCategory[category];
+      return slot?.isFilled == true ? slot!.tint : neutral;
+    }
 
     // Mousepad / accessory sits under the keyboard and mouse.
     final accessory = byCategory[ComponentCategory.accessory];
     final padColor = accessory?.isFilled == true
-        ? _mix(accessory!.tint, neutral, 0.35)
+        ? _mix(getPeripheralColor(ComponentCategory.accessory), neutral, 0.35)
         : _mix(neutral, deskTop, 0.55);
     _addBox(
       faces,
@@ -960,8 +975,7 @@ class _ScenePainter extends CustomPainter {
     }
 
     // Monitor.
-    final monitor = byCategory[ComponentCategory.monitor];
-    final monitorColor = monitor?.isFilled == true ? monitor!.tint : neutral;
+    final monitorColor = getPeripheralColor(ComponentCategory.monitor);
     _addBox(
       faces,
       const _Vec3(0, 0.025, -0.52),
@@ -1008,8 +1022,7 @@ class _ScenePainter extends CustomPainter {
     );
 
     // Keyboard.
-    final keyboard = byCategory[ComponentCategory.keyboard];
-    final keyboardColor = keyboard?.isFilled == true ? keyboard!.tint : neutral;
+    final keyboardColor = getPeripheralColor(ComponentCategory.keyboard);
     _addBox(
       faces,
       const _Vec3(0, 0.045, 0.31),
@@ -1043,8 +1056,7 @@ class _ScenePainter extends CustomPainter {
     );
 
     // Mouse.
-    final mouse = byCategory[ComponentCategory.mouse];
-    final mouseColor = mouse?.isFilled == true ? mouse!.tint : neutral;
+    final mouseColor = getPeripheralColor(ComponentCategory.mouse);
     _addEllipsoid(
       faces,
       const _Vec3(0.66, 0.075, 0.35),
@@ -1067,8 +1079,7 @@ class _ScenePainter extends CustomPainter {
     );
 
     // Headset on a stand.
-    final audio = byCategory[ComponentCategory.audio];
-    final audioColor = audio?.isFilled == true ? audio!.tint : neutral;
+    final audioColor = getPeripheralColor(ComponentCategory.audio);
     _addBox(
       faces,
       const _Vec3(-0.92, 0.02, 0.02),
@@ -1106,10 +1117,7 @@ class _ScenePainter extends CustomPainter {
     );
 
     // Camera on a small tripod.
-    final cameraSlot = byCategory[ComponentCategory.camera];
-    final cameraColor = cameraSlot?.isFilled == true
-        ? cameraSlot!.tint
-        : neutral;
+    final cameraColor = getPeripheralColor(ComponentCategory.camera);
     _addBox(
       faces,
       const _Vec3(0.88, 0.02, -0.3),
@@ -1383,6 +1391,7 @@ class _ScenePainter extends CustomPainter {
         oldDelegate.pitch != pitch ||
         oldDelegate.distance != distance ||
         oldDelegate.isDark != isDark ||
-        oldDelegate.slots != slots;
+        oldDelegate.slots != slots ||
+        oldDelegate.themeColor != themeColor;
   }
 }

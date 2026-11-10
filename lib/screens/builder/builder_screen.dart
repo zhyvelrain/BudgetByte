@@ -12,6 +12,38 @@ import '../../providers/build_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../main/main_screen.dart';
 
+/// Predefined color themes for the build setup.
+/// Each theme provides a consistent color for all peripherals.
+class BuildColorTheme {
+  const BuildColorTheme({
+    required this.id,
+    required this.name,
+    required this.color,
+    required this.hex,
+  });
+
+  final String id;
+  final String name;
+  final Color color;
+  final String hex; // For serialization
+
+  static const List<BuildColorTheme> presets = [
+    BuildColorTheme(id: 'vermilion', name: 'Vermilion', color: BBColors.accentBlue, hex: '#E4572E'),
+    BuildColorTheme(id: 'electric_blue', name: 'Electric Blue', color: Color(0xFF007AFF), hex: '#007AFF'),
+    BuildColorTheme(id: 'emerald', name: 'Emerald', color: BBColors.accentGreen, hex: '#22883D'),
+    BuildColorTheme(id: 'amber', name: 'Amber', color: BBColors.accentWarm, hex: '#D97706'),
+    BuildColorTheme(id: 'violet', name: 'Violet', color: Color(0xFF8B5CF6), hex: '#8B5CF6'),
+    BuildColorTheme(id: 'rose', name: 'Rose', color: Color(0xFFF43F5E), hex: '#F43F5E'),
+    BuildColorTheme(id: 'cyan', name: 'Cyan', color: Color(0xFF06B6D4), hex: '#06B6D4'),
+    BuildColorTheme(id: 'neutral', name: 'Neutral', color: Color(0xFF64748B), hex: '#64748B'),
+  ];
+
+  static BuildColorTheme? fromHex(String? hex) {
+    if (hex == null) return null;
+    return presets.where((t) => t.hex == hex).firstOrNull;
+  }
+}
+
 class BuilderScreen extends StatefulWidget {
   const BuilderScreen({super.key});
 
@@ -138,6 +170,7 @@ class _BuildSummaryCard extends StatelessWidget {
     final completed = build?.componentCount ?? 0;
     final total = ComponentCategory.values.length;
     final complete = build?.isComplete ?? false;
+    final selectedTheme = BuildColorTheme.fromHex(build?.selectedColorTheme);
 
     return Container(
       margin: const EdgeInsets.fromLTRB(BBColors.padM, BBColors.padM, BBColors.padM, BBColors.padS),
@@ -201,11 +234,30 @@ class _BuildSummaryCard extends StatelessWidget {
           ),
           if (showPreview) ...[
             const SizedBox(height: BBColors.padS),
+            // Color theme picker
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final theme in BuildColorTheme.presets)
+                    Padding(
+                      padding: const EdgeInsets.only(right: BBColors.padS),
+                      child: _ColorThemeChip(
+                        theme: theme,
+                        isSelected: selectedTheme?.id == theme.id,
+                        onTap: () => buildProvider.setColorTheme(theme.hex),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: BBColors.padS),
             PeripheralScene(
               slots: SceneSlot.fromBuild(build),
               height: previewHeight,
               showControls: true,
               showLegend: previewHeight >= 170,
+              themeColor: selectedTheme?.color,
             ),
           ],
           const SizedBox(height: BBColors.padM),
@@ -716,14 +768,78 @@ class _BuildActionBar extends StatelessWidget {
   }
 
   Future<void> _addToCart(BuildContext context) async {
-    final build = buildProvider.currentBuild;
-    if (build == null || !build.isComplete) return;
-    await context.read<CartProvider>().addBuild(build);
-    if (!context.mounted) return;
-    goToTab(context, 2);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('${build.componentCount} parts added to your cart'),
-      behavior: SnackBarBehavior.floating,
-    ));
+      final build = buildProvider.currentBuild;
+      if (build == null || !build.isComplete) return;
+      await context.read<CartProvider>().addBuild(build);
+      if (!context.mounted) return;
+      goToTab(context, 2);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('${build.componentCount} parts added to your cart'),
+        behavior: SnackBarBehavior.floating,
+      ));
+    }
   }
-}
+
+  /// Color theme chip widget for selecting build color theme.
+  class _ColorThemeChip extends StatelessWidget {
+    const _ColorThemeChip({
+      required this.theme,
+      required this.isSelected,
+      required this.onTap,
+    });
+
+    final BuildColorTheme theme;
+    final bool isSelected;
+    final VoidCallback onTap;
+
+    @override
+    Widget build(BuildContext context) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: BBColors.durationFast,
+          padding: const EdgeInsets.symmetric(horizontal: BBColors.padM, vertical: BBColors.padS),
+          decoration: BoxDecoration(
+            color: isSelected ? theme.color : (isDark ? BBColors.nightSurfaceAlt : BBColors.daySurface),
+            borderRadius: BorderRadius.circular(BBColors.radiusFull),
+            border: Border.all(
+              color: isSelected ? theme.color : (isDark ? BBColors.nightBorder : BBColors.dayBorder),
+              width: isSelected ? 2 : 1,
+            ),
+            boxShadow: isSelected
+                ? [BoxShadow(color: theme.color.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: theme.color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: BBColors.padS),
+              Text(
+                theme.name,
+                style: BBTextResponsive.labelMedium(
+                  context,
+                  color: isSelected
+                      ? (theme.color.computeLuminance() > 0.5 ? BBColors.black : BBColors.white)
+                      : BBColors.textPrimary(context),
+                  weight: FontWeight.w600,
+                ),
+              ),
+              if (isSelected) ...[
+                const SizedBox(width: 4),
+                Icon(Icons.check, size: 14, color: theme.color.computeLuminance() > 0.5 ? BBColors.black : BBColors.white),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+  }
